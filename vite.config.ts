@@ -10,6 +10,14 @@ export default defineConfig(({ mode }) => {
     return {
       plugins: [
         react(),
+        {
+          name: 'html-env-inject',
+          transformIndexHtml(html) {
+            // Replace API key placeholder with actual environment variable
+            const geminiApiKey = env.VITE_GEMINI_API_KEY || '';
+            return html.replace('__VITE_GEMINI_API_KEY__', geminiApiKey);
+          }
+        },
         // PWA Plugin for production - temporarily disabled due to version conflict
         // ...(isProduction ? [
         //   VitePWA({
