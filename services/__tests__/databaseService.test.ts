@@ -1,0 +1,634 @@
+import { 
+  projectsService, 
+  tasksService, 
+  userPreferencesService,
+  tagsService,
+  tagCategoriesService,
+  authService,
+  DatabaseServiceError 
+} from '../databaseService';
+import { supabase } from '../../src/lib/supabase';
+import { 
+  Project, 
+  Task, 
+  UserPreferences, 
+  Tag, 
+  TagCategory,
+  ProjectStatus,
+  ProjectContext,
+  TaskPriority,
+  TaskStatus
+} from '../../types';
+
+// Mock Supabase
+jest.mock('../../src/lib/supabase', () => ({
+  supabase: {
+    from: jest.fn(),
+    auth: {
+      getUser: jest.fn(),
+      signUp: jest.fn(),
+      signInWithPassword: jest.fn(),
+      signOut: jest.fn(),
+      onAuthStateChange: jest.fn(),
+    },
+    channel: jest.fn(),
+  },
+}));
+
+const mockSupabase = supabase as jest.Mocked<typeof supabase>;
+
+describe('Database Service', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('Projects Service', () => {
+    const mockProject: Project = {
+      id: 'project-1',
+      title: 'Test Project',
+      description: 'Test Description',
+      goals: ['Goal 1', 'Goal 2'],
+      status: ProjectStatus.ACTIVE,
+      context: ProjectContext.BUSINESS,
+      tags: ['test'],
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    describe('getAll', () => {
+      it('should fetch all projects successfully', async () => {
+        const mockResponse = {
+          data: [mockProject],
+          error: null,
+        };
+
+        mockSupabase.from.mockReturnValue({
+          select: jest.fn().mockReturnValue({
+            order: jest.fn().mockResolvedValue(mockResponse),
+          }),
+        } as any);
+
+        const result = await projectsService.getAll();
+
+        expect(mockSupabase.from).toHaveBeenCalledWith('projects');
+        expect(result).toEqual([mockProject]);
+      });
+
+      it('should handle database errors', async () => {
+        const mockError = { message: 'Database error', code: 'DB_ERROR' };
+        const mockResponse = {
+          data: null,
+          error: mockError,
+        };
+
+        mockSupabase.from.mockReturnValue({
+          select: jest.fn().mockReturnValue({
+            order: jest.fn().mockResolvedValue(mockResponse),
+          }),
+        } as any);
+
+        await expect(projectsService.getAll()).rejects.toThrow(DatabaseServiceError);
+      });
+    });
+
+    describe('create', () => {
+      it('should create a project successfully', async () => {
+        const newProject = {
+          title: 'New Project',
+          description: 'New Description',
+          goals: ['Goal 1'],
+          status: ProjectStatus.ACTIVE,
+          context: ProjectContext.BUSINESS,
+          tags: ['new'],
+        };
+
+        const mockResponse = {
+          data: { ...newProject, id: 'new-project-id' },
+          error: null,
+        };
+
+        mockSupabase.from.mockReturnValue({
+          insert: jest.fn().mockReturnValue({
+            select: jest.fn().mockReturnValue({
+              single: jest.fn().mockResolvedValue(mockResponse),
+            }),
+          }),
+        } as any);
+
+        const result = await projectsService.create(newProject);
+
+        expect(mockSupabase.from).toHaveBeenCalledWith('projects');
+        expect(result).toEqual(mockResponse.data);
+      });
+
+      it('should handle validation errors', async () => {
+        const invalidProject = {
+          title: '', // Invalid empty title
+          description: 'Description',
+          goals: [],
+          status: ProjectStatus.ACTIVE,
+          context: ProjectContext.BUSINESS,
+          tags: [],
+        };
+
+        const mockError = { 
+          message: 'Validation failed', 
+          code: 'VALIDATION_ERROR',
+          details: 'Title cannot be empty'
+        };
+
+        mockSupabase.from.mockReturnValue({
+          insert: jest.fn().mockReturnValue({
+            select: jest.fn().mockReturnValue({
+              single: jest.fn().mockResolvedValue({
+                data: null,
+                error: mockError,
+              }),
+            }),
+          }),
+        } as any);
+
+        await expect(projectsService.create(invalidProject)).rejects.toThrow(DatabaseServiceError);
+      });
+    });
+
+    describe('update', () => {
+      it('should update a project successfully', async () => {
+        const updates = { title: 'Updated Title' };
+        const updatedProject = { ...mockProject, ...updates };
+
+        const mockResponse = {
+          data: updatedProject,
+          error: null,
+        };
+
+        mockSupabase.from.mockReturnValue({
+          update: jest.fn().mockReturnValue({
+            eq: jest.fn().mockReturnValue({
+              select: jest.fn().mockReturnValue({
+                single: jest.fn().mockResolvedValue(mockResponse),
+              }),
+            }),
+          }),
+        } as any);
+
+        const result = await projectsService.update('project-1', updates);
+
+        expect(result).toEqual(updatedProject);
+      });
+
+      it('should handle not found errors', async () => {
+        const mockError = { 
+          message: 'No rows found', 
+          code: 'PGRST116'
+        };
+
+        mockSupabase.from.mockReturnValue({
+          update: jest.fn().mockReturnValue({
+            eq: jest.fn().mockReturnValue({
+              select: jest.fn().mockReturnValue({
+                single: jest.fn().mockResolvedValue({
+                  data: null,
+                  error: mockError,
+                }),
+              }),
+            }),
+          }),
+        } as any);
+
+        await expect(projectsService.update('nonexistent-id', { title: 'Updated' }))
+          .rejects.toThrow(DatabaseServiceError);
+      });
+    });
+
+    describe('delete', () => {
+      it('should delete a project successfully', async () => {
+        const mockResponse = {
+          data: null,
+          error: null,
+        };
+
+        mockSupabase.from.mockReturnValue({
+          delete: jest.fn().mockReturnValue({
+            eq: jest.fn().mockResolvedValue(mockResponse),
+          }),
+        } as any);
+
+        await expect(projectsService.delete('project-1')).resolves.not.toThrow();
+      });
+
+      it('should handle foreign key constraint errors', async () => {
+        const mockError = { 
+          message: 'Foreign key constraint violation', 
+          code: '23503'
+        };
+
+        mockSupabase.from.mockReturnValue({
+          delete: jest.fn().mockReturnValue({
+            eq: jest.fn().mockResolvedValue({
+              data: null,
+              error: mockError,
+            }),
+          }),
+        } as any);
+
+        await expect(projectsService.delete('project-1')).rejects.toThrow(DatabaseServiceError);
+      });
+    });
+  });
+
+  describe('Tasks Service', () => {
+    const mockTask: Task = {
+      id: 'task-1',
+      title: 'Test Task',
+      description: 'Test Description',
+      project_id: 'project-1',
+      priority: TaskPriority.HIGH,
+      status: TaskStatus.TODO,
+      estimated_hours: 4,
+      dependencies: [],
+      tags: ['test'],
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    describe('getByProject', () => {
+      it('should fetch tasks for a specific project', async () => {
+        const mockResponse = {
+          data: [mockTask],
+          error: null,
+        };
+
+        mockSupabase.from.mockReturnValue({
+          select: jest.fn().mockReturnValue({
+            eq: jest.fn().mockReturnValue({
+              order: jest.fn().mockResolvedValue(mockResponse),
+            }),
+          }),
+        } as any);
+
+        const result = await tasksService.getByProject('project-1');
+
+        expect(mockSupabase.from).toHaveBeenCalledWith('tasks');
+        expect(result).toEqual([mockTask]);
+      });
+    });
+
+    describe('updateStatus', () => {
+      it('should update task status', async () => {
+        const updatedTask = { ...mockTask, status: TaskStatus.IN_PROGRESS };
+
+        const mockResponse = {
+          data: updatedTask,
+          error: null,
+        };
+
+        mockSupabase.from.mockReturnValue({
+          update: jest.fn().mockReturnValue({
+            eq: jest.fn().mockReturnValue({
+              select: jest.fn().mockReturnValue({
+                single: jest.fn().mockResolvedValue(mockResponse),
+              }),
+            }),
+          }),
+        } as any);
+
+        const result = await tasksService.updateStatus('task-1', TaskStatus.IN_PROGRESS);
+
+        expect(result).toEqual(updatedTask);
+      });
+    });
+
+    describe('getDependencies', () => {
+      it('should fetch task dependencies', async () => {
+        const taskWithDeps = { ...mockTask, dependencies: ['task-2', 'task-3'] };
+        const depTask1 = { ...mockTask, id: 'task-2', title: 'Dependency 1' };
+        const depTask2 = { ...mockTask, id: 'task-3', title: 'Dependency 2' };
+
+        mockSupabase.from.mockReturnValue({
+          select: jest.fn().mockReturnValue({
+            in: jest.fn().mockResolvedValue({
+              data: [depTask1, depTask2],
+              error: null,
+            }),
+          }),
+        } as any);
+
+        const result = await tasksService.getDependencies(['task-2', 'task-3']);
+
+        expect(result).toEqual([depTask1, depTask2]);
+      });
+    });
+  });
+
+  describe('User Preferences Service', () => {
+    const mockPreferences: UserPreferences = {
+      id: 'pref-1',
+      working_hours_start: '09:00',
+      working_hours_end: '17:00',
+      focus_block_duration: 90,
+      break_duration: 15,
+      priority_weight_deadline: 0.4,
+      priority_weight_effort: 0.3,
+      priority_weight_deps: 0.3,
+      ai_provider: 'gemini',
+      selected_gemini_model: 'gemini-1.5-flash',
+      instructions: 'Test preferences',
+      business_hours_start: '09:00',
+      business_hours_end: '17:00',
+      business_days: ['mon', 'tue', 'wed', 'thu', 'fri'],
+      personal_time_weekday_evening: true,
+      personal_time_weekends: true,
+      personal_time_early_morning: false,
+      allow_business_in_personal_time: false,
+      allow_personal_in_business_time: false,
+      context_switch_buffer_minutes: 15,
+      claude_api_key: '',
+      openai_api_key: '',
+      focus_blocks: [],
+      preferred_time_slots: [],
+      business_relevance_default: 50,
+    };
+
+    describe('get', () => {
+      it('should fetch user preferences', async () => {
+        const mockResponse = {
+          data: mockPreferences,
+          error: null,
+        };
+
+        mockSupabase.from.mockReturnValue({
+          select: jest.fn().mockReturnValue({
+            eq: jest.fn().mockReturnValue({
+              single: jest.fn().mockResolvedValue(mockResponse),
+            }),
+          }),
+        } as any);
+
+        const result = await userPreferencesService.get('user-1');
+
+        expect(result).toEqual(mockPreferences);
+      });
+
+      it('should return default preferences if none exist', async () => {
+        const mockResponse = {
+          data: null,
+          error: { code: 'PGRST116' }, // No rows found
+        };
+
+        mockSupabase.from.mockReturnValue({
+          select: jest.fn().mockReturnValue({
+            eq: jest.fn().mockReturnValue({
+              single: jest.fn().mockResolvedValue(mockResponse),
+            }),
+          }),
+        } as any);
+
+        const result = await userPreferencesService.get('user-1');
+
+        expect(result).toMatchObject({
+          working_hours_start: '09:00',
+          working_hours_end: '17:00',
+          ai_provider: 'gemini',
+        });
+      });
+    });
+
+    describe('upsert', () => {
+      it('should create or update preferences', async () => {
+        const updates = { working_hours_start: '08:00' };
+        const updatedPrefs = { ...mockPreferences, ...updates };
+
+        const mockResponse = {
+          data: updatedPrefs,
+          error: null,
+        };
+
+        mockSupabase.from.mockReturnValue({
+          upsert: jest.fn().mockReturnValue({
+            select: jest.fn().mockReturnValue({
+              single: jest.fn().mockResolvedValue(mockResponse),
+            }),
+          }),
+        } as any);
+
+        const result = await userPreferencesService.upsert('user-1', updates);
+
+        expect(result).toEqual(updatedPrefs);
+      });
+    });
+  });
+
+  describe('Auth Service', () => {
+    describe('signUp', () => {
+      it('should sign up a new user', async () => {
+        const mockUser = {
+          id: 'user-1',
+          email: 'test@example.com',
+        };
+
+        const mockResponse = {
+          data: { user: mockUser, session: null },
+          error: null,
+        };
+
+        mockSupabase.auth.signUp.mockResolvedValue(mockResponse);
+
+        const result = await authService.signUp('test@example.com', 'password123');
+
+        expect(mockSupabase.auth.signUp).toHaveBeenCalledWith({
+          email: 'test@example.com',
+          password: 'password123',
+        });
+        expect(result).toEqual(mockResponse);
+      });
+
+      it('should handle signup errors', async () => {
+        const mockError = { message: 'Email already exists' };
+        const mockResponse = {
+          data: { user: null, session: null },
+          error: mockError,
+        };
+
+        mockSupabase.auth.signUp.mockResolvedValue(mockResponse);
+
+        await expect(authService.signUp('existing@example.com', 'password123'))
+          .rejects.toThrow(DatabaseServiceError);
+      });
+    });
+
+    describe('signIn', () => {
+      it('should sign in an existing user', async () => {
+        const mockUser = {
+          id: 'user-1',
+          email: 'test@example.com',
+        };
+
+        const mockSession = {
+          access_token: 'token',
+          user: mockUser,
+        };
+
+        const mockResponse = {
+          data: { user: mockUser, session: mockSession },
+          error: null,
+        };
+
+        mockSupabase.auth.signInWithPassword.mockResolvedValue(mockResponse);
+
+        const result = await authService.signIn('test@example.com', 'password123');
+
+        expect(result).toEqual(mockResponse);
+      });
+
+      it('should handle invalid credentials', async () => {
+        const mockError = { message: 'Invalid credentials' };
+        const mockResponse = {
+          data: { user: null, session: null },
+          error: mockError,
+        };
+
+        mockSupabase.auth.signInWithPassword.mockResolvedValue(mockResponse);
+
+        await expect(authService.signIn('wrong@example.com', 'wrongpassword'))
+          .rejects.toThrow(DatabaseServiceError);
+      });
+    });
+  });
+
+  describe('Real-time Subscriptions', () => {
+    it('should set up project subscriptions', () => {
+      const mockChannel = {
+        on: jest.fn().mockReturnThis(),
+        subscribe: jest.fn().mockReturnValue({ unsubscribe: jest.fn() }),
+      };
+
+      mockSupabase.channel.mockReturnValue(mockChannel);
+
+      const callback = jest.fn();
+      const subscription = projectsService.subscribe(callback);
+
+      expect(mockSupabase.channel).toHaveBeenCalledWith('projects-changes');
+      expect(mockChannel.on).toHaveBeenCalledWith(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'projects' },
+        expect.any(Function)
+      );
+      expect(mockChannel.subscribe).toHaveBeenCalled();
+    });
+
+    it('should handle subscription errors gracefully', () => {
+      const mockChannel = {
+        on: jest.fn().mockReturnThis(),
+        subscribe: jest.fn().mockImplementation(() => {
+          throw new Error('Subscription failed');
+        }),
+      };
+
+      mockSupabase.channel.mockReturnValue(mockChannel);
+
+      const callback = jest.fn();
+      
+      expect(() => projectsService.subscribe(callback)).not.toThrow();
+    });
+  });
+
+  describe('Error Handling', () => {
+    it('should create DatabaseServiceError with proper context', () => {
+      const originalError = { message: 'Database error', code: 'DB_001' };
+      const operation = 'create project';
+      const context = { projectId: 'project-1' };
+
+      const error = new DatabaseServiceError(originalError.message, operation, originalError, context);
+
+      expect(error.message).toBe('Database error');
+      expect(error.operation).toBe('create project');
+      expect(error.originalError).toBe(originalError);
+      expect(error.context).toBe(context);
+      expect(error.name).toBe('DatabaseServiceError');
+    });
+
+    it('should handle network errors', async () => {
+      const networkError = new Error('Network error');
+      
+      mockSupabase.from.mockReturnValue({
+        select: jest.fn().mockRejectedValue(networkError),
+      } as any);
+
+      await expect(projectsService.getAll()).rejects.toThrow(DatabaseServiceError);
+    });
+
+    it('should handle timeout errors', async () => {
+      const timeoutError = new Error('Request timeout');
+      
+      mockSupabase.from.mockReturnValue({
+        select: jest.fn().mockRejectedValue(timeoutError),
+      } as any);
+
+      await expect(projectsService.getAll()).rejects.toThrow(DatabaseServiceError);
+    });
+  });
+
+  describe('Data Validation', () => {
+    it('should validate project data before creation', async () => {
+      const invalidProject = {
+        title: '', // Empty title should be invalid
+        description: 'Valid description',
+        goals: [],
+        status: 'invalid_status' as any, // Invalid status
+        context: ProjectContext.BUSINESS,
+        tags: [],
+      };
+
+      // Mock validation error from database
+      const mockError = { 
+        message: 'Validation failed', 
+        code: 'VALIDATION_ERROR'
+      };
+
+      mockSupabase.from.mockReturnValue({
+        insert: jest.fn().mockReturnValue({
+          select: jest.fn().mockReturnValue({
+            single: jest.fn().mockResolvedValue({
+              data: null,
+              error: mockError,
+            }),
+          }),
+        }),
+      } as any);
+
+      await expect(projectsService.create(invalidProject)).rejects.toThrow(DatabaseServiceError);
+    });
+
+    it('should validate task dependencies', async () => {
+      const taskWithCircularDep = {
+        title: 'Circular Task',
+        description: 'Task with circular dependency',
+        project_id: 'project-1',
+        priority: TaskPriority.MEDIUM,
+        status: TaskStatus.TODO,
+        estimated_hours: 2,
+        dependencies: ['task-1'], // Self-reference
+        tags: [],
+      };
+
+      const mockError = { 
+        message: 'Circular dependency detected', 
+        code: 'CIRCULAR_DEPENDENCY'
+      };
+
+      mockSupabase.from.mockReturnValue({
+        insert: jest.fn().mockReturnValue({
+          select: jest.fn().mockReturnValue({
+            single: jest.fn().mockResolvedValue({
+              data: null,
+              error: mockError,
+            }),
+          }),
+        }),
+      } as any);
+
+      await expect(tasksService.create(taskWithCircularDep)).rejects.toThrow(DatabaseServiceError);
+    });
+  });
+}); 

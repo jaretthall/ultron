@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  # Ultron Standalone Application
+  ultron:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: ultron-standalone  
+    ports:
+      - "8080:80"
+    environment:
+      - NODE_ENV=production
+      - VITE_SUPABASE_URL=${SUPABASE_URL:-https://mldklirjxxxegcxyweug.supabase.co}
+      - VITE_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS...}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    labels:
+      - "app=ultron"
+      - "version=2.5.20"
+    networks:
+      - ultron-network
+
+networks:
+  ultron-network:
+    driver: bridge 

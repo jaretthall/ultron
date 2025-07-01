@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Authentication Diagnostics</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #0f172a;
+            color: #e2e8f0;
+        }
+        .card {
+            background: #1e293b;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid #334155;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success { background-color: #065f46; border: 1px solid #059669; }
+        .error { background-color: #7f1d1d; border: 1px solid #dc2626; }
+        .warning { background-color: #78350f; border: 1px solid #d97706; }
+        .info { background-color: #1e3a8a; border: 1px solid #3b82f6; }
+        button {
+            background: #0ea5e9;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0284c7; }
+        input {
+            background: #334155;
+            border: 1px solid #475569;
+            color: #e2e8f0;
+            padding: 8px;
+            border-radius: 4px;
+            width: 300px;
+            margin: 5px;
+        }
+        pre {
+            background: #334155;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Supabase Authentication Diagnostics</h1>
+    
+    <div class="card">
+        <h2>Configuration Check</h2>
+        <div id="configStatus"></div>
+        <p><strong>URL:</strong> <span id="supabaseUrl">Loading...</span></p>
+        <p><strong>Key Length:</strong> <span id="keyLength">Loading...</span></p>
+    </div>
+
+    <div class="card">
+        <h2>Connection Test</h2>
+        <button onclick="testConnection()">Test Connection</button>
+        <div id="connectionStatus"></div>
+    </div>
+
+    <div class="card">
+        <h2>Authentication Test</h2>
+        <div>
+            <input type="email" id="testEmail" placeholder="test@example.com" value="test@example.com">
+            <input type="password" id="testPassword" placeholder="password123" value="password123">
+        </div>
+        <div>
+            <button onclick="testSignUp()">Test Sign Up</button>
+            <button onclick="testSignIn()">Test Sign In</button>
+            <button onclick="testSignOut()">Test Sign Out</button>
+        </div>
+        <div id="authStatus"></div>
+    </div>
+
+    <div class="card">
+        <h2>Session Information</h2>
+        <button onclick="checkSession()">Check Current Session</button>
+        <div id="sessionInfo"></div>
+    </div>
+
+    <div class="card">
+        <h2>Common Issues & Solutions</h2>
+        <div id="recommendations"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Configuration from your app
+        const SUPABASE_URL = 'https://mldklirjxxxegcxyweug.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1sZGtsaXJqeHh4ZWdjeHl3ZXVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkwNzg4NDUsImV4cCI6MjA2NDY1NDg0NX0.CXeXX_ltTy4GWTloUr2LmjENXQ5bDF7F18TDlVHUcR4';
+
+        let supabase;
+
+        function setStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        function checkConfiguration() {
+            document.getElementById('supabaseUrl').textContent = SUPABASE_URL;
+            document.getElementById('keyLength').textContent = SUPABASE_ANON_KEY.length + ' characters';
+
+            let configOk = true;
+            let issues = [];
+
+            if (!SUPABASE_URL || !SUPABASE_URL.includes('.supabase.co')) {
+                issues.push('Invalid Supabase URL format');
+                configOk = false;
+            }
+
+            if (!SUPABASE_ANON_KEY || SUPABASE_ANON_KEY.length < 100) {
+                issues.push('Invalid or missing anon key');
+                configOk = false;
+            }
+
+            if (configOk) {
+                setStatus('configStatus', '✅ Configuration looks valid', 'success');
+                initializeSupabase();
+            } else {
+                setStatus('configStatus', '❌ Configuration issues: ' + issues.join(', '), 'error');
+            }
+        }
+
+        function initializeSupabase() {
+            try {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log('Supabase client initialized');
+            } catch (error) {
+                setStatus('configStatus', '❌ Failed to initialize Supabase client: ' + error.message, 'error');
+            }
+        }
+
+        async function testConnection() {
+            if (!supabase) {
+                setStatus('connectionStatus', '❌ Supabase client not initialized', 'error');
+                return;
+            }
+
+            try {
+                setStatus('connectionStatus', '🔄 Testing connection...', 'info');
+                
+                // Test basic connectivity
+                const { data, error } = await supabase.auth.getSession();
+                
+                if (error) {
+                    setStatus('connectionStatus', `❌ Connection error: ${error.message}`, 'error');
+                } else {
+                    setStatus('connectionStatus', '✅ Connection successful', 'success');
+                }
+            } catch (error) {
+                setStatus('connectionStatus', `❌ Network error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testSignUp() {
+            if (!supabase) {
+                setStatus('authStatus', '❌ Supabase client not initialized', 'error');
+                return;
+            }
+
+            const email = document.getElementById('testEmail').value;
+            const password = document.getElementById('testPassword').value;
+
+            try {
+                setStatus('authStatus', '🔄 Testing sign up...', 'info');
+                
+                const { data, error } = await supabase.auth.signUp({
+                    email: email,
+                    password: password
+                });
+
+                if (error) {
+                    setStatus('authStatus', `❌ Sign up error: ${error.message}`, 'error');
+                } else {
+                    setStatus('authStatus', '✅ Sign up successful! Check your email for verification.', 'success');
+                    console.log('Sign up data:', data);
+                }
+            } catch (error) {
+                setStatus('authStatus', `❌ Sign up failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testSignIn() {
+            if (!supabase) {
+                setStatus('authStatus', '❌ Supabase client not initialized', 'error');
+                return;
+            }
+
+            const email = document.getElementById('testEmail').value;
+            const password = document.getElementById('testPassword').value;
+
+            try {
+                setStatus('authStatus', '🔄 Testing sign in...', 'info');
+                
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                if (error) {
+                    setStatus('authStatus', `❌ Sign in error: ${error.message}`, 'error');
+                } else {
+                    setStatus('authStatus', '✅ Sign in successful!', 'success');
+                    console.log('Sign in data:', data);
+                }
+            } catch (error) {
+                setStatus('authStatus', `❌ Sign in failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testSignOut() {
+            if (!supabase) {
+                setStatus('authStatus', '❌ Supabase client not initialized', 'error');
+                return;
+            }
+
+            try {
+                setStatus('authStatus', '🔄 Testing sign out...', 'info');
+                
+                const { error } = await supabase.auth.signOut();
+
+                if (error) {
+                    setStatus('authStatus', `❌ Sign out error: ${error.message}`, 'error');
+                } else {
+                    setStatus('authStatus', '✅ Sign out successful!', 'success');
+                }
+            } catch (error) {
+                setStatus('authStatus', `❌ Sign out failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function checkSession() {
+            if (!supabase) {
+                setStatus('sessionInfo', '❌ Supabase client not initialized', 'error');
+                return;
+            }
+
+            try {
+                const { data: { session }, error } = await supabase.auth.getSession();
+
+                if (error) {
+                    setStatus('sessionInfo', `❌ Session check error: ${error.message}`, 'error');
+                } else if (session) {
+                    setStatus('sessionInfo', `✅ Active session found for: ${session.user.email}`, 'success');
+                    document.getElementById('sessionInfo').innerHTML += `<pre>${JSON.stringify(session.user, null, 2)}</pre>`;
+                } else {
+                    setStatus('sessionInfo', 'ℹ️ No active session', 'info');
+                }
+            } catch (error) {
+                setStatus('sessionInfo', `❌ Session check failed: ${error.message}`, 'error');
+            }
+        }
+
+        function showRecommendations() {
+            const recommendations = `
+                <h3>Common Issues & Solutions:</h3>
+                <div class="status warning">
+                    <strong>1. Project Paused:</strong> Check if your Supabase project is paused due to inactivity. 
+                    Go to your Supabase dashboard and unpause it if needed.
+                </div>
+                <div class="status warning">
+                    <strong>2. Authentication Settings:</strong> Ensure email authentication is enabled in Supabase Auth settings.
+                </div>
+                <div class="status warning">
+                    <strong>3. RLS Policies:</strong> Check if Row Level Security policies are too restrictive.
+                </div>
+                <div class="status warning">
+                    <strong>4. CORS Issues:</strong> Verify your site URL is added to the allowed origins in Supabase.
+                </div>
+                <div class="status warning">
+                    <strong>5. Email Verification:</strong> Check if email confirmation is required and not completed.
+                </div>
+                <div class="status info">
+                    <strong>Quick Fixes:</strong>
+                    <ul>
+                        <li>Restart your Supabase project if it's paused</li>
+                        <li>Add 'http://localhost:5173' to allowed origins</li>
+                        <li>Disable email confirmation temporarily for testing</li>
+                        <li>Check browser console for detailed errors</li>
+                    </ul>
+                </div>
+            `;
+            document.getElementById('recommendations').innerHTML = recommendations;
+        }
+
+        // Initialize on page load
+        window.onload = function() {
+            checkConfiguration();
+            showRecommendations();
+        };
+    </script>
+</body>
+</html> 

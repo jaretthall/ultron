@@ -1,0 +1,136 @@
+# Docker Compose for Ultron Development and Production
+# Phase 6.3: Deployment & CI/CD
+
+version: '3.8'
+
+services:
+  # Ultron Application
+  ultron-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: ultron-production
+    ports:
+      - "80:80"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ultron.rule=Host(`ultron.local`)"
+      - "traefik.http.services.ultron.loadbalancer.server.port=80"
+    networks:
+      - ultron-network
+
+  # Development service (alternative to production)
+  ultron-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: ultron-development
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - VITE_HMR_HOST=localhost
+    command: npm run dev
+    profiles:
+      - dev
+    networks:
+      - ultron-network
+
+  # Nginx Reverse Proxy (for production)
+  nginx-proxy:
+    image: nginx:alpine
+    container_name: ultron-nginx-proxy
+    ports:
+      - "443:443"
+    volumes:
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./nginx/proxy.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - ultron-app
+    profiles:
+      - production
+    networks:
+      - ultron-network
+
+  # Redis for caching (optional)
+  redis:
+    image: redis:7-alpine
+    container_name: ultron-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-ultron-redis-pass}
+    profiles:
+      - production
+      - cache
+    networks:
+      - ultron-network
+
+  # Monitoring with Prometheus (optional)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: ultron-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    profiles:
+      - monitoring
+    networks:
+      - ultron-network
+
+  # Grafana for dashboards (optional)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: ultron-grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_SECURITY_ADMIN_USER=admin
+    depends_on:
+      - prometheus
+    profiles:
+      - monitoring
+    networks:
+      - ultron-network
+
+volumes:
+  redis-data:
+    driver: local
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
+
+networks:
+  ultron-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16 
