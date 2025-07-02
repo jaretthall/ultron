@@ -48,16 +48,13 @@ const AppWithAuthContent: React.FC = () => {
     addTask,
     updateTask,
     deleteTask,
-    updateUserPreferences,
     clearError
   } = useAppState();
   const navigate = useNavigate();
 
   // Local UI state for modals
   const [projectToEdit, setProjectToEdit] = useState<Project | null>(null);
-  const [isEditProjectModalOpen, setIsEditProjectModalOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
-  const [isEditTaskModalOpen, setIsEditTaskModalOpen] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   // Global Search state
@@ -124,22 +121,10 @@ const AppWithAuthContent: React.FC = () => {
   // Modal handlers
   const handleOpenEditProjectModal = (project: Project) => {
     setProjectToEdit(project);
-    setIsEditProjectModalOpen(true);
-  };
-
-  const handleCloseEditProjectModal = () => {
-    setIsEditProjectModalOpen(false);
-    setProjectToEdit(null);
   };
 
   const handleOpenEditTaskModal = (task: Task) => {
     setTaskToEdit(task);
-    setIsEditTaskModalOpen(true);
-  };
-
-  const handleCloseEditTaskModal = () => {
-    setIsEditTaskModalOpen(false);
-    setTaskToEdit(null);
   };
 
   // CRUD operation handlers with feedback
@@ -162,7 +147,7 @@ const AppWithAuthContent: React.FC = () => {
     try {
       await updateProject(updatedProject.id, updatedProject);
       setFeedback({ type: 'success', message: `Project '${updatedProject.title}' updated successfully.` });
-      handleCloseEditProjectModal();
+      setProjectToEdit(null);
     } catch (error: any) {
       setFeedback({ type: 'error', message: error.message || 'Failed to update project' });
     }
@@ -207,7 +192,7 @@ const AppWithAuthContent: React.FC = () => {
     try {
       await updateTask(updatedTask.id, updatedTask);
       setFeedback({ type: 'success', message: `Task '${updatedTask.title}' updated successfully.` });
-      handleCloseEditTaskModal();
+      setTaskToEdit(null);
     } catch (error: any) {
       setFeedback({ type: 'error', message: error.message || 'Failed to update task' });
     }
@@ -229,14 +214,7 @@ const AppWithAuthContent: React.FC = () => {
     }
   };
 
-  const handleUpdateUserPreferences = async (updates: any) => {
-    try {
-      await updateUserPreferences(updates);
-      setFeedback({ type: 'success', message: 'Preferences updated successfully.' });
-    } catch (error: any) {
-      setFeedback({ type: 'error', message: error.message || 'Failed to update preferences' });
-    }
-  };
+
 
      const showToastMessage = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
      // Convert 'info' to 'success' for the existing feedback system
@@ -373,40 +351,14 @@ const AppWithAuthContent: React.FC = () => {
               onDeleteTask={handleDeleteTask}
             />
           } />
-          <Route path="/calendar" element={
-            <CalendarPage 
-              tasks={state.tasks}
-              onAddTask={handleAddTask}
-              allProjects={state.projects}
-              onEditTaskRequest={handleOpenEditTaskModal}
-              onDeleteTask={handleDeleteTask}
-            />
-          } />
-          <Route path="/documents" element={
-            <DocumentsPage 
-              projects={state.projects}
-            />
-          } />
-          <Route path="/settings" element={
-            state.userPreferences ? (
-              <SettingsPage 
-                userPreferences={state.userPreferences}
-                onUpdatePreferences={handleUpdateUserPreferences}
-              />
-            ) : (
-              <div className="flex items-center justify-center h-96">
-                <div className="text-center">
-                  <LoadingSpinner />
-                  <p className="mt-4 text-slate-400">Loading user preferences...</p>
-                </div>
-              </div>
-            )
-          } />
+          <Route path="/calendar" element={<CalendarPage />} />
+          <Route path="/documents" element={<DocumentsPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
           <Route path="/ai" element={
             <AIDashboard />
           } />
           <Route path="/analytics" element={
-            <AnalyticsPage />
+            <AnalyticsDashboard />
           } />
         </Routes>
       </main>
