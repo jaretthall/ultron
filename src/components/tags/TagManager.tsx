@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Tag, TagCategory } from '../../../types';
-import { tagsService, tagCategoriesService } from '../../services/databaseService';
+import { tagsService, tagCategoriesService } from '../../../services/databaseService';
 
 interface TagManagerProps {
   onClose?: () => void;

@@ -1,7 +1,7 @@
 import React from 'react';
 import { isSupabaseConfigured } from './lib/supabaseClient';
-import LoadingSpinner from './components/LoadingSpinner';
-import ErrorBoundary from './components/ErrorBoundary';
+import LoadingSpinner from './src/components/LoadingSpinner';
+import ErrorBoundary from './src/components/ErrorBoundary';
 import { AuthProvider, useAuth } from './src/contexts/AuthContext';
 import AuthForm from './src/components/auth/AuthForm';
 import AppWithAuth from './AppWithAuth';

@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
-import HeaderComponent from './components/project_dashboard/HeaderComponent';
+import HeaderComponent from './src/components/project_dashboard/HeaderComponent';
 import ProjectDashboardPage from './src/components/project_dashboard/ProjectDashboardPage';
-import HomePage from './components/home/HomePage';
+import HomePage from './src/components/home/HomePage';
 import TaskManagementPage from './src/components/tasks/TaskManagementPage';
-import CalendarPage from './components/calendar/CalendarPage';
-import DocumentsPage from './components/documents/DocumentsPage';
-import SettingsPage from './components/settings/SettingsPage';
+import CalendarPage from './src/components/calendar/CalendarPage';
+import DocumentsPage from './src/components/documents/DocumentsPage';
+import SettingsPage from './src/components/settings/SettingsPage';
 import AIDashboard from './src/components/ai/AIDashboard';
-import AnalyticsPage from './components/analytics/AnalyticsPage';
+import AnalyticsDashboard from './src/components/analytics/AnalyticsDashboard';
 import GlobalSearch from './src/components/GlobalSearch';
 import { Project, Task } from './types';
 import LoadingSpinner from './src/components/LoadingSpinner';
-import EditProjectModal from './components/projects/EditProjectModal';
-import EditTaskModal from './components/tasks/EditTaskModal';
+import EditProjectModal from './src/components/projects/EditProjectModal';
+import EditTaskModal from './src/components/tasks/EditTaskModal';
 import FeedbackToast from './src/components/FeedbackToast';
 import { AppStateProvider, useAppState } from './src/contexts/AppStateContext';
 // Phase 6: Production Readiness - Security & Monitoring

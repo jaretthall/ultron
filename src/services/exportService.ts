@@ -3,9 +3,9 @@ import {
   Project, Task, UserPreferences, WorkspaceSnapshot, EnrichedProject,
   PriorityGroups, TagPatterns, UrgencyMetrics, TimeMetrics, StrategicInsights,
   TaskStatus, TaskPriority, TagUsage, ProjectStatus
-} from '../types';
+} from '../../types';
 import { generateStrategicInsights } from './geminiService';
-import { APP_VERSION } from '../constants';
+import { APP_VERSION } from '../../constants';
 
 const calculateCompletionPercentage = (projectId: string, tasks: Task[]): number => {
   const projectTasks = tasks.filter(task => task.project_id === projectId); // snake_case

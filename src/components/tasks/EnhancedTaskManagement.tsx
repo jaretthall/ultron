@@ -5,7 +5,7 @@ import TaskItem from './TaskItem';
 import TaskCard from './TaskCard';
 import TaskDetailsModal from './TaskDetailsModal';
 import DependencyGraphView from './DependencyGraphView';
-import { useAppContext, ActionType } from '../../state/AppStateContext';
+import { useAppState } from '../../contexts/AppStateContext';
 import { buildDependencyGraph, getBlockedTasksFromGraph, getAvailableTasksFromGraph } from '../../utils/dependencyUtils';
 
 // Icons

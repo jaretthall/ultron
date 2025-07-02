@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Task, TaskStatus, TaskPriority } from '../../../types';
-import { useAppContext, ActionType } from '../../state/AppStateContext';
+import { useAppState } from '../../contexts/AppStateContext';
 import { tasksService } from '../../../services/databaseService';
 import { getTaskDependencyStats, buildDependencyGraph } from '../../utils/dependencyUtils';
 
