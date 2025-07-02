@@ -17,12 +17,11 @@ import EditTaskModal from './components/tasks/EditTaskModal';
 import FeedbackToast from './src/components/FeedbackToast';
 import { AppStateProvider, useAppState } from './src/contexts/AppStateContext';
 // Phase 6: Production Readiness - Security & Monitoring
-import monitoringService, { 
+import { 
   captureException, 
   trackUserInteraction, 
   ErrorCategory, 
-  ErrorSeverity,
-  setUserId 
+  ErrorSeverity
 } from './src/services/monitoringService';
 import { initializeSecurity } from './src/utils/securityUtils';
 

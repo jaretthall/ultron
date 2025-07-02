@@ -32,7 +32,7 @@ const mockSupabase = {
   }),
 };
 
-jest.mock('./src/lib/supabase', () => ({
+jest.mock('./lib/supabaseClient', () => ({
   supabase: mockSupabase,
 }));
 
