@@ -47,17 +47,8 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, projectTitle, onEditTaskReque
 
   return (
     <div 
-      className="bg-slate-800 p-4 rounded-lg shadow-md hover:bg-slate-700/70 transition-all group cursor-pointer hover:shadow-sky-500/20 hover:scale-[1.01]"
-      onClick={handleItemClick}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          handleItemClick();
-        }
-      }}
-      aria-label={`Edit task: ${task.title}`}
+      className="bg-slate-800 p-4 rounded-lg shadow-md hover:bg-slate-700/70 transition-all group hover:shadow-sky-500/20 hover:scale-[1.01]"
+      aria-label={`Task: ${task.title}`}
     >
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
         <div className="flex-1 min-w-0">

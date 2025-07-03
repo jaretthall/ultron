@@ -180,35 +180,7 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
     }
   };
 
-  const _handleSaveChanges = async () => {
-    try {
-      const updatedTask = { ...task, ...formData };
-      await updateTask(task.id, formData);
-      onUpdate(updatedTask);
-      onClose();
-    } catch (error) {
-      console.error('Error updating task:', error);
-    }
-  };
-
-  const _handleDeleteTask = async () => {
-    try {
-      onDelete(task.id);
-      onClose();
-    } catch (error) {
-      console.error('Error deleting task:', error);
-    }
-  };
-
-  const _handleToggleComplete = async () => {
-    try {
-      const newStatus = task.status === TaskStatus.COMPLETED ? TaskStatus.TODO : TaskStatus.COMPLETED;
-      await updateTask(task.id, { status: newStatus });
-      onUpdate({ ...task, status: newStatus });
-    } catch (error) {
-      console.error('Error updating task status:', error);
-    }
-  };
+  // Note: Task manipulation handlers removed - using component props for actions
 
   if (!isOpen) return null;
 
@@ -237,6 +209,8 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
             onClick={onClose} 
             className="text-slate-400 hover:text-slate-200 transition-colors"
             disabled={isLoading}
+            aria-label="Close task details modal"
+            title="Close modal"
           >
             <XIcon />
           </button>
@@ -322,6 +296,7 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                     value={selectedDependency}
                     onChange={e => setSelectedDependency(e.target.value)}
                     className="flex-1 bg-slate-600 border-slate-500 text-slate-100 rounded-md p-2"
+                    aria-label="Select task to add as dependency"
                   >
                     <option value="">Select a task...</option>
                     {availableForDependencies.map(t => (

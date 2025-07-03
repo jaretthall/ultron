@@ -1,8 +1,8 @@
 // Unified AI Service Layer with Provider Selection and Failover
 import { Project, Task, UserPreferences } from '../../types';
-import { generateStrategicInsights as generateGeminiInsights, generateDailyPlan as generateGeminiDailyPlan, generateWorkloadAnalysis as generateGeminiWorkloadAnalysis, DailyPlan, WorkloadAnalysis } from './geminiService';
-import { generateClaudeInsights, generateClaudeDailyPlan, generateClaudeWorkloadAnalysis } from './claudeService';
-import { generateOpenAIInsights, generateOpenAIDailyPlan, generateOpenAIWorkloadAnalysis } from './openaiService';
+import { generateDailyPlan as generateGeminiDailyPlan, generateWorkloadAnalysis as generateGeminiWorkloadAnalysis, DailyPlan, WorkloadAnalysis } from './geminiService';
+import { generateClaudeDailyPlan, generateClaudeWorkloadAnalysis } from './claudeService';
+import { generateOpenAIDailyPlan, generateOpenAIWorkloadAnalysis } from './openaiService';
 
 export interface AIInsights {
   blocked_tasks: any[];
@@ -273,24 +273,7 @@ export const generateAIWorkloadAnalysis = async (
   }
 };
 
-// Provider-specific function calls
-const _callInsightsProvider = async (
-  provider: string,
-  projects: Project[],
-  tasks: Task[],
-  userPreferences: UserPreferences
-): Promise<AIInsights> => {
-  switch (provider) {
-    case 'gemini':
-      return await generateGeminiInsights(projects, tasks, userPreferences);
-    case 'claude':
-      return await generateClaudeInsights(projects, tasks, userPreferences);
-    case 'openai':
-      return await generateOpenAIInsights(projects, tasks, userPreferences);
-    default:
-      throw new Error(`Unsupported AI provider: ${provider}`);
-  }
-};
+// Note: Provider-specific function calls moved to unified API approach
 
 const callDailyPlanProvider = async (
   provider: string,

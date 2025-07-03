@@ -128,26 +128,32 @@ const WorkingHoursManager: React.FC<WorkingHoursManagerProps> = ({ userPreferenc
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="working-hours-start" className="block text-sm font-medium text-gray-700 mb-1">
               Working Hours Start
             </label>
             <input
+              id="working-hours-start"
               type="time"
               value={formData.working_hours_start}
               onChange={(e) => setFormData(prev => ({ ...prev, working_hours_start: e.target.value }))}
               className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              title="Set working hours start time"
+              aria-label="Working hours start time"
             />
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="working-hours-end" className="block text-sm font-medium text-gray-700 mb-1">
               Working Hours End
             </label>
             <input
+              id="working-hours-end"
               type="time"
               value={formData.working_hours_end}
               onChange={(e) => setFormData(prev => ({ ...prev, working_hours_end: e.target.value }))}
               className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              title="Set working hours end time"
+              aria-label="Working hours end time"
             />
           </div>
         </div>
@@ -155,18 +161,21 @@ const WorkingHoursManager: React.FC<WorkingHoursManagerProps> = ({ userPreferenc
 
       <div>
         <h4 className="font-medium mb-2">Context Switching</h4>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Buffer Time Between Different Contexts (minutes)
-          </label>
-          <input
-            type="number"
-            min="0"
-            max="60"
-            value={formData.context_switch_buffer_minutes}
-            onChange={(e) => setFormData(prev => ({ ...prev, context_switch_buffer_minutes: parseInt(e.target.value) || 0 }))}
-            className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
+                  <div>
+            <label htmlFor="context-switch-buffer" className="block text-sm font-medium text-gray-700 mb-1">
+              Buffer Time Between Different Contexts (minutes)
+            </label>
+            <input
+              id="context-switch-buffer"
+              type="number"
+              min="0"
+              max="60"
+              value={formData.context_switch_buffer_minutes}
+              onChange={(e) => setFormData(prev => ({ ...prev, context_switch_buffer_minutes: parseInt(e.target.value) || 0 }))}
+              className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              title="Set buffer time between context switches"
+              aria-label="Context switch buffer time in minutes"
+            />
           <p className="text-xs text-gray-500 mt-1">
             Buffer time added when switching between business and personal tasks
           </p>
@@ -185,26 +194,32 @@ const WorkingHoursManager: React.FC<WorkingHoursManagerProps> = ({ userPreferenc
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="business-hours-start" className="block text-sm font-medium text-gray-700 mb-1">
               Business Hours Start
             </label>
             <input
+              id="business-hours-start"
               type="time"
               value={formData.business_hours_start}
               onChange={(e) => setFormData(prev => ({ ...prev, business_hours_start: e.target.value }))}
               className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              title="Set business hours start time"
+              aria-label="Business hours start time"
             />
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="business-hours-end" className="block text-sm font-medium text-gray-700 mb-1">
               Business Hours End
             </label>
             <input
+              id="business-hours-end"
               type="time"
               value={formData.business_hours_end}
               onChange={(e) => setFormData(prev => ({ ...prev, business_hours_end: e.target.value }))}
               className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              title="Set business hours end time"
+              aria-label="Business hours end time"
             />
           </div>
         </div>
@@ -329,6 +344,8 @@ const WorkingHoursManager: React.FC<WorkingHoursManagerProps> = ({ userPreferenc
               value={formData.focus_block_duration}
               onChange={(e) => setFormData(prev => ({ ...prev, focus_block_duration: parseInt(e.target.value) }))}
               className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              title="Select focus block duration"
+              aria-label="Focus block duration"
             >
               <option value={25}>25 minutes (Pomodoro)</option>
               <option value={45}>45 minutes</option>
@@ -347,6 +364,8 @@ const WorkingHoursManager: React.FC<WorkingHoursManagerProps> = ({ userPreferenc
               value={formData.break_duration}
               onChange={(e) => setFormData(prev => ({ ...prev, break_duration: parseInt(e.target.value) }))}
               className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              title="Select break duration"
+              aria-label="Break duration"
             >
               <option value={5}>5 minutes</option>
               <option value={10}>10 minutes</option>
@@ -418,6 +437,8 @@ const WorkingHoursManager: React.FC<WorkingHoursManagerProps> = ({ userPreferenc
           <button
             onClick={() => onUpdate(userPreferences)}
             className="text-gray-400 hover:text-gray-600"
+            aria-label="Close working hours manager"
+            title="Close manager"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

@@ -47,17 +47,8 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, projectTitle, onEditTaskReque
 
   return (
     <div 
-      className={`bg-slate-800 p-4 rounded-lg shadow-md hover:shadow-sky-500/30 transition-all cursor-pointer border-l-4 ${getStatusBorderClass(task.status)} flex flex-col justify-between min-h-[200px] hover:scale-[1.02] hover:bg-slate-750 group`}
-      onClick={handleCardClick}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          handleCardClick();
-        }
-      }}
-      aria-label={`Edit task: ${task.title}`}
+      className={`bg-slate-800 p-4 rounded-lg shadow-md hover:shadow-sky-500/30 transition-all border-l-4 ${getStatusBorderClass(task.status)} flex flex-col justify-between min-h-[200px] hover:scale-[1.02] hover:bg-slate-750 group`}
+      aria-label={`Task: ${task.title}`}
     >
       <div>
         <div className="flex justify-between items-start mb-1">

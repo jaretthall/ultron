@@ -15,11 +15,7 @@ interface DocumentsPageProps {
   onNavigate: (page: string) => void;
 }
 
-const _PlusIcon: React.FC = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-  </svg>
-);
+// Note: PlusIcon component removed - not currently used in UI
 const UploadIcon: React.FC = () => (
  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
   <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
@@ -114,6 +110,7 @@ const DocumentsPage: React.FC<DocumentsPageProps> = () => {
             onChange={(e) => setSelectedProjectForImport(e.target.value)}
             className="bg-slate-700 border-slate-600 rounded-md text-sm py-2 px-3 focus:ring-sky-500 focus:border-sky-500 h-10"
             aria-label="Select project for import"
+            title="Select project for importing documents"
             disabled={projects.length === 0}
             >
             {projects.length === 0 && <option value="" disabled>No projects to import to</option>}
@@ -126,7 +123,7 @@ const DocumentsPage: React.FC<DocumentsPageProps> = () => {
            >
             <UploadIcon /> <span className="ml-2">Import File</span>
           </button>
-          <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
+          <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" aria-label="Select file to import" title="File input for document import" />
           <button onClick={() => alert("Export functionality placeholder")} className="bg-slate-700 hover:bg-slate-600 text-slate-100 font-medium py-2 px-3 rounded-lg flex items-center text-sm h-10">
             <DownloadIcon /> <span className="ml-2">Export File(s)</span>
           </button>
@@ -135,6 +132,7 @@ const DocumentsPage: React.FC<DocumentsPageProps> = () => {
 
       <div className="mb-6 flex flex-wrap gap-3 items-center">
          <div className="relative flex-grow sm:flex-grow-0 sm:w-auto">
+          <label htmlFor="document-search" className="sr-only">Search documents and chats</label>
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <svg className="h-5 w-5 text-slate-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
               <path fillRule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clipRule="evenodd" />
@@ -146,14 +144,16 @@ const DocumentsPage: React.FC<DocumentsPageProps> = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="block w-full pl-10 pr-3 py-2 border border-slate-600 rounded-md leading-5 bg-slate-700 text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500 sm:text-sm"
-            aria-label="Search documents"
+            aria-label="Search documents and chats"
+            id="document-search"
+            title="Search through documents and chat transcripts"
           />
         </div>
-        <select value={projectFilter} onChange={e => setProjectFilter(e.target.value)} className="bg-slate-700 border-slate-600 rounded-md text-sm py-2 px-3 focus:ring-sky-500 focus:border-sky-500" aria-label="Filter by project">
+        <select value={projectFilter} onChange={e => setProjectFilter(e.target.value)} className="bg-slate-700 border-slate-600 rounded-md text-sm py-2 px-3 focus:ring-sky-500 focus:border-sky-500" aria-label="Filter by project" title="Filter documents by project">
           <option value="All Projects">All Projects</option>
           {projects.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
         </select>
-        <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} className="bg-slate-700 border-slate-600 rounded-md text-sm py-2 px-3 focus:ring-sky-500 focus:border-sky-500" aria-label="Filter by type" disabled>
+        <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} className="bg-slate-700 border-slate-600 rounded-md text-sm py-2 px-3 focus:ring-sky-500 focus:border-sky-500" aria-label="Filter by type" title="Filter documents by file type" disabled>
           <option>All Types</option>
         </select>
       </div>
@@ -173,32 +173,34 @@ const DocumentsPage: React.FC<DocumentsPageProps> = () => {
               </summary>
               <div className="border-t border-slate-700 p-4">
                 <div className="mb-4 border-b border-slate-600">
-                    <nav className="-mb-px flex space-x-4" aria-label="Tabs">
-                        <button className="whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm border-sky-500 text-sky-400" aria-selected="true">
+                    <nav className="-mb-px flex space-x-4" role="tablist" aria-label="Document tabs">
+                        <button className="whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm border-sky-500 text-sky-400" role="tab" aria-selected="true" id={`docs-tab-${project.id}`} aria-controls={`docs-panel-${project.id}`} title="View documents">
                             Documents ({project.docs.length})
                         </button>
-                        <button className="whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm border-transparent text-slate-400 hover:text-slate-200 hover:border-slate-400" aria-selected="false">
+                        <button className="whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm border-transparent text-slate-400 hover:text-slate-200 hover:border-slate-400" role="tab" aria-selected="false" id={`chats-tab-${project.id}`} aria-controls={`chats-panel-${project.id}`} title="View chat transcripts">
                             Chat Transcripts ({project.chatTranscripts.length})
                         </button>
                     </nav>
                 </div>
-                {project.docs.length === 0 ? (
-                  <p className="text-slate-500 text-center py-4">No documents in this project yet.</p>
-                ) : (
-                  <ul className="space-y-2">
-                    {project.docs.map(doc => (
-                      <li key={doc.id} className="flex justify-between items-center p-3 bg-slate-700/50 rounded-md hover:bg-slate-600/50">
-                        <div>
-                          <p className="font-medium text-slate-200">{doc.name}</p>
-                          <p className="text-xs text-slate-400">
-                            {(doc.size / 1024).toFixed(1)} KB - {new Date(doc.upload_date).toLocaleDateString()} {/* snake_case */}
-                          </p>
-                        </div>
-                        <button onClick={() => handleExportFile(doc.id)} className="text-sky-400 hover:text-sky-300 text-sm">Export</button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
+                <div role="tabpanel" id={`docs-panel-${project.id}`} aria-labelledby={`docs-tab-${project.id}`}>
+                  {project.docs.length === 0 ? (
+                    <p className="text-slate-500 text-center py-4">No documents in this project yet.</p>
+                  ) : (
+                    <ul className="space-y-2">
+                      {project.docs.map(doc => (
+                        <li key={doc.id} className="flex justify-between items-center p-3 bg-slate-700/50 rounded-md hover:bg-slate-600/50">
+                          <div>
+                            <p className="font-medium text-slate-200">{doc.name}</p>
+                            <p className="text-xs text-slate-400">
+                              {(doc.size / 1024).toFixed(1)} KB - {new Date(doc.upload_date).toLocaleDateString()} {/* snake_case */}
+                            </p>
+                          </div>
+                          <button onClick={() => handleExportFile(doc.id)} className="text-sky-400 hover:text-sky-300 text-sm" aria-label={`Export document ${doc.name}`} title="Export this document">Export</button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               </div>
             </details>
           </div>

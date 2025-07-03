@@ -121,10 +121,7 @@ const getGeminiApiKey = (): string | null => {
 };
 
 // Initialize AI client with API key
-const _initializeGeminiClient = (): GoogleGenAI | null => {
-  const apiKey = getGeminiApiKey();
-  return apiKey ? new GoogleGenAI({ apiKey }) : null;
-};
+// Note: Gemini client initialization moved to service initialization
 
 
 const _constructPrompt = (projects: Project[], tasks: Task[]): string => {

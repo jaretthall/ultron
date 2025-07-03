@@ -64,7 +64,8 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ onTaskClick, onEditTask }) 
           `}
           onClick={() => setSelectedDate(date)}
           role="button"
-          aria-pressed={isSelected ? 'true' : 'false'}
+          aria-pressed={isSelected ? "true" : "false"}
+          aria-label={`Select ${date.toLocaleDateString()}, ${tasksOnDate.length} tasks`}
           tabIndex={0}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setSelectedDate(date);}}
         >

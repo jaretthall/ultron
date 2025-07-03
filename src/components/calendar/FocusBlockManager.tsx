@@ -235,6 +235,8 @@ const FocusBlockManager: React.FC<FocusBlockManagerProps> = ({ onClose }) => {
               return newDate;
             })}
             className="p-2 rounded-lg border hover:bg-gray-50"
+            aria-label="Previous week"
+            title="Go to previous week"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -250,6 +252,8 @@ const FocusBlockManager: React.FC<FocusBlockManagerProps> = ({ onClose }) => {
               return newDate;
             })}
             className="p-2 rounded-lg border hover:bg-gray-50"
+            aria-label="Next week"
+            title="Go to next week"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -314,6 +318,8 @@ const FocusBlockManager: React.FC<FocusBlockManagerProps> = ({ onClose }) => {
                     <button
                       onClick={() => deleteFocusBlock(block.id)}
                       className="text-red-500 hover:text-red-700 mt-1"
+                      aria-label={`Remove focus block from ${block.start_time} to ${block.end_time}`}
+                      title="Remove this focus block"
                     >
                       Remove
                     </button>
@@ -333,22 +339,28 @@ const FocusBlockManager: React.FC<FocusBlockManagerProps> = ({ onClose }) => {
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Date</label>
+                <label htmlFor="focus-block-date" className="block text-sm font-medium mb-1">Date</label>
                 <input
+                  id="focus-block-date"
                   type="date"
                   value={newBlockForm.date || ''}
                   onChange={(e) => setNewBlockForm(prev => ({ ...prev, date: e.target.value }))}
                   className="w-full border rounded-lg px-3 py-2"
+                  title="Select date for focus block"
+                  aria-label="Select date for focus block"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Start Time</label>
+                <label htmlFor="focus-block-start-time" className="block text-sm font-medium mb-1">Start Time</label>
                 <input
+                  id="focus-block-start-time"
                   type="time"
                   value={newBlockForm.start_time || ''}
                   onChange={(e) => setNewBlockForm(prev => ({ ...prev, start_time: e.target.value }))}
                   className="w-full border rounded-lg px-3 py-2"
+                  title="Select start time for focus block"
+                  aria-label="Select start time for focus block"
                 />
               </div>
 
@@ -358,6 +370,7 @@ const FocusBlockManager: React.FC<FocusBlockManagerProps> = ({ onClose }) => {
                   value={newBlockForm.duration_minutes || 90}
                   onChange={(e) => setNewBlockForm(prev => ({ ...prev, duration_minutes: Number(e.target.value) }))}
                   className="w-full border rounded-lg px-3 py-2"
+                  aria-label="Select duration in minutes"
                 >
                   <option value={30}>30 minutes</option>
                   <option value={45}>45 minutes</option>
@@ -374,6 +387,7 @@ const FocusBlockManager: React.FC<FocusBlockManagerProps> = ({ onClose }) => {
                   value={newBlockForm.block_type || 'deep_work'}
                   onChange={(e) => setNewBlockForm(prev => ({ ...prev, block_type: e.target.value as any }))}
                   className="w-full border rounded-lg px-3 py-2"
+                  aria-label="Select block type"
                 >
                   <option value="deep_work">Deep Work</option>
                   <option value="focused_execution">Focused Execution</option>
@@ -388,6 +402,7 @@ const FocusBlockManager: React.FC<FocusBlockManagerProps> = ({ onClose }) => {
                   value={newBlockForm.energy_level || 'high'}
                   onChange={(e) => setNewBlockForm(prev => ({ ...prev, energy_level: e.target.value as any }))}
                   className="w-full border rounded-lg px-3 py-2"
+                  aria-label="Select energy level"
                 >
                   <option value="high">High</option>
                   <option value="medium">Medium</option>
@@ -502,7 +517,8 @@ const FocusBlockManager: React.FC<FocusBlockManagerProps> = ({ onClose }) => {
                     <div className="w-24 bg-gray-200 rounded-full h-2">
                       <div 
                         className="bg-blue-600 h-2 rounded-full" 
-                        style={{ width: `${percentage}%` }}
+                        style={{width: `${percentage}%`}}
+                        aria-label={`${type.replace('_', ' ')} blocks: ${percentage.toFixed(1)}%`}
                       />
                     </div>
                     <span className="text-sm text-gray-600">{count}</span>

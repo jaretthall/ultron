@@ -44,7 +44,6 @@ export const enrichProject = (
   tasks: Task[]
 ): EnrichedProject => {
   const projectTasks = tasks.filter(task => task.project_id === project.id);
-  const _completedTasks = projectTasks.filter(task => task.status === 'completed');
   const activeTasks = projectTasks.filter(task => task.status !== 'completed');
   
   return {

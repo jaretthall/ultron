@@ -281,14 +281,18 @@ const TagsTab: React.FC<TagsTabProps> = ({
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-4">
           <div className="relative">
+            <label htmlFor="tag-search" className="sr-only">Search tags</label>
             <input
+              id="tag-search"
               type="text"
               placeholder="Search tags..."
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
               className="pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              aria-label="Search tags"
+              title="Search through tags by name or description"
             />
-            <svg className="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </div>
@@ -297,6 +301,8 @@ const TagsTab: React.FC<TagsTabProps> = ({
             value={selectedCategory}
             onChange={(e) => onCategoryChange(e.target.value)}
             className="border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            aria-label="Filter by category"
+            title="Filter tags by category"
           >
             <option value="all">All Categories</option>
             {categories.map(category => (
@@ -345,16 +351,20 @@ const TagsTab: React.FC<TagsTabProps> = ({
                     <button
                       onClick={() => onEditTag(tag)}
                       className="text-gray-400 hover:text-blue-600"
+                      aria-label={`Edit tag ${tag.name}`}
+                      title="Edit this tag"
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                       </svg>
                     </button>
                     <button
                       onClick={() => onDeleteTag(tag.id)}
                       className="text-gray-400 hover:text-red-600"
+                      aria-label={`Delete tag ${tag.name}`}
+                      title="Delete this tag"
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
                     </button>
@@ -447,16 +457,20 @@ const CategoriesTab: React.FC<CategoriesTabProps> = ({
                     <button
                       onClick={() => onEditCategory(category)}
                       className="text-gray-400 hover:text-blue-600"
+                      aria-label={`Edit category ${category.label}`}
+                      title="Edit this category"
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                       </svg>
                     </button>
                     <button
                       onClick={() => onDeleteCategory(category.id)}
                       className="text-gray-400 hover:text-red-600"
+                      aria-label={`Delete category ${category.label}`}
+                      title="Delete this category"
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
                     </button>

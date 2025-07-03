@@ -31,6 +31,8 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
             value={projectContextFilter}
             onChange={(e) => onProjectContextFilterChange(e.target.value as 'all' | 'business' | 'personal')}
             className="bg-slate-700 text-white text-sm rounded px-3 py-1 border border-slate-600"
+            aria-label="Filter projects by context"
+            title="Filter projects by business or personal context"
           >
             <option value="all">All Projects</option>
             <option value="business">Business</option>
