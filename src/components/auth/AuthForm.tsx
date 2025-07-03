@@ -23,8 +23,14 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
     setIsSubmitting(true);
 
     // Validation
-    if (!email || !password) {
-      setError('Email and password are required');
+    if (!email) {
+      setError('Email is required');
+      setIsSubmitting(false);
+      return;
+    }
+    
+    if (!password) {
+      setError('Password is required');
       setIsSubmitting(false);
       return;
     }
@@ -35,8 +41,8 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
       return;
     }
 
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters long');
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters');
       setIsSubmitting(false);
       return;
     }
@@ -48,7 +54,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
         onSuccess?.();
       } else {
         await signUp(email, password);
-        setSuccessMessage('Account created successfully! Please check your email to verify your account.');
+        setSuccessMessage('Account created successfully');
       }
     } catch (error: any) {
       console.error('Authentication error:', error);

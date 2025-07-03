@@ -17,9 +17,9 @@ describe('Authentication Flow', () => {
     it('should show authentication required message for protected routes', () => {
       cy.visit('/');
       
-      // Should show authentication required message or redirect to login
-      cy.contains('Authentication Required', { timeout: 10000 }).should('be.visible');
-      cy.contains('Please sign in to access this application').should('be.visible');
+      // Should show auth form when not authenticated
+      cy.contains('Sign in to your account', { timeout: 10000 }).should('be.visible');
+      cy.contains('Welcome to Ultron').should('be.visible');
     });
 
     it('should not allow access to protected features without authentication', () => {

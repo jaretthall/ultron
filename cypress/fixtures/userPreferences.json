@@ -1,0 +1,17 @@
+{
+  "theme": "light",
+  "language": "en",
+  "notifications": {
+    "email": true,
+    "push": true,
+    "desktop": false
+  },
+  "workingHours": {
+    "start": "09:00",
+    "end": "17:00",
+    "timezone": "America/New_York"
+  },
+  "defaultView": "dashboard",
+  "autoSave": true,
+  "taskReminders": true
+}
