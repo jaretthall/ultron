@@ -1,11 +1,10 @@
-
 import React, { useState, useMemo } from 'react';
 import { Project, Task, TaskStatus, ProjectStatus } from '../../../types';
 import TaskItem from '../tasks/TaskItem';
 import NewTaskModal from '../tasks/NewTaskModal';
 import StatCard from '../StatCard';
 import EditProjectModal from '../projects/EditProjectModal';
-import { calculateProjectCompletion, calculateUrgencyScore, enrichProject } from '../../utils/projectUtils';
+import { calculateProjectCompletion, calculateUrgencyScore } from '../../utils/projectUtils';
 
 // Icons
 const CompletedIcon: React.FC = () => (
@@ -77,10 +76,13 @@ const MainProjectContentComponent: React.FC<MainProjectContentComponentProps> = 
     };
   }, [project, tasks]);
 
-  const enrichedProject = useMemo(() => {
-    if (!project) return null;
-    return enrichProject(project, tasks);
-  }, [project, tasks]);
+  // const enrichedProject = useMemo(() => {
+  //   if (!project) return null;
+  //   return {
+  //     ...project,
+  //     // Add enrichment logic here
+  //   };
+  // }, [project]);
 
   const urgencyScore = useMemo(() => {
     return project?.deadline ? calculateUrgencyScore(project.deadline) : 0;
@@ -226,7 +228,13 @@ const MainProjectContentComponent: React.FC<MainProjectContentComponentProps> = 
         {tasks.length > 0 ? (
           <div className="space-y-3">
             {tasks.map(task => (
-              <TaskItem key={task.id} task={task} projectTitle={project.title} />
+              <TaskItem 
+                key={task.id} 
+                task={task} 
+                projectTitle={project.title}
+                onEditTaskRequest={() => {}}
+                onDeleteTask={() => {}}
+              />
             ))}
           </div>
         ) : (

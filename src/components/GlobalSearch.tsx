@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Project, Task } from '../../types';
+// import { Project, Task } from '../../types';
 import { useAppState } from '../contexts/AppStateContext';
 
 interface SearchResult {
@@ -16,6 +16,8 @@ interface SearchResult {
 }
 
 interface GlobalSearchProps {
+  placeholder?: string;
+  onResultSelect?: (result: any) => void;
   isOpen: boolean;
   onClose: () => void;
   onSelectResult: (result: SearchResult) => void;
@@ -39,7 +41,7 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose, onSelectRe
     // Search Projects
     projects.forEach(project => {
       let relevanceScore = 0;
-      const projectText = `${project.title} ${project.description} ${project.goals?.join(' ') || ''}`.toLowerCase();
+      // const projectText = `${project.title} ${project.description} ${project.goals?.join(' ') || ''}`.toLowerCase();
       
       // Calculate relevance score
       searchTerms.forEach(term => {
@@ -70,7 +72,7 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose, onSelectRe
     // Search Tasks
     tasks.forEach(task => {
       let relevanceScore = 0;
-      const taskText = `${task.title} ${task.description}`.toLowerCase();
+      // const taskText = `${task.title} ${task.description}`.toLowerCase();
       
       searchTerms.forEach(term => {
         if (task.title.toLowerCase().includes(term)) relevanceScore += 10;

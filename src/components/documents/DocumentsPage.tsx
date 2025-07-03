@@ -1,6 +1,6 @@
-
 import React, { useState, useRef } from 'react';
-import { useAppContext } from '../../state/AppStateContext';
+import { Project } from '../../../types';
+import { useAppState } from '../../contexts/AppStateContext';
 
 interface DocumentFileLocalState {
   id: string;
@@ -11,7 +11,11 @@ interface DocumentFileLocalState {
   upload_date: string; // snake_case
 }
 
-const PlusIcon: React.FC = () => (
+interface DocumentsPageProps {
+  onNavigate: (page: string) => void;
+}
+
+const _PlusIcon: React.FC = () => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
   </svg>
@@ -27,8 +31,8 @@ const DownloadIcon: React.FC = () => (
   </svg>
 );
 
-const DocumentsPage: React.FC = () => {
-  const { state } = useAppContext();
+const DocumentsPage: React.FC<DocumentsPageProps> = () => {
+  const { state } = useAppState();
   const { projects } = state;
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -90,7 +94,7 @@ const DocumentsPage: React.FC = () => {
     return documents.filter(doc => doc.project_id === pId); // snake_case
   };
 
-  const displayedProjects = projects.map(p => ({
+  const displayedProjects = projects.map((p: Project) => ({
     ...p,
     docs: getDocumentsByProject(p.id),
     chatTranscripts: []

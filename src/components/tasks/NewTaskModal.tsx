@@ -76,20 +76,20 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
 
   if (!isOpen) return null;
 
-  const validateForm = (): boolean => {
-    const errors: TaskFormErrors = {};
-    if (!title.trim()) {
-      errors.title = 'Title is required.';
-    }
-    if (estimatedHours !== '' && (isNaN(Number(estimatedHours)) || Number(estimatedHours) < 0)) {
-      errors.estimated_hours = 'Estimated hours must be a non-negative number.';
-    }
-    if (dueDate && isNaN(new Date(dueDate).getTime())) {
-        errors.due_date = 'Invalid due date format.';
-    }
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
+  // const validateForm = (): boolean => {
+  //   const errors: TaskFormErrors = {};
+  //   if (!title.trim()) {
+  //     errors.title = 'Title is required.';
+  //   }
+  //   if (estimatedHours !== '' && (isNaN(Number(estimatedHours)) || Number(estimatedHours) < 0)) {
+  //     errors.estimated_hours = 'Estimated hours must be a non-negative number.';
+  //   }
+  //   if (dueDate && isNaN(new Date(dueDate).getTime())) {
+  //       errors.due_date = 'Invalid due date format.';
+  //   }
+  //   setFormErrors(errors);
+  //   return Object.keys(errors).length === 0;
+  // };
 
   const resetFormAndClose = () => {
     setTitle('');

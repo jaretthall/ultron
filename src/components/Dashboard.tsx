@@ -1,8 +1,7 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { WorkspaceSnapshot, TaskStatus, TaskPriority, ProjectStatus } from '../../types';
 import { generateWorkspaceSnapshot } from '../../services/exportService';
-import { AnalyticsService, AnalyticsData } from '../../services/analyticsService';
+// import { AnalyticsService, AnalyticsData } from '../../services/analyticsService';
 import StatCard from './StatCard';
 import LoadingSpinner from './LoadingSpinner';
 import { useAppState } from '../contexts/AppStateContext';
@@ -69,6 +68,11 @@ const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
   }, [projects, tasks]);
 
   const handleExportData = useCallback(async () => {
+    if (!userPreferences) {
+      setError('User preferences not loaded');
+      return;
+    }
+    
     setIsLoading(true);
     setError(null);
     setExportedData(null);
@@ -81,6 +85,25 @@ const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
       setError(err instanceof Error ? err.message : 'An unknown error occurred during export.');
     } finally {
       setIsLoading(false);
+    }
+  }, [projects, tasks, userPreferences]);
+
+  useEffect(() => {
+    const loadDashboardData = async () => {
+      try {
+        if (userPreferences) {
+          const snapshot = await generateWorkspaceSnapshot(projects, tasks, userPreferences);
+          if (snapshot) {
+            // Process snapshot data
+          }
+        }
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+      }
+    };
+
+    if (userPreferences) {
+      loadDashboardData();
     }
   }, [projects, tasks, userPreferences]);
 

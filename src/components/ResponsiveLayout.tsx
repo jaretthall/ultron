@@ -65,7 +65,7 @@ const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
   children, 
   sidebar, 
   header,
-  mobileMenuTrigger 
+  // mobileMenuTrigger - unused but kept for future use
 }) => {
   const { isMobile, isTablet } = useScreenSize();
   const [sidebarOpen, setSidebarOpen] = useState(false);

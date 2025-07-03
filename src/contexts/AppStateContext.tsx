@@ -166,14 +166,15 @@ function appStateReducer(state: AppState, action: AppAction): AppState {
       };
     
     case 'SET_USER_PREFERENCES':
-      return { ...state, userPreferences: action.preferences };
+      return {
+        ...state,
+        userPreferences: action.preferences
+      };
     
     case 'UPDATE_USER_PREFERENCES':
       return {
         ...state,
-        userPreferences: state.userPreferences 
-          ? { ...state.userPreferences, ...action.preferences }
-          : null
+        userPreferences: action.preferences && state.userPreferences ? { ...state.userPreferences, ...action.preferences } : state.userPreferences
       };
     
     case 'SET_TAGS':
@@ -522,7 +523,7 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
   const updateUserPreferences = useCallback(async (updates: Partial<UserPreferences>): Promise<void> => {
     if (!state.userPreferences) return;
 
-    const updatedPreferences = { ...state.userPreferences, ...updates };
+    // const updatedPreferences = { ...state.userPreferences, ...updates };
 
     await performOptimisticUpdate(
       { type: 'UPDATE_USER_PREFERENCES', preferences: updates },

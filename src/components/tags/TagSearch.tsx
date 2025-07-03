@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Tag } from '../../../types';
 import { tagsService, tagFilteringService } from '../../../services/databaseService';
+import { useAppState } from '../../contexts/AppStateContext';
 
 interface TagSearchProps {
   onResultsChange: (results: {
@@ -22,13 +23,22 @@ const TagSearch: React.FC<TagSearchProps> = ({
   placeholder = "Search by tags...",
   className = ""
 }) => {
+  const { state } = useAppState();
+  const { projects, tasks } = state;
+  
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [availableTags, setAvailableTags] = useState<Tag[]>([]);
   const [filteredTags, setFilteredTags] = useState<Tag[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [searchResults, setSearchResults] = useState({
+  const [matchTypeState, setMatchType] = useState<'any' | 'all'>(matchType);
+  const [searchResults, setSearchResults] = useState<{
+    projects: any[];
+    tasks: any[];
+    totalResults: number;
+    selectedTags?: string[];
+  }>({
     projects: [],
     tasks: [],
     totalResults: 0
@@ -53,8 +63,21 @@ const TagSearch: React.FC<TagSearchProps> = ({
   }, [searchQuery, availableTags, selectedTags]);
 
   useEffect(() => {
-    performSearch();
-  }, [selectedTags, matchType, entityTypes]);
+    if (selectedTags.length > 0) {
+      const searchResults = {
+        projects: projects.filter(project => 
+          selectedTags.some(tag => project.tags?.includes(tag))
+        ),
+        tasks: tasks.filter(task => 
+          selectedTags.some(tag => task.tags?.includes(tag))
+        ),
+        totalResults: 0,
+        selectedTags
+      };
+      searchResults.totalResults = searchResults.projects.length + searchResults.tasks.length;
+      setSearchResults(searchResults);
+    }
+  }, [selectedTags, projects, tasks]);
 
   const loadTags = async () => {
     try {
@@ -65,7 +88,7 @@ const TagSearch: React.FC<TagSearchProps> = ({
     }
   };
 
-  const performSearch = async () => {
+  const _performSearch = async () => {
     if (selectedTags.length === 0) {
       const emptyResults = {
         projects: [],
@@ -82,7 +105,7 @@ const TagSearch: React.FC<TagSearchProps> = ({
       setIsSearching(true);
       const results = await tagFilteringService.getEntitiesByTags(selectedTags, {
         entityTypes,
-        matchType
+        matchType: matchTypeState
       });
 
       const searchResults = {
@@ -169,26 +192,26 @@ const TagSearch: React.FC<TagSearchProps> = ({
           </div>
 
           {/* Match Type Toggle */}
-          <div className="flex border rounded-lg">
+          <div className="flex space-x-2 mb-4">
             <button
               onClick={() => setMatchType('any')}
-              className={`px-3 py-2 text-sm ${
-                matchType === 'any'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-50'
+              className={`px-3 py-1 rounded text-sm ${
+                matchTypeState === 'any'
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               }`}
             >
-              Any
+              Match Any
             </button>
             <button
               onClick={() => setMatchType('all')}
-              className={`px-3 py-2 text-sm border-l ${
-                matchType === 'all'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-50'
+              className={`px-3 py-1 rounded text-sm ${
+                matchTypeState === 'all'
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               }`}
             >
-              All
+              Match All
             </button>
           </div>
 
@@ -205,7 +228,7 @@ const TagSearch: React.FC<TagSearchProps> = ({
 
         {/* Match Type Explanation */}
         <p className="text-xs text-gray-500">
-          {matchType === 'any' 
+          {matchTypeState === 'any' 
             ? 'Show items that have any of the selected tags'
             : 'Show items that have all of the selected tags'
           }

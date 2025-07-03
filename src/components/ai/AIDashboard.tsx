@@ -34,11 +34,11 @@ const ClockIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5" }) 
   </svg>
 );
 
-const ZapIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5" }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
-  </svg>
-);
+// const ZapIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5" }) => (
+//   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+//     <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+//   </svg>
+// );
 
 const TrendingUpIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5" }) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
@@ -59,7 +59,7 @@ const XCircleIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5" }
 );
 
 const AIDashboard: React.FC = () => {
-  const { state, updateUserPreferences } = useAppState();
+  const { state } = useAppState();
   const { projects, tasks, userPreferences } = state;
   const [insights, setInsights] = useState<AIServiceResult<AIInsights> | null>(null);
   const [dailyPlan, setDailyPlan] = useState<AIServiceResult<DailyPlan> | null>(null);
@@ -200,12 +200,12 @@ const AIDashboard: React.FC = () => {
               <h3 className="text-lg font-semibold text-blue-800">AI Recommendations</h3>
             </div>
             <ul className="space-y-2">
-              {insights.data.recommendations.map((recommendation, index) => (
+              {insights.data.recommendations?.map((recommendation, index) => (
                 <li key={index} className="flex items-start space-x-2">
                   <BrainIcon className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
                   <span className="text-sm text-gray-700">{recommendation}</span>
                 </li>
-              ))}
+              )) || []}
             </ul>
           </div>
         </>

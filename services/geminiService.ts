@@ -1,6 +1,5 @@
-
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
-import { Project, Task, StrategicInsights, UserPreferences, AIProvider } from '../types';
+import { Project, Task, StrategicInsights, UserPreferences } from '../types';
 // GEMINI_MODEL_NAME from constants is now a default, actual model used can be passed in.
 
 const API_KEY = process.env.API_KEY;
@@ -107,6 +106,11 @@ export const generateStrategicInsights = async (
           }
       });
       
+      if (!response?.text) {
+        console.warn('Empty response from Gemini API');
+        return defaultInsights;
+      }
+
       let jsonStr = response.text.trim();
       const fenceRegex = /^```(\w*)?\s*\n?(.*?)\n?\s*```$/s;
       const match = jsonStr.match(fenceRegex);

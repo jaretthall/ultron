@@ -1,14 +1,17 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Task, TaskStatus, TaskPriority } from '../../../types';
+import { Task, Project, TaskStatus, TaskPriority, /*UserPreferences*/ } from '../../../types';
 import { useAppState } from '../../contexts/AppStateContext';
 import { tasksService } from '../../../services/databaseService';
-import { getTaskDependencyStats, buildDependencyGraph } from '../../utils/dependencyUtils';
+import { getTaskDependencyStats, /*buildDependencyGraph*/ } from '../../utils/dependencyUtils';
 
 interface TaskDetailsModalProps {
-  isOpen: boolean;
-  onClose: () => void;
   task: Task;
+  onClose: () => void;
+  onUpdate: (task: Task) => void;
+  onDelete: (taskId: string) => void;
   allTasks: Task[];
+  allProjects: Project[];
+  isOpen: boolean;
 }
 
 // Icons
@@ -48,14 +51,32 @@ const TrashIcon = () => (
   </svg>
 );
 
-const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({ isOpen, onClose, task, allTasks }) => {
-  const { dispatch } = useAppContext();
+const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
+  task,
+  onClose,
+  onUpdate,
+  onDelete,
+  allTasks,
+  // allProjects,
+  isOpen
+}) => {
+  const { updateTask } = useAppState();
   const [isLoading, setIsLoading] = useState(false);
   const [showAddDependency, setShowAddDependency] = useState(false);
   const [selectedDependency, setSelectedDependency] = useState('');
   const [dependencies, setDependencies] = useState<Task[]>([]);
   const [dependents, setDependents] = useState<Task[]>([]);
   const [error, setError] = useState<string | null>(null);
+
+  // Form data state for editing
+  const [formData] = useState({
+    title: task.title,
+    description: task.description || '',
+    priority: task.priority,
+    status: task.status,
+    due_date: task.due_date || '',
+    estimated_hours: task.estimated_hours || 0
+  });
 
   // Calculate dependency statistics
   const dependencyStats = useMemo(() => {
@@ -95,25 +116,24 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({ isOpen, onClose, ta
     }
   };
 
-  const handleAddDependency = async () => {
-    if (!selectedDependency) return;
-
+  const handleAddDependency = async (dependencyId: string) => {
     try {
       setIsLoading(true);
-      const updatedTask = await tasksService.addDependency(task.id, selectedDependency);
+      const updatedTask = {
+        ...task,
+        dependencies: [...(task.dependencies || []), dependencyId]
+      };
+      
+      // Update the task in the database  
+      await tasksService.update(task.id, { dependencies: updatedTask.dependencies });
       
       // Update the task in global state
-      dispatch({ type: ActionType.UPDATE_TASK, payload: updatedTask });
+      await updateTask(task.id, { dependencies: updatedTask.dependencies });
       
       // Reload dependency data
-      await loadDependencyData();
-      
-      setSelectedDependency('');
       setShowAddDependency(false);
-      setError(null);
-    } catch (err: any) {
-      console.error('Error adding dependency:', err);
-      setError(err.message || 'Failed to add dependency');
+    } catch (error) {
+      console.error('Error adding dependency:', error);
     } finally {
       setIsLoading(false);
     }
@@ -122,17 +142,20 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({ isOpen, onClose, ta
   const handleRemoveDependency = async (dependencyId: string) => {
     try {
       setIsLoading(true);
-      const updatedTask = await tasksService.removeDependency(task.id, dependencyId);
+      const updatedTask = {
+        ...task,
+        dependencies: (task.dependencies || []).filter(id => id !== dependencyId)
+      };
+      
+      // Update the task in the database
+      await tasksService.update(task.id, { dependencies: updatedTask.dependencies });
       
       // Update the task in global state
-      dispatch({ type: ActionType.UPDATE_TASK, payload: updatedTask });
+      await updateTask(task.id, { dependencies: updatedTask.dependencies });
       
       // Reload dependency data
-      await loadDependencyData();
-      setError(null);
-    } catch (err: any) {
-      console.error('Error removing dependency:', err);
-      setError(err.message || 'Failed to remove dependency');
+    } catch (error) {
+      console.error('Error removing dependency:', error);
     } finally {
       setIsLoading(false);
     }
@@ -154,6 +177,36 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({ isOpen, onClose, ta
       case TaskStatus.IN_PROGRESS: return 'text-blue-400 bg-blue-900/20';
       case TaskStatus.TODO: return 'text-slate-400 bg-slate-900/20';
       default: return 'text-slate-400 bg-slate-900/20';
+    }
+  };
+
+  const _handleSaveChanges = async () => {
+    try {
+      const updatedTask = { ...task, ...formData };
+      await updateTask(task.id, formData);
+      onUpdate(updatedTask);
+      onClose();
+    } catch (error) {
+      console.error('Error updating task:', error);
+    }
+  };
+
+  const _handleDeleteTask = async () => {
+    try {
+      onDelete(task.id);
+      onClose();
+    } catch (error) {
+      console.error('Error deleting task:', error);
+    }
+  };
+
+  const _handleToggleComplete = async () => {
+    try {
+      const newStatus = task.status === TaskStatus.COMPLETED ? TaskStatus.TODO : TaskStatus.COMPLETED;
+      await updateTask(task.id, { status: newStatus });
+      onUpdate({ ...task, status: newStatus });
+    } catch (error) {
+      console.error('Error updating task status:', error);
     }
   };
 
@@ -276,7 +329,7 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({ isOpen, onClose, ta
                     ))}
                   </select>
                   <button
-                    onClick={handleAddDependency}
+                    onClick={() => handleAddDependency(selectedDependency)}
                     disabled={!selectedDependency || isLoading}
                     className="bg-green-600 hover:bg-green-700 disabled:bg-slate-600 text-white px-4 py-2 rounded-md transition-colors"
                   >

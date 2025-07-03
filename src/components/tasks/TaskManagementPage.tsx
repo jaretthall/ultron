@@ -4,9 +4,9 @@ import { Task, Project, TaskStatus } from '../../../types';
 import NewTaskModal from './NewTaskModal';
 import TaskItem from './TaskItem';
 import TaskCard from './TaskCard';
-import TaskDetailsModal from './TaskDetailsModal';
-import DependencyGraphView from './DependencyGraphView';
-import { buildDependencyGraph, getBlockedTasksFromGraph, getAvailableTasksFromGraph } from '../../utils/dependencyUtils';
+// import TaskDetailsModal from './TaskDetailsModal';
+// import DependencyGraphView from './DependencyGraphView';
+// import { buildDependencyGraph, getBlockedTasksFromGraph, getAvailableTasksFromGraph } from '../../utils/dependencyUtils';
 
 interface TaskManagementPageProps {
   initialTasks: Task[];
@@ -59,8 +59,8 @@ const TaskManagementPage: React.FC<TaskManagementPageProps> = ({
   const [categoryFilter, setCategoryFilter] = useState('All Categories');
   const [viewMode, setViewMode] = useState<'list' | 'grid' | 'graph'>('list');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [showDependencyStats, setShowDependencyStats] = useState(false);
+  // const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  // const [showDependencyStats, setShowDependencyStats] = useState(false);
 
   const projectOptions = useMemo(() => {
     return [{ id: 'All Projects', title: 'All Projects' }, ...projects, {id: 'standalone', title: 'Standalone Tasks'}];

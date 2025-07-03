@@ -59,7 +59,7 @@ export const generateAIInsights = async (
   projects: Project[],
   tasks: Task[],
   userPreferences: UserPreferences,
-  allowFallback: boolean = true
+  _allowFallback: boolean = true
 ): Promise<AIServiceResult<AIInsights>> => {
   try {
     // Call the unified serverless function which handles provider selection and fallback
@@ -274,7 +274,7 @@ export const generateAIWorkloadAnalysis = async (
 };
 
 // Provider-specific function calls
-const callInsightsProvider = async (
+const _callInsightsProvider = async (
   provider: string,
   projects: Project[],
   tasks: Task[],

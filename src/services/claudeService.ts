@@ -229,7 +229,7 @@ const callClaudeAPI = async (
 };
 
 // Enhanced prompt construction for Claude insights
-const constructClaudeInsightsPrompt = (projects: Project[], tasks: Task[]): string => {
+const _constructClaudeInsightsPrompt = (projects: Project[], tasks: Task[]): string => {
   return `
 As a productivity and project management expert, analyze the following data and provide strategic insights:
 
@@ -276,7 +276,7 @@ Focus on providing actionable, specific insights that will help improve producti
 };
 
 // Enhanced prompt construction for Claude daily planning
-const constructClaudeDailyPlanPrompt = (
+const _constructClaudeDailyPlanPrompt = (
   date: Date,
   projects: Project[],
   tasks: Task[],
@@ -466,7 +466,7 @@ Analyze capacity, bottlenecks, work-life balance, and efficiency. Return compreh
 };
 
 // Response parsing utilities
-const parseClaudeResponse = (response: ClaudeResponse): { blocked_tasks: Task[]; projects_needing_attention: Project[]; recommendations: string[] } => {
+const _parseClaudeResponse = (response: ClaudeResponse): { blocked_tasks: Task[]; projects_needing_attention: Project[]; recommendations: string[] } => {
   try {
     const content = response.content[0].text;
     
@@ -495,7 +495,7 @@ const parseClaudeResponse = (response: ClaudeResponse): { blocked_tasks: Task[];
   }
 };
 
-const parseClaudeDailyPlanResponse = (response: ClaudeResponse): DailyPlan => {
+const _parseClaudeDailyPlanResponse = (response: ClaudeResponse): DailyPlan => {
   try {
     const content = response.content[0].text;
     

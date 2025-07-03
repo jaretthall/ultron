@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Task, UserPreferences } from '../../../types';
+// import { format, startOfDay, endOfDay, addDays, isWithinInterval } from 'date-fns';
+import { useAppState } from '../../contexts/AppStateContext';
 import { tasksService } from '../../../services/databaseService';
-import { useAppContext } from '../../state/AppStateContext';
 
 interface TaskSchedulerProps {
-  selectedDate?: Date;
+  task: Task;
+  selectedDate: Date;
+  onScheduleUpdate: (task: Task) => void;
   onClose?: () => void;
-  onScheduleUpdate?: (scheduledTasks: ScheduledTask[]) => void;
 }
 
 interface ScheduledTask extends Task {
@@ -26,12 +28,13 @@ interface TimeSlot {
 }
 
 const TaskScheduler: React.FC<TaskSchedulerProps> = ({ 
-  selectedDate = new Date(), 
-  onClose, 
-  onScheduleUpdate 
+  // task,
+  selectedDate,
+  onScheduleUpdate,
+  onClose
 }) => {
-  const { state } = useAppContext();
-  const { userPreferences, tasks } = state;
+  const { state } = useAppState();
+  const { userPreferences /*, tasks*/ } = state;
 
   const [availableTasks, setAvailableTasks] = useState<Task[]>([]);
   const [scheduledTasks, setScheduledTasks] = useState<ScheduledTask[]>([]);
@@ -251,7 +254,7 @@ const TaskScheduler: React.FC<TaskSchedulerProps> = ({
     setLoading(false);
 
     if (onScheduleUpdate) {
-      onScheduleUpdate(scheduled);
+      onScheduleUpdate(scheduled[0]);
     }
   };
 
@@ -484,7 +487,7 @@ const TaskScheduler: React.FC<TaskSchedulerProps> = ({
             </button>
             <button
               onClick={() => {
-                if (onScheduleUpdate) onScheduleUpdate(scheduledTasks);
+                if (onScheduleUpdate) onScheduleUpdate(scheduledTasks[0]);
                 if (onClose) onClose();
               }}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"

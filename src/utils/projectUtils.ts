@@ -44,7 +44,7 @@ export const enrichProject = (
   tasks: Task[]
 ): EnrichedProject => {
   const projectTasks = tasks.filter(task => task.project_id === project.id);
-  const completedTasks = projectTasks.filter(task => task.status === 'completed');
+  const _completedTasks = projectTasks.filter(task => task.status === 'completed');
   const activeTasks = projectTasks.filter(task => task.status !== 'completed');
   
   return {
@@ -146,4 +146,15 @@ export const calculateProjectHealthScore = (
   }
   
   return Math.max(0, score);
+};
+
+export const calculateProjectProgress = (project: Project, tasks: Task[]): number => {
+  const projectTasks = tasks.filter(task => task.project_id === project.id);
+  
+  if (projectTasks.length === 0) return 0;
+  
+  const totalTasks = projectTasks.length;
+  const completedCount = projectTasks.filter(task => task.status === 'completed').length;
+  
+  return Math.round((completedCount / totalTasks) * 100);
 }; 

@@ -21,11 +21,11 @@ const ProjectDashboardPage: React.FC<ProjectDashboardPageProps> = ({
   projects,
   tasks,
   onAddTask,
-  onAddProject,
+  // onAddProject, - unused
   onEditProjectRequest,
-  onDeleteProject,
-  onEditTaskRequest,
-  onDeleteTask,
+  // onDeleteProject, - unused
+  // onEditTaskRequest, - unused
+  // onDeleteTask, - unused
   projectContextFilter = 'all'
 }) => {
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);

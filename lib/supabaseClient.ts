@@ -72,7 +72,7 @@ export const testSupabaseConnection = async () => {
   }
 
   try {
-    const { data, error } = await supabase.auth.getSession();
+    const { error } = await supabase.auth.getSession();
     if (error) {
       console.error('Supabase connection test failed:', error);
       return false;

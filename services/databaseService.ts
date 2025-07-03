@@ -1,7 +1,7 @@
 import { supabase } from '../lib/supabaseClient';
 import {
-  Project, Task, UserPreferences, Tag, TagCategory, Note, Schedule, DocumentFile, Plan,
-  ProjectStatus, ProjectContext, TaskPriority, TaskStatus, AIProvider
+  Project, Task, UserPreferences, Tag, TagCategory,
+  ProjectStatus, ProjectContext, TaskPriority, TaskStatus
 } from '../types';
 
 // Generic error handler for database operations
@@ -892,13 +892,11 @@ export const tagsService = {
     if (tagsError) handleError('fetching tags for analytics', tagsError);
 
     // Get all entities to analyze tag usage
-    const [projects, tasks, documents, schedules] = await Promise.all([
+    const [projects, tasks] = await Promise.all([
       projectsService.getAll(),
-      tasksService.getAll(),
+      tasksService.getAll()
       // Note: We'll need to implement document and schedule services for complete analytics
-      // For now, using empty arrays as placeholders
-      Promise.resolve([]), // documentsService.getAll(),
-      Promise.resolve([])  // schedulesService.getAll()
+      // For now, using zero counts as placeholders for document and schedule usage
     ]);
 
     const allTags = tags || [];
@@ -994,7 +992,7 @@ export const tagsService = {
   /**
    * Get tag suggestions based on existing tag patterns
    */
-  async getTagSuggestions(entityType: 'project' | 'task' | 'document' | 'schedule', entityData: any): Promise<Tag[]> {
+  async getTagSuggestions(_entityType: 'project' | 'task' | 'document' | 'schedule', _entityData: any): Promise<Tag[]> {
     if (!supabase) throw new Error('Supabase client not initialized');
     
     // Simple suggestion algorithm based on most used tags

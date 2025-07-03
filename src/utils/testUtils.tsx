@@ -73,6 +73,7 @@ export const mockTasks: Task[] = [
 
 export const mockUserPreferences: UserPreferences = {
   id: 'pref-1',
+  user_id: 'user-1',
   working_hours_start: '09:00',
   working_hours_end: '17:00',
   focus_block_duration: 90,

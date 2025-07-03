@@ -181,9 +181,9 @@ const SettingsPage: React.FC = () => {
             <h3 className="text-xl font-semibold mb-4 text-slate-100">Application Preferences</h3>
             <p className="text-slate-400">Customize your workspace behavior. (More preferences to be added here)</p>
             <div className="mt-4 space-y-2">
-                <p className="text-sm text-slate-300">Working Hours Start: <span className="font-medium text-slate-100">{userPreferences.working_hours_start}</span></p> {/* Corrected */}
-                <p className="text-sm text-slate-300">Working Hours End: <span className="font-medium text-slate-100">{userPreferences.working_hours_end}</span></p> {/* Corrected */}
-                <p className="text-sm text-slate-300">Focus Block Duration: <span className="font-medium text-slate-100">{userPreferences.focus_block_duration} minutes</span></p>
+                <p className="text-sm text-slate-300">Working Hours Start: <span className="font-medium text-slate-100">{userPreferences?.working_hours_start}</span></p> {/* Corrected */}
+                <p className="text-sm text-slate-300">Working Hours End: <span className="font-medium text-slate-100">{userPreferences?.working_hours_end}</span></p> {/* Corrected */}
+                <p className="text-sm text-slate-300">Focus Block Duration: <span className="font-medium text-slate-100">{userPreferences?.focus_block_duration} minutes</span></p>
             </div>
           </section>
         );

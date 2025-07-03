@@ -132,8 +132,7 @@ export class AnalyticsService {
   /**
    * Calculate trend data for different time periods
    */
-  private static calculateTrends(projects: Project[], tasks: Task[]): TrendData {
-    const now = new Date();
+  private static calculateTrends(_projects: Project[], tasks: Task[]): TrendData {
     
     // Generate daily trends for the last 30 days
     const daily = this.generatePeriodMetrics(tasks, 30, 'day');
@@ -262,7 +261,7 @@ export class AnalyticsService {
   /**
    * Calculate performance insights
    */
-  private static calculatePerformanceInsights(projects: Project[], tasks: Task[]) {
+  private static calculatePerformanceInsights(_projects: Project[], _tasks: Task[]) {
     // Mock data for demonstration - in real implementation, this would analyze historical patterns
     const topPerformingDays = ['Monday', 'Wednesday', 'Friday'];
     const bottleneckAnalysis = [
@@ -288,7 +287,7 @@ export class AnalyticsService {
   /**
    * Generate period metrics for trend analysis
    */
-  private static generatePeriodMetrics(tasks: Task[], periods: number, periodType: 'day' | 'week' | 'month'): PeriodMetrics[] {
+  private static generatePeriodMetrics(_tasks: Task[], periods: number, periodType: 'day' | 'week' | 'month'): PeriodMetrics[] {
     const metrics: PeriodMetrics[] = [];
     const now = new Date();
 
@@ -337,7 +336,7 @@ export class AnalyticsService {
   /**
    * Calculate time estimation accuracy
    */
-  private static calculateTimeEstimationAccuracy(completedTasks: Task[]): number {
+  private static calculateTimeEstimationAccuracy(_completedTasks: Task[]): number {
     // Mock calculation - would need actual time tracking data
     // For now, return a random accuracy between 70-95%
     return Math.floor(Math.random() * 25) + 70;
@@ -390,7 +389,7 @@ export class AnalyticsService {
     return Math.round((missedDeadlines / tasksWithDeadlines.length) * 100);
   }
 
-  private static calculateTaskVelocity(completedTasks: Task[]): number {
+  private static calculateTaskVelocity(_completedTasks: Task[]): number {
     // Simulate weekly velocity - in real implementation, analyze completion timestamps
     return Math.floor(Math.random() * 10) + 5; // 5-15 tasks per week
   }
@@ -404,7 +403,7 @@ export class AnalyticsService {
     return 'low';
   }
 
-  private static calculateContextSwitchFrequency(projects: Project[], tasks: Task[]): number {
+  private static calculateContextSwitchFrequency(projects: Project[], _tasks: Task[]): number {
     const businessProjects = projects.filter(p => p.context === 'business').length;
     const personalProjects = projects.filter(p => p.context === 'personal').length;
     return Math.min(businessProjects, personalProjects) * 2; // Estimate switches per day

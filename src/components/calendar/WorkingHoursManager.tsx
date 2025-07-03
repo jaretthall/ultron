@@ -1,29 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { UserPreferences } from '../../../types';
-import { useAppContext, ActionType } from '../../state/AppStateContext';
+import { useAppState } from '../../contexts/AppStateContext';
 
 interface WorkingHoursManagerProps {
-  onClose?: () => void;
+  userPreferences: UserPreferences;
+  onUpdate: (preferences: UserPreferences) => void;
 }
 
-const WorkingHoursManager: React.FC<WorkingHoursManagerProps> = ({ onClose }) => {
-  const { state, dispatch } = useAppContext();
-  const { userPreferences } = state;
+const WorkingHoursManager: React.FC<WorkingHoursManagerProps> = ({ userPreferences, onUpdate }) => {
+  const { updateUserPreferences } = useAppState();
 
   const [formData, setFormData] = useState({
-    working_hours_start: userPreferences?.working_hours_start || '09:00',
-    working_hours_end: userPreferences?.working_hours_end || '17:00',
-    business_hours_start: userPreferences?.business_hours_start || '09:00',
-    business_hours_end: userPreferences?.business_hours_end || '17:00',
-    business_days: userPreferences?.business_days || ['mon', 'tue', 'wed', 'thu', 'fri'],
-    personal_time_weekday_evening: userPreferences?.personal_time_weekday_evening || true,
-    personal_time_weekends: userPreferences?.personal_time_weekends || true,
-    personal_time_early_morning: userPreferences?.personal_time_early_morning || false,
-    allow_business_in_personal_time: userPreferences?.allow_business_in_personal_time || false,
-    allow_personal_in_business_time: userPreferences?.allow_personal_in_business_time || true,
-    context_switch_buffer_minutes: userPreferences?.context_switch_buffer_minutes || 15,
-    focus_block_duration: userPreferences?.focus_block_duration || 90,
-    break_duration: userPreferences?.break_duration || 15
+    working_hours_start: userPreferences.working_hours_start,
+    working_hours_end: userPreferences.working_hours_end,
+    business_hours_start: userPreferences.business_hours_start,
+    business_hours_end: userPreferences.business_hours_end,
+    business_days: userPreferences.business_days || [],
+    personal_time_weekday_evening: userPreferences.personal_time_weekday_evening,
+    personal_time_weekends: userPreferences.personal_time_weekends,
+    personal_time_early_morning: userPreferences.personal_time_early_morning,
+    allow_business_in_personal_time: userPreferences.allow_business_in_personal_time,
+    allow_personal_in_business_time: userPreferences.allow_personal_in_business_time,
+    context_switch_buffer_minutes: userPreferences.context_switch_buffer_minutes,
+    focus_block_duration: userPreferences.focus_block_duration,
+    break_duration: userPreferences.break_duration,
   });
 
   const [activeTab, setActiveTab] = useState<'working' | 'business' | 'personal' | 'focus'>('working');
@@ -97,24 +97,25 @@ const WorkingHoursManager: React.FC<WorkingHoursManagerProps> = ({ onClose }) =>
     setPreviewSchedule(schedule);
   };
 
-  const handleSave = () => {
-    const updatedPrefs: Partial<UserPreferences> = {
-      ...formData,
-      business_days: formData.business_days as ('mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun')[]
-    };
-
-    dispatch({ type: ActionType.SET_USER_PREFERENCES, payload: updatedPrefs });
-    
-    if (onClose) onClose();
+  const handleSave = async () => {
+    try {
+      const updatedPrefs = { ...userPreferences, ...formData };
+      await updateUserPreferences(updatedPrefs);
+      onUpdate(updatedPrefs);
+    } catch (error) {
+      console.error('Error updating user preferences:', error);
+    }
   };
 
   const handleBusinessDayToggle = (dayId: string) => {
-    setFormData(prev => ({
-      ...prev,
-      business_days: prev.business_days.includes(dayId as any)
-        ? prev.business_days.filter(day => day !== dayId)
-        : [...prev.business_days, dayId as any]
-    }));
+    const businessDays = userPreferences.business_days || [];
+    const updatedPreferences = {
+      ...userPreferences,
+      business_days: businessDays.includes(dayId as any)
+        ? businessDays.filter((day: string) => day !== dayId)
+        : [...businessDays, dayId as any]
+    };
+    onUpdate(updatedPreferences as UserPreferences);
   };
 
   const renderWorkingHoursTab = () => (
@@ -415,7 +416,7 @@ const WorkingHoursManager: React.FC<WorkingHoursManagerProps> = ({ onClose }) =>
             <p className="text-gray-600">Configure your working hours, business time, and focus patterns</p>
           </div>
           <button
-            onClick={onClose}
+            onClick={() => onUpdate(userPreferences)}
             className="text-gray-400 hover:text-gray-600"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -464,7 +465,7 @@ const WorkingHoursManager: React.FC<WorkingHoursManagerProps> = ({ onClose }) =>
         {/* Footer */}
         <div className="flex items-center justify-end space-x-3 p-6 border-t bg-gray-50">
           <button
-            onClick={onClose}
+            onClick={() => onUpdate(userPreferences)}
             className="px-4 py-2 text-gray-600 border rounded-lg hover:bg-gray-50"
           >
             Cancel

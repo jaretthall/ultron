@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useAppContext } from '../../state/AppStateContext';
+import { useAppState } from '../../contexts/AppStateContext';
 import { AnalyticsService, AnalyticsData } from '../../../services/analyticsService';
 import StatCard from '../StatCard';
 import LoadingSpinner from '../LoadingSpinner';
+// import { Task, Project, UserPreferences, ProjectStatus, TaskStatus, ProjectContext } from '../../../types';
 
 // Chart Icons
 const ChartIcon: React.FC = () => (
@@ -31,10 +32,11 @@ const ClockIcon: React.FC = () => (
 
 interface AnalyticsDashboardProps {
   className?: string;
+  onNavigate: (page: string) => void;
 }
 
 const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ className = '' }) => {
-  const { state } = useAppContext();
+  const { state } = useAppState();
   const { projects, tasks } = state;
   
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
@@ -193,7 +195,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ className = '' 
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {trends[selectedPeriod].slice(-8).map((period, index) => (
+          {trends[selectedPeriod].slice(-8).map((period) => (
             <div key={period.period} className="bg-slate-700 p-4 rounded-lg">
               <div className="text-sm text-slate-400 mb-2">
                 {new Date(period.period).toLocaleDateString()}
@@ -240,7 +242,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ className = '' 
           <div>
             <h3 className="text-lg font-semibold text-slate-200 mb-3">Most Active Projects</h3>
             <div className="space-y-2">
-              {workloadInsights.mostActiveProjects.slice(0, 3).map((item, index) => (
+              {workloadInsights.mostActiveProjects.slice(0, 3).map((item) => (
                 <div key={item.project.id} className="flex justify-between items-center">
                   <span className="text-slate-300 truncate max-w-[150px]">
                     {item.project.title}
@@ -260,7 +262,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ className = '' 
               {workloadInsights.upcomingDeadlines.slice(0, 5).map((deadline, index) => (
                 <div key={index} className="flex justify-between items-center bg-slate-700 p-2 rounded">
                   <span className="text-slate-300 truncate max-w-[200px]">
-                    {'title' in deadline.entity ? deadline.entity.title : deadline.entity.title}
+                    {deadline.entity.title}
                   </span>
                   <span className={`font-semibold ${
                     deadline.daysUntil <= 3 ? 'text-red-400' : 

@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Task, Project, TaskStatus } from '../../../types';
+import { Task, TaskStatus } from '../../../types';
 import NewTaskModal from './NewTaskModal';
 import TaskItem from './TaskItem';
 import TaskCard from './TaskCard';
@@ -54,7 +54,7 @@ const CheckCircleIcon: React.FC = () => (
 type ViewMode = 'list' | 'grid' | 'graph';
 
 const EnhancedTaskManagement: React.FC = () => {
-  const { state, dispatch } = useAppContext();
+  const { state, addTask } = useAppState();
   const { tasks, projects } = state;
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -72,8 +72,8 @@ const EnhancedTaskManagement: React.FC = () => {
     
     return {
       graph,
-      blockedTasks: blockedTasks.map(node => tasks.find(t => t.id === node.id)).filter(Boolean) as Task[],
-      availableTasks: availableTasks.map(node => tasks.find(t => t.id === node.id)).filter(Boolean) as Task[],
+      blockedTasks: blockedTasks.map(node => tasks.find((t: Task) => t.id === node.id)).filter(Boolean) as Task[],
+      availableTasks: availableTasks.map(node => tasks.find((t: Task) => t.id === node.id)).filter(Boolean) as Task[],
       totalDependencies: graph.edges.length
     };
   }, [tasks]);
@@ -87,7 +87,7 @@ const EnhancedTaskManagement: React.FC = () => {
   }, [projects]);
 
   const filteredTasks = useMemo(() => {
-    return tasks.filter(task => {
+    return tasks.filter((task: Task) => {
       const searchMatch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           task.description.toLowerCase().includes(searchTerm.toLowerCase());
       
@@ -112,12 +112,12 @@ const EnhancedTaskManagement: React.FC = () => {
 
   const getProjectTitle = (pId?: string): string => {
     if (!pId) return "Standalone";
-    const project = projects.find(p => p.id === pId);
+    const project = projects.find((p: any) => p.id === pId);
     return project ? project.title : "Unknown Project";
   };
 
-  const handleAddTask = (newTask: Task) => {
-    dispatch({ type: ActionType.ADD_TASK, payload: newTask });
+  const handleAddTask = (newTask: Omit<Task, 'id' | 'created_at' | 'updated_at'>) => {
+    addTask(newTask);
   };
 
   const handleTaskClick = (task: Task) => {
@@ -196,6 +196,7 @@ const EnhancedTaskManagement: React.FC = () => {
           value={projectFilter}
           onChange={e => setProjectFilter(e.target.value)}
           className="bg-slate-700 border-slate-600 rounded-md text-sm py-2 px-3 focus:ring-sky-500 focus:border-sky-500"
+          aria-label="Filter by project"
         >
           {projectOptions.map(proj => (
             <option key={proj.id} value={proj.id}>{proj.title}</option>
@@ -206,6 +207,7 @@ const EnhancedTaskManagement: React.FC = () => {
           value={statusFilter}
           onChange={e => setStatusFilter(e.target.value as any)}
           className="bg-slate-700 border-slate-600 rounded-md text-sm py-2 px-3 focus:ring-sky-500 focus:border-sky-500"
+          aria-label="Filter by status"
         >
           <option value="Active">Active Tasks</option>
           <option value="Available">Available Tasks</option>
@@ -270,7 +272,12 @@ const EnhancedTaskManagement: React.FC = () => {
             <div className="space-y-3">
               {filteredTasks.map(task => (
                 <div key={task.id} onClick={() => handleTaskClick(task)} className="cursor-pointer">
-                  <TaskItem task={task} projectTitle={getProjectTitle(task.project_id)} />
+                  <TaskItem 
+                    task={task} 
+                    projectTitle={getProjectTitle(task.project_id)}
+                    onEditTaskRequest={() => {}}
+                    onDeleteTask={() => {}}
+                  />
                 </div>
               ))}
             </div>
@@ -278,7 +285,12 @@ const EnhancedTaskManagement: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {filteredTasks.map(task => (
                 <div key={task.id} onClick={() => handleTaskClick(task)} className="cursor-pointer">
-                  <TaskCard task={task} projectTitle={getProjectTitle(task.project_id)} />
+                  <TaskCard 
+                    task={task} 
+                    projectTitle={getProjectTitle(task.project_id)}
+                    onEditTaskRequest={() => {}}
+                    onDeleteTask={() => {}}
+                  />
                 </div>
               ))}
             </div>
@@ -298,10 +310,21 @@ const EnhancedTaskManagement: React.FC = () => {
 
       {selectedTask && (
         <TaskDetailsModal
-          isOpen={!!selectedTask}
+          isOpen={selectedTask !== null}
           onClose={() => setSelectedTask(null)}
-          task={selectedTask}
-          allTasks={tasks}
+          task={selectedTask!}
+          onUpdate={(updatedTask: Task) => {
+            // Handle task update
+            console.log('Task updated:', updatedTask);
+            setSelectedTask(null);
+          }}
+          onDelete={(taskId: string) => {
+            // Handle task deletion
+            console.log('Task deleted:', taskId);
+            setSelectedTask(null);
+          }}
+          allTasks={filteredTasks}
+          allProjects={projects}
         />
       )}
     </div>

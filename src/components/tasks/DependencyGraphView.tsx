@@ -46,7 +46,7 @@ const DependencyGraphView: React.FC<DependencyGraphViewProps> = ({
 
   // Layout algorithm - simple force-directed layout
   const { nodes, edges } = useMemo(() => {
-    const taskMap = new Map(tasks.map(t => [t.id, t]));
+    // const taskMap = new Map(tasks.map(t => [t.id, t])); // unused for now
     const nodePositions = new Map<string, { x: number; y: number }>();
     
     // Initialize positions randomly

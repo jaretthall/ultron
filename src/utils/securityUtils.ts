@@ -329,7 +329,7 @@ export const initializeSecurity = (): void => {
     RateLimiter.cleanup();
   }, 60000); // Every minute
 
-  SecurityLogger.logSecurityEvent('security_initialized');
+  SecurityLogger.logSecurityEvent('data_access');
 };
 
 // Export default security configuration

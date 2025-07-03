@@ -230,7 +230,7 @@ const callOpenAIAPI = async (
 };
 
 // Enhanced prompt construction for OpenAI insights
-const constructOpenAIInsightsPrompt = (projects: Project[], tasks: Task[]): string => {
+const _constructOpenAIInsightsPrompt = (projects: Project[], tasks: Task[]): string => {
   return `
 Analyze the following productivity data and provide strategic insights as a JSON response:
 
@@ -467,7 +467,7 @@ Analyze capacity, bottlenecks, work-life balance, and efficiency. Return compreh
 };
 
 // Response parsing utilities
-const parseOpenAIResponse = (response: OpenAIResponse): { blocked_tasks: Task[]; projects_needing_attention: Project[]; recommendations: string[] } => {
+const _parseOpenAIResponse = (response: OpenAIResponse): { blocked_tasks: Task[]; projects_needing_attention: Project[]; recommendations: string[] } => {
   try {
     const content = response.choices[0].message.content;
     const parsed = JSON.parse(content);

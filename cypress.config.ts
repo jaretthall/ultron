@@ -8,7 +8,7 @@ export default defineConfig({
     specPattern: 'cypress/e2e/**/*.cy.ts',
     video: false, // Disable video recording for faster tests locally
     screenshotOnRunFailure: true,
-    setupNodeEvents(on, config) {
+    setupNodeEvents(_on, _config) {
       // implement node event listeners here
     },
   },

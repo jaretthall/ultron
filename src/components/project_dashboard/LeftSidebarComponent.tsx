@@ -1,6 +1,6 @@
 import React from 'react';
 import { Project } from '../../../types';
-import { calculateProjectCompletion, calculateUrgencyScore } from '../../utils/projectUtils';
+import { calculateUrgencyScore } from '../../utils/projectUtils';
 
 interface LeftSidebarComponentProps {
   projects: Project[];

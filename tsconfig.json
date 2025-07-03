@@ -20,8 +20,8 @@
     "paths": {
       "*": ["types/*"]
     },
-    "types": ["jest", "@testing-library/jest-dom", "node"]
+    "types": ["node"]
   },
   "include": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
-  "exclude": ["node_modules", "dist", "build"]
+  "exclude": ["node_modules", "dist", "build", "cypress", "**/*.test.ts", "**/*.test.tsx", "**/__tests__/**"]
 }

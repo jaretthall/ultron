@@ -313,12 +313,7 @@ const AppWithAuthContent: React.FC = () => {
           <Route path="/" element={
             state.userPreferences ? (
               <HomePage 
-                projects={state.projects}
-                tasks={state.tasks}
-                userPreferences={state.userPreferences}
-                onAddTask={handleAddTask}
-                allProjects={state.projects}
-                onAddProject={handleAddProject}
+                onNavigate={() => {}}
               />
             ) : (
               <div className="flex items-center justify-center h-96">
@@ -352,13 +347,13 @@ const AppWithAuthContent: React.FC = () => {
             />
           } />
           <Route path="/calendar" element={<CalendarPage />} />
-          <Route path="/documents" element={<DocumentsPage />} />
+          <Route path="/documents" element={<DocumentsPage onNavigate={() => {}} />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/ai" element={
             <AIDashboard />
           } />
           <Route path="/analytics" element={
-            <AnalyticsDashboard />
+            <AnalyticsDashboard onNavigate={() => {}} />
           } />
         </Routes>
       </main>

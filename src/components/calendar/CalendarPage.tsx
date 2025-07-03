@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { Task, TaskStatus } from '../../../types';
+import { Task, /*TaskStatus*/ } from '../../../types';
+import { useAppState } from '../../contexts/AppStateContext';
+import { formatDateForInput, isSameDate } from '../../utils/dateUtils';
 import NewTaskModal from '../tasks/NewTaskModal';
 import TaskScheduler from './TaskScheduler';
 import WorkingHoursManager from './WorkingHoursManager';
 import FocusBlockManager from './FocusBlockManager';
-import EditTaskModal from '../tasks/EditTaskModal';
-import { useAppState } from '../../contexts/AppStateContext';
-import { formatDateForInput, isSameDate } from '../../utils/dateUtils';
+// import EditTaskModal from '../tasks/EditTaskModal';
 
 const PlusIcon: React.FC = () => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
@@ -14,14 +14,17 @@ const PlusIcon: React.FC = () => (
   </svg>
 );
 
-const CalendarPage: React.FC = () => {
-  const { state, updateTask } = useAppState();
-  const { tasks, projects } = state;
+interface CalendarPageProps {
+  onTaskClick?: (task: Task) => void;
+  onEditTask?: (task: Task) => void;
+}
 
-  const [currentMonth, setCurrentMonth] = useState(new Date(2025, 5, 1));
-  const [editingTask, setEditingTask] = useState<Task | null>(null);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date(2025, 5, 6));
-  const [isNewTaskModalOpen, setIsNewTaskModalOpen] = useState(false);
+const CalendarPage: React.FC<CalendarPageProps> = ({ onTaskClick, onEditTask }) => {
+  const { state, /*updateTask,*/ addTask } = useAppState();
+  const { tasks, projects } = state;
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [showNewTaskModal, setShowNewTaskModal] = useState(false);
   const [isTaskSchedulerOpen, setIsTaskSchedulerOpen] = useState(false);
   const [isWorkingHoursOpen, setIsWorkingHoursOpen] = useState(false);
   const [isFocusBlockManagerOpen, setIsFocusBlockManagerOpen] = useState(false);
@@ -37,8 +40,8 @@ const CalendarPage: React.FC = () => {
   };
 
   const renderCalendarGrid = () => {
-    const year = currentMonth.getFullYear();
-    const month = currentMonth.getMonth();
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
     const numDays = getDaysInMonth(year, month);
     const firstDay = getFirstDayOfMonth(year, month);
     const cells = [];
@@ -81,21 +84,40 @@ const CalendarPage: React.FC = () => {
   };
 
   const prevMonth = () => {
-    setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
+    setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
   };
   const nextMonth = () => {
-    setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
+    setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
   };
   const goToToday = () => {
     const today = new Date();
-    setCurrentMonth(new Date(today.getFullYear(), today.getMonth(), 1));
+    setCurrentDate(new Date(today.getFullYear(), today.getMonth(), 1));
     setSelectedDate(today);
   }
 
   const tasksForSelectedDate = selectedDate ? tasks.filter(task => task.due_date && isSameDate(task.due_date, selectedDate)) : [];
 
-  const handleAddTask = (newTask: Task) => {
-    dispatch({type: ActionType.ADD_TASK, payload: newTask});
+  // Default handlers if not provided as props
+  const handleTaskClick = onTaskClick || ((task: Task) => {
+    console.log('Task clicked:', task.title);
+  });
+
+  const handleEditTask = onEditTask || ((task: Task) => {
+    console.log('Edit task:', task.title);
+  });
+
+  const handleMarkComplete = (task: Task) => {
+    console.log('Mark complete:', task.title);
+    // updateTask({ ...task, status: 'completed' });
+  };
+
+  const handleAddTask = async (taskData: Omit<Task, 'id' | 'created_at' | 'updated_at'>) => {
+    try {
+      await addTask(taskData);
+      setShowNewTaskModal(false);
+    } catch (error) {
+      console.error('Error adding task:', error);
+    }
   };
 
   return (
@@ -139,7 +161,7 @@ const CalendarPage: React.FC = () => {
               Focus Blocks
             </button>
             <button
-              onClick={() => setIsNewTaskModalOpen(true)}
+              onClick={() => setShowNewTaskModal(true)}
               className="bg-sky-600 hover:bg-sky-700 text-white font-medium py-2 px-4 rounded-lg flex items-center text-sm"
               aria-label="Add New Task"
             >
@@ -150,7 +172,7 @@ const CalendarPage: React.FC = () => {
 
         <div className="flex items-center justify-between mb-4 bg-slate-800 p-3 rounded-t-lg">
           <h2 className="text-xl font-semibold">
-            {currentMonth.toLocaleString('default', { month: 'long' })} {currentMonth.getFullYear()}
+            {currentDate.toLocaleString('default', { month: 'long' })} {currentDate.getFullYear()}
           </h2>
           <div className="flex items-center space-x-2">
             <button onClick={prevMonth} className="p-2 rounded-md hover:bg-slate-700" aria-label="Previous month">
@@ -238,23 +260,23 @@ const CalendarPage: React.FC = () => {
           )}
         </div>
       </aside>
-      {isNewTaskModalOpen && (
+      {showNewTaskModal && (
         <NewTaskModal
-            isOpen={isNewTaskModalOpen}
-            onClose={() => setIsNewTaskModalOpen(false)}
+            isOpen={showNewTaskModal}
+            onClose={() => setShowNewTaskModal(false)}
             onAddTask={handleAddTask}
             projects={projects}
             defaultDueDate={formatDateForInput(selectedDate)}
         />
       )}
       
-      {isTaskSchedulerOpen && selectedDate && (
+      {isTaskSchedulerOpen && (
         <TaskScheduler
-          selectedDate={selectedDate}
+          task={selectedDate ? tasks.find(task => isSameDate(task.due_date, selectedDate)) || tasks[0] : tasks[0]}
+          selectedDate={selectedDate || new Date()}
           onClose={() => setIsTaskSchedulerOpen(false)}
-          onScheduleUpdate={(scheduledTasks) => {
-            console.log('Scheduled tasks:', scheduledTasks);
-            // TODO: Implement task scheduling persistence
+          onScheduleUpdate={(scheduledTask: Task) => {
+            console.log('Task scheduled:', scheduledTask);
             setIsTaskSchedulerOpen(false);
           }}
         />
@@ -262,7 +284,11 @@ const CalendarPage: React.FC = () => {
 
       {isWorkingHoursOpen && (
         <WorkingHoursManager
-          onClose={() => setIsWorkingHoursOpen(false)}
+          userPreferences={state.userPreferences!}
+          onUpdate={(updatedPreferences) => {
+            console.log('Updated preferences:', updatedPreferences);
+            setIsWorkingHoursOpen(false);
+          }}
         />
       )}
 

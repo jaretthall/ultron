@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Task, UserPreferences } from '../../../types';
-import { useAppContext } from '../../state/AppStateContext';
-import { tasksService } from '../../../services/databaseService';
+import { Task, /*UserPreferences*/ } from '../../../types';
+import { useAppState } from '../../contexts/AppStateContext';
+// import { tasksService } from '../../../services/databaseService';
 
 interface FocusBlockManagerProps {
   onClose?: () => void;
@@ -67,7 +67,7 @@ const focusSessionTypes: FocusSession[] = [
 ];
 
 const FocusBlockManager: React.FC<FocusBlockManagerProps> = ({ onClose }) => {
-  const { state } = useAppContext();
+  const { state } = useAppState();
   const { userPreferences } = state;
 
   const [focusBlocks, setFocusBlocks] = useState<FocusBlock[]>([]);
@@ -140,7 +140,7 @@ const FocusBlockManager: React.FC<FocusBlockManagerProps> = ({ onClose }) => {
       
       if (userPreferences.business_days?.includes(dayOfWeek as any)) {
         const businessStart = userPreferences.business_hours_start || '09:00';
-        const businessEnd = userPreferences.business_hours_end || '17:00';
+        // const businessEnd = userPreferences.business_hours_end || '17:00';
         
         // Generate 2-3 focus blocks per day
         const morningBlock: Partial<FocusBlock> = {

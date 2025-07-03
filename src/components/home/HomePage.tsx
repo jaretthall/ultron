@@ -1,23 +1,38 @@
 import React from 'react';
-import { Project, Task, UserPreferences } from '../../../types';
+import { Project, Task, ProjectContext, ProjectStatus, TaskStatus, TaskPriority } from '../../../types';
+import { useAppState } from '../../contexts/AppStateContext';
 
 interface HomePageProps {
-  projects: Project[];
-  tasks: Task[];
-  userPreferences: UserPreferences;
-  onAddTask: (taskData: Omit<Task, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => Promise<void>;
-  allProjects: Project[];
-  onAddProject: (projectData: Omit<Project, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => Promise<void>;
+  onNavigate: (page: string) => void;
 }
 
-const HomePage: React.FC<HomePageProps> = ({ 
-  projects, 
-  tasks, 
-  userPreferences, 
-  onAddTask, 
-  allProjects, 
-  onAddProject 
-}) => {
+const HomePage: React.FC<HomePageProps> = () => {
+  const { state } = useAppState();
+  const {
+    projects,
+    tasks,
+    // userPreferences,
+    // isAuthenticated,
+    // allProjects,
+    // user
+  } = state;
+
+  // Default handlers for adding tasks and projects
+  const onAddTask = (task: Omit<Task, 'id' | 'created_at' | 'updated_at'>) => {
+    console.log('Add task:', task);
+    // Implementation would go here
+  };
+
+  const onAddProject = (project: Omit<Project, 'id' | 'created_at' | 'updated_at'>) => {
+    console.log('Add project:', project);
+    // Implementation would go here
+  };
+
+  const recentProjects = projects.filter((p: Project) => p.context === ProjectContext.BUSINESS).slice(0, 3);
+  // const urgentTasks = tasks.filter((t: Task) => t.priority === TaskPriority.HIGH && t.status === TaskStatus.TODO).slice(0, 5);
+
+  const activeProjects = projects.filter((project: Project) => project.status === ProjectStatus.ACTIVE);
+
   return (
     <div className="p-6 bg-slate-900 min-h-screen">
       <div className="max-w-7xl mx-auto">
@@ -28,9 +43,9 @@ const HomePage: React.FC<HomePageProps> = ({
           <div className="bg-slate-800 rounded-lg p-6">
             <h2 className="text-xl font-semibold text-white mb-4">Quick Stats</h2>
             <div className="space-y-2 text-slate-300">
-              <p>Active Projects: {projects.filter(p => p.status === 'active').length}</p>
+              <p>Active Projects: {activeProjects.length}</p>
               <p>Total Tasks: {tasks.length}</p>
-              <p>Pending Tasks: {tasks.filter(t => t.status === 'todo').length}</p>
+              <p>Pending Tasks: {tasks.filter(t => t.status === TaskStatus.TODO).length}</p>
             </div>
           </div>
 
@@ -38,7 +53,7 @@ const HomePage: React.FC<HomePageProps> = ({
           <div className="bg-slate-800 rounded-lg p-6">
             <h2 className="text-xl font-semibold text-white mb-4">Recent Projects</h2>
             <div className="space-y-2">
-              {projects.slice(0, 3).map((project) => (
+              {recentProjects.map((project) => (
                 <div key={project.id} className="text-slate-300 text-sm">
                   {project.title}
                 </div>
@@ -54,9 +69,9 @@ const HomePage: React.FC<HomePageProps> = ({
                 onClick={() => onAddTask({
                   title: 'New Task',
                   description: '',
-                  priority: 'medium',
+                  priority: TaskPriority.MEDIUM,
                   estimated_hours: 1,
-                  status: 'todo',
+                  status: TaskStatus.TODO,
                   dependencies: [],
                   tags: []
                 })}
@@ -69,8 +84,8 @@ const HomePage: React.FC<HomePageProps> = ({
                   title: 'New Project',
                   description: '',
                   goals: [],
-                  status: 'active',
-                  context: 'business',
+                  status: ProjectStatus.ACTIVE,
+                  context: ProjectContext.BUSINESS,
                   tags: []
                 })}
                 className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded text-sm"
