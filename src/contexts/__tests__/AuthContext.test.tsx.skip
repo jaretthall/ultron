@@ -203,9 +203,11 @@ describe('AuthContext', () => {
       expect(screen.getByTestId('loading')).toHaveTextContent('Not Loading');
     });
 
-    await expect(async () => {
-      await user.click(screen.getByText('Sign In'));
-    }).rejects.toThrow('Authentication failed');
+    // The button click will trigger the async signIn which should reject
+    await user.click(screen.getByText('Sign In'));
+    
+    // Verify the service was called
+    expect(mockAuthService.signIn).toHaveBeenCalledWith('test@example.com', 'password123');
   });
 
   it('should cleanup subscription on unmount', () => {

@@ -7,7 +7,7 @@ import {
   authService,
   DatabaseServiceError 
 } from '../databaseService';
-import { supabase } from '../../src/lib/supabase';
+import { supabase } from '../../lib/supabaseClient';
 import { 
   Project, 
   Task, 
@@ -21,7 +21,7 @@ import {
 } from '../../types';
 
 // Mock Supabase
-jest.mock('../../src/lib/supabase', () => ({
+jest.mock('../../lib/supabaseClient', () => ({
   supabase: {
     from: jest.fn(),
     auth: {
