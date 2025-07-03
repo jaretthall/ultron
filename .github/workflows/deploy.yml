@@ -34,8 +34,27 @@ jobs:
     - name: Run unit tests
       run: npm run test:ci
       
-    - name: Run E2E tests
-      run: npm run test:e2e:ci
+    - name: Build application for E2E tests
+      run: npm run build
+      
+    - name: Start server and run E2E tests
+      run: |
+        # Start the preview server in background
+        npm run preview &
+        SERVER_PID=$!
+        
+        # Wait for server to be ready
+        echo "Waiting for server to start..."
+        npx wait-on http://localhost:4173 --timeout 60000
+        
+        # Update Cypress baseUrl to use preview server
+        export CYPRESS_BASE_URL=http://localhost:4173
+        
+        # Run E2E tests
+        npm run test:e2e:ci
+        
+        # Clean up: kill the server
+        kill $SERVER_PID || true
       
     - name: Upload test results
       uses: actions/upload-artifact@v4
