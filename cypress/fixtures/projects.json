@@ -1,0 +1,25 @@
+{
+  "validProject": {
+    "title": "Test Project",
+    "description": "A test project for E2E testing",
+    "goals": ["Complete testing", "Improve coverage"],
+    "context": "business",
+    "status": "active",
+    "deadline": "2024-12-31T23:59:59.000Z",
+    "tags": ["testing", "automation"]
+  },
+  "invalidProject": {
+    "title": "",
+    "description": "Invalid project with empty title",
+    "context": "business"
+  },
+  "updatedProject": {
+    "title": "Updated Test Project",
+    "description": "Updated description for test project",
+    "goals": ["Complete testing", "Improve coverage", "Add new features"],
+    "context": "personal",
+    "status": "active",
+    "deadline": "2024-12-31T23:59:59.000Z",
+    "tags": ["testing", "automation", "updated"]
+  }
+} 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1751508013122" clover="3.2.0">
-  <project timestamp="1751508013122" name="All files">
-    <metrics statements="4329" coveredstatements="200" conditionals="2561" coveredconditionals="57" methods="1311" coveredmethods="50" elements="8201" coveredelements="307" complexity="0" loc="4329" ncloc="4329" packages="18" files="60" classes="60"/>
+<coverage generated="1751509618097" clover="3.2.0">
+  <project timestamp="1751509618097" name="All files">
+    <metrics statements="4349" coveredstatements="200" conditionals="2569" coveredconditionals="57" methods="1314" coveredmethods="50" elements="8232" coveredelements="307" complexity="0" loc="4349" ncloc="4349" packages="18" files="60" classes="60"/>
     <package name="services">
       <metrics statements="721" coveredstatements="47" conditionals="486" coveredconditionals="18" methods="197" coveredmethods="4"/>
       <file name="analyticsService.ts" path="C:\Users\JarettHall\Programming\Ultron\services\analyticsService.ts">
@@ -739,14 +739,24 @@
       </file>
     </package>
     <package name="src">
-      <metrics statements="5" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>
+      <metrics statements="15" coveredstatements="0" conditionals="2" coveredconditionals="0" methods="2" coveredmethods="0"/>
       <file name="App.tsx" path="C:\Users\JarettHall\Programming\Ultron\src\App.tsx">
-        <metrics statements="5" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>
+        <metrics statements="15" coveredstatements="0" conditionals="2" coveredconditionals="0" methods="2" coveredmethods="0"/>
         <line num="1" count="0" type="stmt"/>
         <line num="2" count="0" type="stmt"/>
+        <line num="3" count="0" type="stmt"/>
         <line num="4" count="0" type="stmt"/>
         <line num="5" count="0" type="stmt"/>
-        <line num="12" count="0" type="stmt"/>
+        <line num="7" count="0" type="stmt"/>
+        <line num="8" count="0" type="stmt"/>
+        <line num="10" count="0" type="cond" truecount="0" falsecount="1"/>
+        <line num="11" count="0" type="stmt"/>
+        <line num="18" count="0" type="cond" truecount="0" falsecount="1"/>
+        <line num="19" count="0" type="stmt"/>
+        <line num="22" count="0" type="stmt"/>
+        <line num="25" count="0" type="stmt"/>
+        <line num="26" count="0" type="stmt"/>
+        <line num="33" count="0" type="stmt"/>
       </file>
     </package>
     <package name="src.components">
@@ -1274,9 +1284,9 @@
       </file>
     </package>
     <package name="src.components.auth">
-      <metrics statements="50" coveredstatements="0" conditionals="41" coveredconditionals="0" methods="6" coveredmethods="0"/>
+      <metrics statements="50" coveredstatements="0" conditionals="45" coveredconditionals="0" methods="6" coveredmethods="0"/>
       <file name="AuthForm.tsx" path="C:\Users\JarettHall\Programming\Ultron\src\components\auth\AuthForm.tsx">
-        <metrics statements="50" coveredstatements="0" conditionals="41" coveredconditionals="0" methods="6" coveredmethods="0"/>
+        <metrics statements="50" coveredstatements="0" conditionals="45" coveredconditionals="0" methods="6" coveredmethods="0"/>
         <line num="1" count="0" type="stmt"/>
         <line num="2" count="0" type="stmt"/>
         <line num="8" count="0" type="stmt"/>
@@ -1324,9 +1334,9 @@
         <line num="67" count="0" type="stmt"/>
         <line num="70" count="0" type="stmt"/>
         <line num="100" count="0" type="stmt"/>
-        <line num="118" count="0" type="stmt"/>
-        <line num="137" count="0" type="stmt"/>
-        <line num="225" count="0" type="stmt"/>
+        <line num="119" count="0" type="stmt"/>
+        <line num="139" count="0" type="stmt"/>
+        <line num="230" count="0" type="stmt"/>
       </file>
     </package>
     <package name="src.components.calendar">
@@ -2011,14 +2021,24 @@
       </file>
     </package>
     <package name="src.components.project_dashboard">
-      <metrics statements="92" coveredstatements="0" conditionals="119" coveredconditionals="0" methods="40" coveredmethods="0"/>
+      <metrics statements="102" coveredstatements="0" conditionals="121" coveredconditionals="0" methods="42" coveredmethods="0"/>
       <file name="HeaderComponent.tsx" path="C:\Users\JarettHall\Programming\Ultron\src\components\project_dashboard\HeaderComponent.tsx">
-        <metrics statements="5" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="0"/>
+        <metrics statements="15" coveredstatements="0" conditionals="2" coveredconditionals="0" methods="4" coveredmethods="0"/>
         <line num="1" count="0" type="stmt"/>
-        <line num="8" count="0" type="stmt"/>
-        <line num="12" count="0" type="stmt"/>
-        <line num="32" count="0" type="stmt"/>
+        <line num="2" count="0" type="stmt"/>
+        <line num="3" count="0" type="stmt"/>
+        <line num="10" count="0" type="stmt"/>
+        <line num="14" count="0" type="stmt"/>
+        <line num="15" count="0" type="stmt"/>
+        <line num="17" count="0" type="stmt"/>
+        <line num="18" count="0" type="stmt"/>
+        <line num="19" count="0" type="stmt"/>
+        <line num="26" count="0" type="stmt"/>
         <line num="47" count="0" type="stmt"/>
+        <line num="64" count="0" type="stmt"/>
+        <line num="65" count="0" type="stmt"/>
+        <line num="67" count="0" type="stmt"/>
+        <line num="83" count="0" type="stmt"/>
       </file>
       <file name="LeftSidebarComponent.tsx" path="C:\Users\JarettHall\Programming\Ultron\src\components\project_dashboard\LeftSidebarComponent.tsx">
         <metrics statements="10" coveredstatements="0" conditionals="49" coveredconditionals="0" methods="3" coveredmethods="0"/>

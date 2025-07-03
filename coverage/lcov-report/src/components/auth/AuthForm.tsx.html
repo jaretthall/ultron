@@ -32,7 +32,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/41</span>
+                <span class='fraction'>0/45</span>
             </div>
         
             
@@ -287,7 +287,12 @@
 <a name='L222'></a><a href='#L222'>222</a>
 <a name='L223'></a><a href='#L223'>223</a>
 <a name='L224'></a><a href='#L224'>224</a>
-<a name='L225'></a><a href='#L225'>225</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L225'></a><a href='#L225'>225</a>
+<a name='L226'></a><a href='#L226'>226</a>
+<a name='L227'></a><a href='#L227'>227</a>
+<a name='L228'></a><a href='#L228'>228</a>
+<a name='L229'></a><a href='#L229'>229</a>
+<a name='L230'></a><a href='#L230'>230</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -404,26 +409,31 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -597,7 +607,7 @@ const AuthForm: React.FC&lt;AuthFormProps&gt; = <span class="cstat-no" title="st
           &lt;/p&gt;
         &lt;/div&gt;
 &nbsp;
-        &lt;form className="mt-8 space-y-6" onSubmit={handleSubmit}&gt;
+        &lt;form className="mt-8 space-y-6" onSubmit={handleSubmit} data-testid="auth-form"&gt;
           &lt;div className="space-y-4"&gt;
             &lt;div&gt;
               &lt;label htmlFor="email" className="block text-sm font-medium text-gray-700"&gt;
@@ -614,6 +624,7 @@ const AuthForm: React.FC&lt;AuthFormProps&gt; = <span class="cstat-no" title="st
                 className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 placeholder="Enter your email"
                 disabled={isSubmitting || loading}
+                data-testid="email-input"
               /&gt;
             &lt;/div&gt;
 &nbsp;
@@ -632,6 +643,7 @@ const AuthForm: React.FC&lt;AuthFormProps&gt; = <span class="cstat-no" title="st
                 className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                 placeholder="Enter your password"
                 disabled={isSubmitting || loading}
+                data-testid="password-input"
               /&gt;
             &lt;/div&gt;
 &nbsp;
@@ -651,6 +663,7 @@ const AuthForm: React.FC&lt;AuthFormProps&gt; = <span class="cstat-no" title="st
                   className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                   placeholder="Confirm your password"
                   disabled={isSubmitting || loading}
+                  data-testid="confirm-password-input"
                 /&gt;
               &lt;/div&gt;
             )}
@@ -701,6 +714,7 @@ const AuthForm: React.FC&lt;AuthFormProps&gt; = <span class="cstat-no" title="st
               type="submit"
               disabled={isSubmitting || loading}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              data-testid={isLogin ? "submit-signin" : "submit-signup"}
             &gt;
               {isSubmitting || loading ? (
                 &lt;div className="flex items-center"&gt;
@@ -722,6 +736,7 @@ const AuthForm: React.FC&lt;AuthFormProps&gt; = <span class="cstat-no" title="st
               onClick={toggleMode}
               className="text-sm text-blue-600 hover:text-blue-500"
               disabled={isSubmitting || loading}
+              data-testid={isLogin ? "sign-up-button" : "sign-in-button"}
             &gt;
               {isLogin 
                 ? "Don't have an account? Sign up" 
@@ -742,7 +757,7 @@ const AuthForm: React.FC&lt;AuthFormProps&gt; = <span class="cstat-no" title="st
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-07-03T02:00:12.914Z
+                at 2025-07-03T02:26:57.883Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

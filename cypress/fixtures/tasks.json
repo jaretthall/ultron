@@ -1,0 +1,27 @@
+{
+  "validTask": {
+    "title": "Test Task",
+    "description": "A test task for E2E testing",
+    "priority": "medium",
+    "status": "todo",
+    "estimated_hours": 2,
+    "tags": ["testing", "automation"],
+    "dependencies": [],
+    "energy_level": "medium"
+  },
+  "invalidTask": {
+    "title": "",
+    "description": "Invalid task with empty title",
+    "priority": "medium"
+  },
+  "updatedTask": {
+    "title": "Updated Test Task",
+    "description": "Updated description for test task",
+    "priority": "high",
+    "status": "in-progress",
+    "estimated_hours": 3,
+    "tags": ["testing", "automation", "updated"],
+    "dependencies": [],
+    "energy_level": "high"
+  }
+} 

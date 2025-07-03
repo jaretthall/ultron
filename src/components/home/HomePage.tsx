@@ -36,7 +36,7 @@ const HomePage: React.FC<HomePageProps> = () => {
   return (
     <div className="p-6 bg-slate-900 min-h-screen">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-white mb-6">Welcome to Ultron</h1>
+        <h1 className="text-3xl font-bold text-white mb-6">Dashboard</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           
           {/* Quick Stats */}
@@ -88,9 +88,9 @@ const HomePage: React.FC<HomePageProps> = () => {
                   context: ProjectContext.BUSINESS,
                   tags: []
                 })}
-                className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded text-sm"
+                className="text-sm text-blue-600 hover:text-blue-500"
               >
-                Add New Project
+                New Project
               </button>
             </div>
           </div>
