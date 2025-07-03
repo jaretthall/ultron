@@ -111,27 +111,13 @@ export interface EfficiencyMetrics {
   multitasking_overhead: number;
 }
 
-// Get API key from environment variable (Vite requires VITE_ prefix)
-const getGeminiApiKey = (): string | null => {
-  // In Vite, environment variables need VITE_ prefix to be accessible in browser
-  // Using any type to access env since Vite types aren't available
-  const env = (import.meta as any).env;
-  const envKey = env?.VITE_GEMINI_API_KEY || env?.VITE_API_KEY;
-  return envKey || null;
-};
+
 
 // Initialize AI client with API key
 // Note: Gemini client initialization moved to service initialization
 
 
-const _constructPrompt = (projects: Project[], tasks: Task[]): string => {
-  return `Analyze the following project and task data and provide strategic insights:
-  
-Projects: ${JSON.stringify(projects, null, 2)}
-Tasks: ${JSON.stringify(tasks, null, 2)}
 
-Return insights in JSON format with: blocked_tasks, projects_needing_attention, focus_recommendations, priority_balance_score`;
-};
 
 export const generateStrategicInsights = async (
   projects: Project[],

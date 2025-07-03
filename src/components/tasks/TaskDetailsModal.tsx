@@ -7,8 +7,6 @@ import { getTaskDependencyStats, /*buildDependencyGraph*/ } from '../../utils/de
 interface TaskDetailsModalProps {
   task: Task;
   onClose: () => void;
-  onUpdate: (task: Task) => void;
-  onDelete: (taskId: string) => void;
   allTasks: Task[];
   allProjects: Project[];
   isOpen: boolean;
@@ -54,8 +52,6 @@ const TrashIcon = () => (
 const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
   task,
   onClose,
-  onUpdate,
-  onDelete,
   allTasks,
   // allProjects,
   isOpen
@@ -67,16 +63,6 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
   const [dependencies, setDependencies] = useState<Task[]>([]);
   const [dependents, setDependents] = useState<Task[]>([]);
   const [error, setError] = useState<string | null>(null);
-
-  // Form data state for editing
-  const [formData] = useState({
-    title: task.title,
-    description: task.description || '',
-    priority: task.priority,
-    status: task.status,
-    due_date: task.due_date || '',
-    estimated_hours: task.estimated_hours || 0
-  });
 
   // Calculate dependency statistics
   const dependencyStats = useMemo(() => {

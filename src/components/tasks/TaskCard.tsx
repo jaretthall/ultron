@@ -41,10 +41,6 @@ const DeleteIconSmall: React.FC = () => (
 );
 
 const TaskCard: React.FC<TaskCardProps> = ({ task, projectTitle, onEditTaskRequest, onDeleteTask }) => {
-  const handleCardClick = () => {
-    onEditTaskRequest(task);
-  };
-
   return (
     <div 
       className={`bg-slate-800 p-4 rounded-lg shadow-md hover:shadow-sky-500/30 transition-all border-l-4 ${getStatusBorderClass(task.status)} flex flex-col justify-between min-h-[200px] hover:scale-[1.02] hover:bg-slate-750 group`}

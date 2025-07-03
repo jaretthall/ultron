@@ -88,41 +88,7 @@ const TagSearch: React.FC<TagSearchProps> = ({
     }
   };
 
-  const _performSearch = async () => {
-    if (selectedTags.length === 0) {
-      const emptyResults = {
-        projects: [],
-        tasks: [],
-        totalResults: 0,
-        selectedTags: []
-      };
-      setSearchResults(emptyResults);
-      onResultsChange(emptyResults);
-      return;
-    }
 
-    try {
-      setIsSearching(true);
-      const results = await tagFilteringService.getEntitiesByTags(selectedTags, {
-        entityTypes,
-        matchType: matchTypeState
-      });
-
-      const searchResults = {
-        projects: results.projects,
-        tasks: results.tasks,
-        totalResults: results.totalMatches,
-        selectedTags: [...selectedTags]
-      };
-
-      setSearchResults(searchResults);
-      onResultsChange(searchResults);
-    } catch (error) {
-      console.error('Error performing tag search:', error);
-    } finally {
-      setIsSearching(false);
-    }
-  };
 
   const handleTagSelect = (tagName: string) => {
     if (!selectedTags.includes(tagName)) {

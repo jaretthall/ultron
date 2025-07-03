@@ -41,10 +41,6 @@ const DeleteIconSmall: React.FC = () => (
 );
 
 const TaskItem: React.FC<TaskItemProps> = ({ task, projectTitle, onEditTaskRequest, onDeleteTask }) => {
-  const handleItemClick = () => {
-    onEditTaskRequest(task);
-  };
-
   return (
     <div 
       className="bg-slate-800 p-4 rounded-lg shadow-md hover:bg-slate-700/70 transition-all group hover:shadow-sky-500/20 hover:scale-[1.01]"

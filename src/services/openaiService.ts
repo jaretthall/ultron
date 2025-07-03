@@ -229,52 +229,7 @@ const callOpenAIAPI = async (
   return response.json() as Promise<OpenAIResponse>;
 };
 
-// Enhanced prompt construction for OpenAI insights
-const _constructOpenAIInsightsPrompt = (projects: Project[], tasks: Task[]): string => {
-  return `
-Analyze the following productivity data and provide strategic insights as a JSON response:
 
-PROJECTS (${projects.length} total):
-${JSON.stringify(projects, null, 2)}
-
-TASKS (${tasks.length} total):
-${JSON.stringify(tasks, null, 2)}
-
-Identify and analyze:
-
-1. BLOCKED TASKS: Tasks that cannot proceed due to dependencies, missing resources, or other blockers
-2. PROJECTS NEEDING ATTENTION: Projects that are at risk, behind schedule, or require immediate action
-3. STRATEGIC RECOMMENDATIONS: Actionable recommendations for improving productivity and project success
-
-Return your analysis as a JSON object with this exact structure:
-{
-  "blocked_tasks": [
-    {
-      "id": "task_id",
-      "title": "task_title",
-      "reason": "why this task is blocked",
-      "suggestions": ["suggestion1", "suggestion2"]
-    }
-  ],
-  "projects_needing_attention": [
-    {
-      "id": "project_id",
-      "title": "project_title",
-      "urgency_level": "high|medium|low",
-      "issues": ["issue1", "issue2"],
-      "recommended_actions": ["action1", "action2"]
-    }
-  ],
-  "recommendations": [
-    "Strategic recommendation 1",
-    "Strategic recommendation 2",
-    "Strategic recommendation 3"
-  ]
-}
-
-Focus on providing actionable, specific insights that will help improve productivity and project outcomes.
-`;
-};
 
 // Enhanced prompt construction for OpenAI daily planning
 const constructOpenAIDailyPlanPrompt = (
@@ -466,26 +421,7 @@ Analyze capacity, bottlenecks, work-life balance, and efficiency. Return compreh
 `;
 };
 
-// Response parsing utilities
-const _parseOpenAIResponse = (response: OpenAIResponse): { blocked_tasks: Task[]; projects_needing_attention: Project[]; recommendations: string[] } => {
-  try {
-    const content = response.choices[0].message.content;
-    const parsed = JSON.parse(content);
-    
-    return {
-      blocked_tasks: parsed.blocked_tasks || [],
-      projects_needing_attention: parsed.projects_needing_attention || [],
-      recommendations: parsed.recommendations || ['OpenAI analysis completed successfully.']
-    };
-  } catch (error) {
-    console.error('Error parsing OpenAI response:', error);
-    return {
-      blocked_tasks: [],
-      projects_needing_attention: [],
-      recommendations: ['Error parsing OpenAI response. Check API configuration.']
-    };
-  }
-};
+
 
 const parseOpenAIDailyPlanResponse = (response: OpenAIResponse): DailyPlan => {
   try {
