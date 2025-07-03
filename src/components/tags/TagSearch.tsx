@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Tag } from '../../../types';
-import { tagsService, tagFilteringService } from '../../../services/databaseService';
+import { tagsService } from '../../../services/databaseService';
 import { useAppState } from '../../contexts/AppStateContext';
 
 interface TagSearchProps {
@@ -17,7 +17,6 @@ interface TagSearchProps {
 }
 
 const TagSearch: React.FC<TagSearchProps> = ({
-  onResultsChange,
   entityTypes = ['projects', 'tasks'],
   matchType = 'any',
   placeholder = "Search by tags...",
@@ -30,7 +29,7 @@ const TagSearch: React.FC<TagSearchProps> = ({
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [availableTags, setAvailableTags] = useState<Tag[]>([]);
   const [filteredTags, setFilteredTags] = useState<Tag[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
+
   const [showDropdown, setShowDropdown] = useState(false);
   const [matchTypeState, setMatchType] = useState<'any' | 'all'>(matchType);
   const [searchResults, setSearchResults] = useState<{
@@ -223,15 +222,9 @@ const TagSearch: React.FC<TagSearchProps> = ({
       )}
 
       {/* Search Results Summary */}
-      {(selectedTags.length > 0 || isSearching) && (
+      {selectedTags.length > 0 && (
         <div className="bg-gray-50 rounded-lg p-4">
-          {isSearching ? (
-            <div className="flex items-center space-x-2">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-              <span className="text-sm text-gray-600">Searching...</span>
-            </div>
-          ) : (
-            <div className="space-y-2">
+          <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <h4 className="font-medium text-gray-900">Search Results</h4>
                 <span className="text-sm text-gray-600">
@@ -260,7 +253,6 @@ const TagSearch: React.FC<TagSearchProps> = ({
                 </p>
               )}
             </div>
-          )}
         </div>
       )}
 

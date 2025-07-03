@@ -10,6 +10,8 @@ interface TaskDetailsModalProps {
   allTasks: Task[];
   allProjects: Project[];
   isOpen: boolean;
+  onUpdate?: (updatedTask: Task) => void;
+  onDelete?: (taskId: string) => void;
 }
 
 // Icons
