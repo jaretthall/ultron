@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Supabase Authentication Diagnostics</title>
+    <title>Supabase JWT Debug - Ultron</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -142,6 +142,79 @@
                 console.log('Supabase client initialized');
             } catch (error) {
                 setStatus('configStatus', '❌ Failed to initialize Supabase client: ' + error.message, 'error');
+            }
+        }
+
+        function clearAllAuthState() {
+            console.log('🧹 Clearing all authentication state...');
+            
+            // Clear localStorage
+            const keysToRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && (key.includes('supabase') || key.includes('sb-'))) {
+                    keysToRemove.push(key);
+                }
+            }
+            keysToRemove.forEach(key => {
+                console.log('Removing:', key);
+                localStorage.removeItem(key);
+            });
+            
+            // Clear sessionStorage
+            sessionStorage.clear();
+            
+            setStatus('authClearStatus', '✅ Cleared all auth state. Refresh page and try logging in again.', 'success');
+            console.log('✅ Auth state cleared successfully');
+        }
+
+        async function diagnoseJWTError() {
+            console.log('🔍 Diagnosing JWT error...');
+            setStatus('jwtDiagStatus', '🔍 Diagnosing JWT issues...', 'info');
+            
+            if (!supabase) {
+                setStatus('jwtDiagStatus', '❌ Supabase not initialized', 'error');
+                return;
+            }
+
+            try {
+                // Check current session
+                const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+                
+                if (sessionError) {
+                    console.error('Session error:', sessionError);
+                    
+                    if (sessionError.message.includes('JWT') || sessionError.message.includes('invalid')) {
+                        setStatus('jwtDiagStatus', 
+                            `❌ JWT Error detected: ${sessionError.message}<br/>` +
+                            `💡 Click "Clear Auth State" below to fix this issue.`, 'error');
+                    } else {
+                        setStatus('jwtDiagStatus', `❌ Session error: ${sessionError.message}`, 'error');
+                    }
+                    return;
+                }
+
+                // Check user
+                const { data: userData, error: userError } = await supabase.auth.getUser();
+                
+                if (userError) {
+                    console.error('User error:', userError);
+                    
+                    if (userError.message.includes('JWT') || userError.message.includes('invalid')) {
+                        setStatus('jwtDiagStatus', 
+                            `❌ JWT Error in getUser: ${userError.message}<br/>` +
+                            `💡 Click "Clear Auth State" to fix this.`, 'error');
+                    } else {
+                        setStatus('jwtDiagStatus', `❌ User error: ${userError.message}`, 'error');
+                    }
+                    return;
+                }
+
+                setStatus('jwtDiagStatus', '✅ No JWT errors detected', 'success');
+                
+            } catch (error) {
+                console.error('Diagnosis failed:', error);
+                setStatus('jwtDiagStatus', `❌ Diagnosis failed: ${error.message}`, 'error');
             }
         }
 

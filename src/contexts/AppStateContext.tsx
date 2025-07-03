@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect, useCallback, ReactNode } from 'react';
 import { Project, Task, UserPreferences, Tag, TagCategory } from '../../types';
-import { useAuth } from './AuthContext';
+import { useCustomAuth } from './CustomAuthContext';
+import { adaptiveDatabaseService } from '../../services/adaptiveDatabaseService';
 import { 
   projectsService, 
   tasksService, 
@@ -294,7 +295,7 @@ interface AppStateProviderProps {
 
 export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(appStateReducer, initialState);
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useCustomAuth();
 
   // Utility function to generate operation IDs
   const generateOperationId = () => `op_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -336,7 +337,7 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
     
     try {
       const [projects, tasks, preferences, tags, categories] = await Promise.all([
-        projectsService.getAll(),
+        adaptiveDatabaseService.getAllProjects(),
         tasksService.getAll(),
         userPreferencesService.get(),
         tagsService.getAll(),
@@ -402,7 +403,7 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
       dispatch({ type: 'ADD_PROJECT', project: tempProject });
       
       // Create the project in database
-      const createdProject = await projectsService.create(projectData);
+      const createdProject = await adaptiveDatabaseService.createProject(projectData);
       console.log('Project created successfully:', createdProject);
       
       // Replace the temporary project with the real one
@@ -428,7 +429,7 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
       { type: 'UPDATE_PROJECT', project: updatedProject },
       { type: 'UPDATE_PROJECT', project: originalProject },
       async () => {
-        const result = await projectsService.update(id, updates);
+        const result = await adaptiveDatabaseService.updateProject(id, updates);
         dispatch({ type: 'UPDATE_PROJECT', project: result });
       }
     );
@@ -442,7 +443,7 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
       { type: 'DELETE_PROJECT', projectId: id },
       { type: 'ADD_PROJECT', project: projectToDelete },
       async () => {
-        await projectsService.delete(id);
+        await adaptiveDatabaseService.deleteProject(id);
       }
     );
   }, [state.projects]);

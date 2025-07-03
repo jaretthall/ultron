@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabaseClient';
+import { getCustomAuthUser } from '../src/contexts/CustomAuthContext';
 import {
   Project, Task, UserPreferences, Tag, TagCategory,
   ProjectStatus, ProjectContext, TaskPriority, TaskStatus
@@ -70,9 +71,9 @@ export const projectsService = {
   async create(project: Omit<Project, 'id' | 'created_at' | 'updated_at' | 'user_id'>): Promise<Project> {
     if (!supabase) throw new Error('Supabase client not initialized');
     
-    // Get current user
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) {
+    // Get current user from custom auth
+    const user = getCustomAuthUser();
+    if (!user) {
       throw new Error('User not authenticated');
     }
     
@@ -262,9 +263,9 @@ export const tasksService = {
   async create(task: Omit<Task, 'id' | 'created_at' | 'updated_at' | 'user_id'>): Promise<Task> {
     if (!supabase) throw new Error('Supabase client not initialized');
     
-    // Get current user
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) {
+    // Get current user from custom auth
+    const user = getCustomAuthUser();
+    if (!user) {
       throw new Error('User not authenticated');
     }
     
@@ -680,9 +681,9 @@ export const userPreferencesService = {
   async get(): Promise<UserPreferences | null> {
     if (!supabase) throw new Error('Supabase client not initialized');
     
-    // Get current user
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) {
+    // Get current user from custom auth
+    const user = getCustomAuthUser();
+    if (!user) {
       throw new Error('User not authenticated');
     }
     
@@ -702,9 +703,9 @@ export const userPreferencesService = {
   async create(preferences: Omit<UserPreferences, 'id' | 'user_id'>): Promise<UserPreferences> {
     if (!supabase) throw new Error('Supabase client not initialized');
     
-    // Get current user
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) {
+    // Get current user from custom auth
+    const user = getCustomAuthUser();
+    if (!user) {
       throw new Error('User not authenticated');
     }
     
@@ -772,9 +773,9 @@ export const userPreferencesService = {
   async update(updates: Partial<UserPreferences>): Promise<UserPreferences> {
     if (!supabase) throw new Error('Supabase client not initialized');
     
-    // Get current user
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) {
+    // Get current user from custom auth
+    const user = getCustomAuthUser();
+    if (!user) {
       throw new Error('User not authenticated');
     }
     
@@ -1408,9 +1409,29 @@ export const authService = {
   async getCurrentUser() {
     if (!supabase) throw new Error('Supabase client not initialized');
     
-    const { data: { user }, error } = await supabase.auth.getUser();
-    if (error) handleError('getting current user', error);
-    return user;
+    try {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error) {
+        // Handle JWT-specific errors
+        if (error.message.includes('JWT') || error.message.includes('invalid')) {
+          console.warn('JWT error detected, clearing auth state:', error.message);
+          // Clear potentially corrupted auth state
+          localStorage.removeItem('supabase.auth.token');
+          sessionStorage.clear();
+          return null;
+        }
+        handleError('getting current user', error);
+      }
+      return user;
+    } catch (error: any) {
+      if (error.message.includes('JWT') || error.message.includes('invalid')) {
+        console.warn('JWT error in getCurrentUser, clearing auth state');
+        localStorage.removeItem('supabase.auth.token');
+        sessionStorage.clear();
+        return null;
+      }
+      throw error;
+    }
   },
 
   async signUp(email: string, password: string) {

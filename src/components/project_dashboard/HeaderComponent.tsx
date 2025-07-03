@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import { useCustomAuth } from '../../contexts/CustomAuthContext';
 
 interface HeaderComponentProps {
   projectContextFilter: 'all' | 'business' | 'personal';
@@ -12,7 +12,7 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
   onProjectContextFilterChange 
 }) => {
   const location = useLocation();
-  const { signOut } = useAuth();
+  const { signOut } = useCustomAuth();
 
   const getLinkClassName = (path: string) => {
     const isActive = location.pathname === path;

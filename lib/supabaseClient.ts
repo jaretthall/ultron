@@ -3,10 +3,9 @@ import {
   Project, Task, UserPreferences, Tag, TagCategory, Note, Schedule, DocumentFile, Plan
 } from '../types'; // Path should be correct if types.ts is in src/
 
-// Supabase configuration - Update these with your actual values
-// In development, these can be hardcoded. In production, use environment variables.
-const supabaseUrl = typeof window !== 'undefined' && (window as any).VITE_SUPABASE_URL || 'https://mldklirjxxxegcxyweug.supabase.co';
-const supabaseAnonKey = typeof window !== 'undefined' && (window as any).VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1sZGtsaXJqeHh4ZWdjeHl3ZXVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkwNzg4NDUsImV4cCI6MjA2NDY1NDg0NX0.CXeXX_ltTy4GWTloUr2LmjENXQ5bDF7F18TDlVHUcR4';
+// Supabase configuration - Prioritize environment variables
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 const SUPABASE_URL_PLACEHOLDER = 'YOUR_SUPABASE_URL_PLACEHOLDER';
 const SUPABASE_ANON_KEY_PLACEHOLDER = 'YOUR_SUPABASE_ANON_KEY_PLACEHOLDER';
@@ -14,14 +13,14 @@ const SUPABASE_ANON_KEY_PLACEHOLDER = 'YOUR_SUPABASE_ANON_KEY_PLACEHOLDER';
 let supabaseSingleton: SupabaseClient<Database> | null = null;
 
 export const isSupabaseConfigured = (): boolean => {
-  const urlValid = supabaseUrl && 
+  const urlValid = Boolean(supabaseUrl && 
                    supabaseUrl !== SUPABASE_URL_PLACEHOLDER && 
                    supabaseUrl.startsWith('https://') && 
-                   supabaseUrl.includes('.supabase.co');
+                   supabaseUrl.includes('.supabase.co'));
   
-  const keyValid = supabaseAnonKey && 
+  const keyValid = Boolean(supabaseAnonKey && 
                    supabaseAnonKey !== SUPABASE_ANON_KEY_PLACEHOLDER &&
-                   supabaseAnonKey.length > 50; // JWT tokens are typically much longer
+                   supabaseAnonKey.length > 50); // JWT tokens are typically much longer
   
   return urlValid && keyValid;
 };
@@ -83,6 +82,67 @@ export const testSupabaseConnection = async () => {
     console.error('Supabase connection test failed:', error);
     return false;
   }
+};
+
+// Helper function to clear all auth state (for JWT errors)
+export const clearAuthState = () => {
+  try {
+    // Clear localStorage
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && (key.includes('supabase') || key.includes('sb-'))) {
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+    
+    // Clear sessionStorage
+    sessionStorage.clear();
+    
+    console.log('🧹 Cleared all auth state');
+    return true;
+  } catch (error) {
+    console.error('Failed to clear auth state:', error);
+    return false;
+  }
+};
+
+// Helper function to diagnose JWT issues
+export const diagnoseJWTIssue = async () => {
+  if (!supabase) {
+    console.error('❌ Supabase client not initialized');
+    return;
+  }
+
+  console.log('🔍 Diagnosing JWT issue...');
+  
+  // Check current session
+  try {
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    console.log('Current session:', sessionData);
+    if (sessionError) {
+      console.error('Session error:', sessionError);
+      
+      // If JWT error, suggest clearing auth state
+      if (sessionError.message.includes('JWT') || sessionError.message.includes('invalid')) {
+        console.log('💡 Suggestion: Clear auth state and re-authenticate');
+        console.log('Run: clearAuthState() then refresh and login again');
+      }
+    }
+  } catch (error) {
+    console.error('Failed to get session:', error);
+  }
+
+  // Check localStorage tokens
+  const authKeys = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && (key.includes('supabase') || key.includes('sb-'))) {
+      authKeys.push(key);
+    }
+  }
+  console.log('Auth keys in localStorage:', authKeys);
 };
 
 // Helper to create Insert types, typically omitting id and auto-generated fields like created_at/updated_at
