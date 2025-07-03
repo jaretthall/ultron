@@ -9,8 +9,7 @@ describe('Authentication Flow', () => {
 
   describe('Unauthenticated State', () => {
     it('should show authentication required message for protected routes', () => {
-      cy.mockUnauthenticatedUser();
-      cy.visit('/');
+      cy.visitWithoutAuth('/');
       
       // Should show auth form when not authenticated
       cy.contains('Sign in to your account', { timeout: 10000 }).should('be.visible');
@@ -18,8 +17,7 @@ describe('Authentication Flow', () => {
     });
 
     it('should not allow access to protected features without authentication', () => {
-      cy.mockUnauthenticatedUser();
-      cy.visit('/');
+      cy.visitWithoutAuth('/');
       
       // Verify no protected content is accessible
       cy.get('[data-testid="dashboard-content"]').should('not.exist');
@@ -30,8 +28,7 @@ describe('Authentication Flow', () => {
 
   describe('Sign Up Flow', () => {
     beforeEach(() => {
-      cy.mockUnauthenticatedUser();
-      cy.visit('/');
+      cy.visitWithoutAuth('/');
     });
 
     it('should allow user to sign up with valid credentials', () => {
@@ -77,8 +74,7 @@ describe('Authentication Flow', () => {
 
   describe('Sign In Flow', () => {
     beforeEach(() => {
-      cy.mockUnauthenticatedUser();
-      cy.visit('/');
+      cy.visitWithoutAuth('/');
     });
 
     it('should allow user to sign in with valid credentials', () => {
@@ -115,19 +111,15 @@ describe('Authentication Flow', () => {
   });
 
   describe('Authenticated State', () => {
-    beforeEach(() => {
-      cy.mockAuthenticatedUser();
-    });
-
     it('should show authenticated content after login', () => {
-      cy.visit('/');
+      cy.visitWithAuth('/');
       
       // Should show dashboard content
       cy.contains('Dashboard', { timeout: 10000 }).should('be.visible');
     });
 
     it('should allow navigation to all protected routes', () => {
-      cy.visit('/');
+      cy.visitWithAuth('/');
       
       // Wait for navigation to be available
       cy.get('[data-testid="main-navigation"]', { timeout: 15000 }).should('be.visible');
@@ -143,8 +135,7 @@ describe('Authentication Flow', () => {
 
   describe('Sign Out Flow', () => {
     beforeEach(() => {
-      cy.mockAuthenticatedUser();
-      cy.visit('/');
+      cy.visitWithAuth('/');
     });
 
     it('should allow user to sign out', () => {
@@ -169,20 +160,17 @@ describe('Authentication Flow', () => {
 
   describe('Protected Route Behavior', () => {
     it('should redirect unauthenticated users attempting to access protected routes', () => {
-      cy.mockUnauthenticatedUser();
-      
       const protectedRoutes = ['/projects', '/tasks', '/calendar', '/documents', '/settings'];
       
       protectedRoutes.forEach(route => {
-        cy.visit(route);
+        cy.visitWithoutAuth(route);
         // Should show auth form instead of protected content
         cy.contains('Sign in to your account', { timeout: 5000 }).should('be.visible');
       });
     });
 
     it('should maintain authentication state across browser refresh', () => {
-      cy.mockAuthenticatedUser();
-      cy.visit('/');
+      cy.visitWithAuth('/');
       
       // Should show dashboard content
       cy.contains('Dashboard', { timeout: 10000 }).should('be.visible');
@@ -197,8 +185,7 @@ describe('Authentication Flow', () => {
 
   describe('Error Handling', () => {
     beforeEach(() => {
-      cy.mockUnauthenticatedUser();
-      cy.visit('/');
+      cy.visitWithoutAuth('/');
     });
 
     it('should handle network errors gracefully during authentication', () => {

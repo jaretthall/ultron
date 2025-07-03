@@ -8,8 +8,7 @@ describe('Application Navigation and Basic Content', () => {
   });
 
   it('should load the home page and display auth form when not authenticated', () => {
-    cy.mockUnauthenticatedUser();
-    cy.visit('/');
+    cy.visitWithoutAuth('/');
     
     // Should show auth form when not authenticated
     cy.contains('Sign in to your account', { timeout: 10000 }).should('be.visible');
@@ -17,8 +16,7 @@ describe('Application Navigation and Basic Content', () => {
   });
 
   it('should show dashboard when authenticated', () => {
-    cy.mockAuthenticatedUser();
-    cy.visit('/');
+    cy.visitWithAuth('/');
     
     // Wait for auth to load and check for dashboard content
     cy.contains('Dashboard', { timeout: 15000 }).should('be.visible');
@@ -28,8 +26,7 @@ describe('Application Navigation and Basic Content', () => {
   });
 
   it('should navigate to Projects page and show project dashboard elements', () => {
-    cy.mockAuthenticatedUser();
-    cy.visit('/');
+    cy.visitWithAuth('/');
     
     // Wait for navigation to be available
     cy.get('[data-testid="main-navigation"]', { timeout: 15000 }).should('be.visible');
@@ -40,8 +37,7 @@ describe('Application Navigation and Basic Content', () => {
   });
 
   it('should navigate to Tasks page', () => {
-    cy.mockAuthenticatedUser();
-    cy.visit('/');
+    cy.visitWithAuth('/');
     
     cy.get('[data-testid="main-navigation"]', { timeout: 15000 }).should('be.visible');
     cy.get('[data-testid="main-navigation"] a').contains('Tasks').click();
@@ -49,8 +45,7 @@ describe('Application Navigation and Basic Content', () => {
   });
 
   it('should navigate to Calendar page', () => {
-    cy.mockAuthenticatedUser();
-    cy.visit('/');
+    cy.visitWithAuth('/');
     
     cy.get('[data-testid="main-navigation"]', { timeout: 15000 }).should('be.visible');
     cy.get('[data-testid="main-navigation"] a').contains('Calendar').click();
@@ -58,8 +53,7 @@ describe('Application Navigation and Basic Content', () => {
   });
 
   it('should navigate to Documents page', () => {
-    cy.mockAuthenticatedUser();
-    cy.visit('/');
+    cy.visitWithAuth('/');
     
     cy.get('[data-testid="main-navigation"]', { timeout: 15000 }).should('be.visible');
     cy.get('[data-testid="main-navigation"] a').contains('Documents').click();
@@ -67,8 +61,7 @@ describe('Application Navigation and Basic Content', () => {
   });
 
   it('should navigate to Settings page and show settings elements', () => {
-    cy.mockAuthenticatedUser();
-    cy.visit('/');
+    cy.visitWithAuth('/');
     
     cy.get('[data-testid="main-navigation"]', { timeout: 15000 }).should('be.visible');
     cy.get('[data-testid="main-navigation"] a').contains('Settings').click();
@@ -76,8 +69,7 @@ describe('Application Navigation and Basic Content', () => {
   });
 
   it('should open New Project modal from Home page', () => {
-    cy.mockAuthenticatedUser();
-    cy.visit('/');
+    cy.visitWithAuth('/');
     
     cy.contains('Dashboard', { timeout: 15000 }).should('be.visible');
     

@@ -17,7 +17,7 @@ describe('CRUD Operations', () => {
 
   describe('Project CRUD Operations', () => {
     beforeEach(() => {
-      cy.visit('/');
+      cy.visitWithAuth('/');
       // Wait for authentication and navigation to load
       cy.get('[data-testid="main-navigation"]', { timeout: 15000 }).should('be.visible');
       cy.get('[data-testid="main-navigation"] a').contains('Projects').click();
@@ -186,7 +186,7 @@ describe('CRUD Operations', () => {
 
   describe('Task CRUD Operations', () => {
     beforeEach(() => {
-      cy.visit('/');
+      cy.visitWithAuth('/');
       cy.get('[data-testid="main-navigation"]', { timeout: 15000 }).should('be.visible');
       cy.get('[data-testid="main-navigation"] a').contains('Tasks').click();
     });
@@ -276,7 +276,7 @@ describe('CRUD Operations', () => {
 
   describe('User Preferences CRUD', () => {
     beforeEach(() => {
-      cy.visit('/');
+      cy.visitWithAuth('/');
       cy.get('[data-testid="main-navigation"]', { timeout: 15000 }).should('be.visible');
       cy.get('[data-testid="main-navigation"] a').contains('Settings').click();
     });
@@ -331,7 +331,7 @@ describe('CRUD Operations', () => {
   describe('Error Handling and Edge Cases', () => {
     it('should handle network connectivity issues', () => {
       // Simulate offline
-      cy.visit('/');
+      cy.visitWithAuth('/');
       
       // Mock network failure
       cy.intercept('GET', '**/rest/v1/**', { forceNetworkError: true });
@@ -349,7 +349,7 @@ describe('CRUD Operations', () => {
     });
 
     it('should handle data validation errors from the server', () => {
-      cy.visit('/');
+      cy.visitWithAuth('/');
       cy.get('[data-testid="main-navigation"]', { timeout: 15000 }).should('be.visible');
       cy.get('[data-testid="main-navigation"] a').contains('Projects').click();
       cy.get('button').contains('New Project').click();
@@ -374,7 +374,7 @@ describe('CRUD Operations', () => {
     });
 
     it('should retry failed operations when connectivity is restored', () => {
-      cy.visit('/');
+      cy.visitWithAuth('/');
       
       // Start offline
       cy.intercept('POST', '**/rest/v1/projects', { forceNetworkError: true }).as('offlineCreate');
@@ -404,7 +404,7 @@ describe('CRUD Operations', () => {
 
   describe('Data Persistence', () => {
     it('should persist data across page refreshes', () => {
-      cy.visit('/');
+      cy.visitWithAuth('/');
       cy.get('[data-testid="main-navigation"]', { timeout: 15000 }).should('be.visible');
       cy.get('[data-testid="main-navigation"] a').contains('Projects').click();
       cy.get('button').contains('New Project').click();
@@ -424,7 +424,7 @@ describe('CRUD Operations', () => {
     });
 
     it('should maintain authentication state across refreshes', () => {
-      cy.visit('/');
+      cy.visitWithAuth('/');
       
       // Verify authenticated state
       cy.contains('Dashboard', { timeout: 10000 }).should('be.visible');
@@ -439,7 +439,7 @@ describe('CRUD Operations', () => {
 
   describe('Real-time Updates', () => {
     it('should handle concurrent user scenarios', () => {
-      cy.visit('/');
+      cy.visitWithAuth('/');
       cy.get('[data-testid="main-navigation"]', { timeout: 15000 }).should('be.visible');
       cy.get('[data-testid="main-navigation"] a').contains('Projects').click();
       

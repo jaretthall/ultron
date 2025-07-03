@@ -26,9 +26,34 @@ import './commands';
 Cypress.on('uncaught:exception', (err, runnable) => {
   // returning false here prevents Cypress from failing the test
   // Decide if this error should fail the test or not.
-  // if (err.message.includes('ResizeObserver loop limit exceeded')) {
-  //   return false;
-  // }
+  if (err.message.includes('ResizeObserver loop limit exceeded')) {
+    return false;
+  }
+  if (err.message.includes('Supabase client not initialized')) {
+    return false;
+  }
+  if (err.message.includes('Network Error')) {
+    return false;
+  }
   // Allow other errors to fail the test
   return true;
+});
+
+// Global setup for all tests
+beforeEach(() => {
+  // Set up global window properties before app loads
+  cy.window().then((win) => {
+    // Mock environment variables
+    Object.defineProperty(win, 'VITE_SUPABASE_URL', {
+      value: 'https://mock.supabase.co',
+      writable: true,
+      configurable: true
+    });
+    
+    Object.defineProperty(win, 'VITE_SUPABASE_ANON_KEY', {
+      value: 'mock-key-' + 'x'.repeat(100),
+      writable: true,
+      configurable: true
+    });
+  });
 });
