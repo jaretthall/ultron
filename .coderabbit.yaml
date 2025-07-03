@@ -1,0 +1,189 @@
+# CodeRabbit Configuration for Ultron Productivity Command Center
+# This file configures how CodeRabbit reviews your code
+
+# Global review settings
+reviews:
+  # Path-based instructions for different file types
+  path_instructions:
+    # React/TypeScript Component Files
+    - path: "src/components/**/*.{tsx,ts}"
+      instructions: |
+        Review React components with focus on:
+        - Component design patterns and best practices
+        - TypeScript type safety and proper interfaces
+        - Accessibility (a11y) compliance using ARIA attributes
+        - Performance optimization (memo, useMemo, useCallback when appropriate)
+        - Proper error handling and loading states
+        - Component composition and reusability
+        - Following established naming conventions
+    
+    # Custom Hooks
+    - path: "src/hooks/**/*.{ts,tsx}"
+      instructions: |
+        Review custom hooks for:
+        - Proper hook naming (useXxx pattern)
+        - Correct use of React hooks rules
+        - Return value consistency and type safety
+        - Dependency arrays in useEffect/useMemo/useCallback
+        - Error handling and cleanup
+    
+    # Context and State Management
+    - path: "src/contexts/**/*.{ts,tsx}"
+      instructions: |
+        Review context providers for:
+        - Proper context structure and type definitions
+        - Performance implications of context changes
+        - Proper provider composition
+        - State management best practices
+        - Error boundaries where appropriate
+    
+    # Services and API Layer
+    - path: "src/services/**/*.{ts,tsx}"
+      instructions: |
+        Review service files for:
+        - Proper error handling and logging
+        - Type safety for API responses
+        - Consistent API patterns
+        - Security considerations (no exposed secrets)
+        - Proper async/await usage
+        - Database query optimization
+    
+    # Utility Functions
+    - path: "src/utils/**/*.{ts,tsx}"
+      instructions: |
+        Review utility functions for:
+        - Pure function principles where applicable
+        - Proper TypeScript typing
+        - Edge case handling
+        - Performance considerations
+        - Reusability and composability
+    
+    # Type Definitions
+    - path: "**/*.d.ts"
+      instructions: |
+        Review type definitions for:
+        - Completeness and accuracy
+        - Proper module declarations
+        - Avoiding 'any' types
+        - Consistent naming conventions
+    
+    # Configuration Files
+    - path: "*.{json,js,ts,yaml,yml}"
+      instructions: |
+        Review configuration files for:
+        - Security (no hardcoded secrets)
+        - Proper environment variable usage
+        - Configuration structure and organization
+        - Documentation for complex settings
+    
+    # Test Files
+    - path: "**/*.{test,spec}.{ts,tsx,js,jsx}"
+      instructions: |
+        Review test files for:
+        - Comprehensive test coverage
+        - Clear test descriptions and expectations
+        - Proper mocking strategies
+        - Testing accessibility features
+        - Performance test considerations
+        - Integration test patterns
+    
+    # Cypress E2E Tests
+    - path: "cypress/**/*.{ts,js}"
+      instructions: |
+        Review Cypress tests for:
+        - Reliable test selectors (data-testid preferred)
+        - Proper wait strategies and assertions
+        - Test isolation and cleanup
+        - Realistic user interaction patterns
+        - Cross-browser compatibility considerations
+    
+    # Styling Files
+    - path: "**/*.{css,scss,less}"
+      instructions: |
+        Review CSS/styling for:
+        - Responsive design principles
+        - Accessibility (color contrast, focus states)
+        - Performance (avoid heavy selectors)
+        - Consistency with design system
+        - Dark mode compatibility
+    
+    # Documentation
+    - path: "**/*.md"
+      instructions: |
+        Review documentation for:
+        - Clarity and completeness
+        - Up-to-date information
+        - Proper markdown formatting
+        - Code examples that work
+        - Security considerations in examples
+    
+    # Database and Schema
+    - path: "**/*{schema,migration}*.{sql,js,ts}"
+      instructions: |
+        Review database files for:
+        - Migration safety (backward compatibility)
+        - Index optimization
+        - Security (SQL injection prevention)
+        - Data integrity constraints
+        - Performance implications
+    
+    # Build and Deployment
+    - path: "{Dockerfile,docker-compose*.yml,.github/workflows/*.yml}"
+      instructions: |
+        Review deployment files for:
+        - Security best practices
+        - Resource optimization
+        - Proper secret management
+        - Error handling and logging
+        - Rollback strategies
+
+  # File patterns to exclude from review
+  exclude:
+    - "node_modules/**"
+    - "dist/**"
+    - "build/**"
+    - ".next/**"
+    - "coverage/**"
+    - "*.log"
+    - ".env*"
+    - "cypress/screenshots/**"
+    - "cypress/videos/**"
+
+# Chat settings for interactive discussions
+chat:
+  # Auto-reply to common questions
+  auto_reply: false
+  
+# Knowledge base settings
+knowledge_base:
+  # Opt in to learnings from codebase patterns
+  learnings: true
+  
+# Language specific settings
+language:
+  # Enable TypeScript-specific analysis
+  typescript:
+    strict_mode: true
+    prefer_interfaces: true
+    
+  # Enable React-specific patterns
+  react:
+    hooks_rules: true
+    accessibility: true
+    performance: true
+
+# Review quality settings
+quality:
+  # Focus areas for code review
+  focus_areas:
+    - security
+    - performance
+    - accessibility
+    - maintainability
+    - testing
+    
+  # Severity levels for different issues
+  severity:
+    security: high
+    performance: medium
+    style: low

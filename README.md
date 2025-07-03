@@ -133,6 +133,33 @@ npm run test:coverage
 - ⏳ **Phase 6**: Production readiness & security
 - 🎯 **v3.0**: Public launch with collaboration features
 
+## 🤖 Code Review with CodeRabbit
+
+This project uses [CodeRabbit](https://coderabbit.ai) for AI-powered code reviews. CodeRabbit automatically reviews pull requests and provides intelligent feedback on:
+
+- **Code Quality**: TypeScript best practices, React patterns, performance optimizations
+- **Security**: Vulnerability detection, secret exposure prevention, secure coding practices  
+- **Accessibility**: ARIA compliance, semantic HTML, keyboard navigation
+- **Testing**: Test coverage, mock strategies, E2E test patterns
+- **Documentation**: Code clarity, API documentation, implementation guides
+
+### Configuration
+
+CodeRabbit is configured via `.coderabbit.yaml` with path-specific instructions for:
+- React/TypeScript components (`src/components/**`)
+- Custom hooks (`src/hooks/**`) 
+- Service layer (`src/services/**`)
+- Test files (`**/*.{test,spec}.*`)
+- Cypress E2E tests (`cypress/**`)
+- Database migrations and schemas
+
+### Getting Reviews
+
+1. **Create a Pull Request**: CodeRabbit automatically reviews all PRs
+2. **Interactive Chat**: Ask questions using `@coderabbitai` in PR comments
+3. **Review Summary**: Automatic PR summaries highlight key changes
+4. **Follow-up**: CodeRabbit tracks conversations and provides updates
+
 ## 🤝 Contributing
 
 1. Fork the repository
@@ -140,6 +167,7 @@ npm run test:coverage
 3. Make your changes
 4. Add tests if applicable  
 5. Submit a pull request
+6. **CodeRabbit will automatically review your PR** with AI-powered feedback
 
 ## 📄 License
 
