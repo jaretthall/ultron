@@ -13,7 +13,10 @@
       "Bash(find:*)",
       "Bash(npm run type-check:*)",
       "Bash(npm run lint)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(npm run test:ci:*)",
+      "Bash(timeout 30s npm test -- --coverage --passWithNoTests)",
+      "Bash(npx jest:*)"
     ],
     "deny": []
   }
