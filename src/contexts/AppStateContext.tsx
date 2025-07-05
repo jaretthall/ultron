@@ -1,10 +1,12 @@
 import React, { createContext, useContext, useReducer, useEffect, useCallback, ReactNode } from 'react';
-import { Project, Task, UserPreferences, Tag, TagCategory } from '../../types';
+import { Project, Task, UserPreferences, Tag, TagCategory, Schedule } from '../../types';
 import { useCustomAuth } from './CustomAuthContext';
+import { supabase } from '../../lib/supabaseClient';
 import { adaptiveDatabaseService } from '../../services/adaptiveDatabaseService';
 import { 
   projectsService, 
   tasksService, 
+  schedulesService,
   userPreferencesService, 
   tagsService,
   tagCategoriesService,
@@ -24,6 +26,10 @@ type AppAction =
   | { type: 'ADD_TASK'; task: Task }
   | { type: 'UPDATE_TASK'; task: Task }
   | { type: 'DELETE_TASK'; taskId: string }
+  | { type: 'SET_SCHEDULES'; schedules: Schedule[] }
+  | { type: 'ADD_SCHEDULE'; schedule: Schedule }
+  | { type: 'UPDATE_SCHEDULE'; schedule: Schedule }
+  | { type: 'DELETE_SCHEDULE'; scheduleId: string }
   | { type: 'SET_USER_PREFERENCES'; preferences: UserPreferences }
   | { type: 'UPDATE_USER_PREFERENCES'; preferences: Partial<UserPreferences> }
   | { type: 'SET_TAGS'; tags: Tag[] }
@@ -44,7 +50,7 @@ type AppAction =
 interface PendingOperation {
   id: string;
   type: 'create' | 'update' | 'delete';
-  entity: 'project' | 'task' | 'userPreferences' | 'tag' | 'tagCategory';
+  entity: 'project' | 'task' | 'schedule' | 'userPreferences' | 'tag' | 'tagCategory';
   data: any;
   timestamp: number;
 }
@@ -54,6 +60,7 @@ interface AppState {
   // Data
   projects: Project[];
   tasks: Task[];
+  schedules: Schedule[];
   userPreferences: UserPreferences | null;
   tags: Tag[];
   tagCategories: TagCategory[];
@@ -72,6 +79,7 @@ interface AppState {
 const initialState: AppState = {
   projects: [],
   tasks: [],
+  schedules: [],
   userPreferences: null,
   tags: [],
   tagCategories: [],
@@ -164,6 +172,29 @@ function appStateReducer(state: AppState, action: AppAction): AppState {
       return {
         ...state,
         tasks: state.tasks.filter(t => t.id !== action.taskId)
+      };
+    
+    case 'SET_SCHEDULES':
+      return { ...state, schedules: action.schedules };
+    
+    case 'ADD_SCHEDULE':
+      return { 
+        ...state, 
+        schedules: [action.schedule, ...state.schedules] 
+      };
+    
+    case 'UPDATE_SCHEDULE':
+      return {
+        ...state,
+        schedules: state.schedules.map(s => 
+          s.id === action.schedule.id ? action.schedule : s
+        )
+      };
+    
+    case 'DELETE_SCHEDULE':
+      return {
+        ...state,
+        schedules: state.schedules.filter(s => s.id !== action.scheduleId)
       };
     
     case 'SET_USER_PREFERENCES':
@@ -268,6 +299,11 @@ interface AppStateContextType {
   updateTask: (id: string, updates: Partial<Task>) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
   
+  // Schedule Actions
+  addSchedule: (schedule: Omit<Schedule, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => Promise<Schedule>;
+  updateSchedule: (id: string, updates: Partial<Schedule>) => Promise<void>;
+  deleteSchedule: (id: string) => Promise<void>;
+  
   // User Preferences Actions
   updateUserPreferences: (updates: Partial<UserPreferences>) => Promise<void>;
   
@@ -336,9 +372,10 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
     dispatch({ type: 'SET_ERROR', error: null });
     
     try {
-      const [projects, tasks, preferences, tags, categories] = await Promise.all([
+      const [projects, tasks, schedules, preferences, tags, categories] = await Promise.all([
         adaptiveDatabaseService.getAllProjects(),
         tasksService.getAll(),
+        schedulesService.getAll(),
         userPreferencesService.get(),
         tagsService.getAll(),
         tagCategoriesService.getAll()
@@ -346,15 +383,78 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
 
       dispatch({ type: 'SET_PROJECTS', projects });
       dispatch({ type: 'SET_TASKS', tasks });
+      dispatch({ type: 'SET_SCHEDULES', schedules });
       dispatch({ type: 'SET_TAGS', tags });
       dispatch({ type: 'SET_TAG_CATEGORIES', categories });
       
       if (preferences) {
         dispatch({ type: 'SET_USER_PREFERENCES', preferences });
       } else {
-        // Create default preferences
-        const newPreferences = await userPreferencesService.create(defaultUserPreferences);
-        dispatch({ type: 'SET_USER_PREFERENCES', preferences: newPreferences });
+        // Create default preferences with enhanced retry logic for foreign key constraint
+        let retryCount = 0;
+        const maxRetries = 3;
+        let preferencesCreated = false;
+        
+        while (!preferencesCreated && retryCount < maxRetries) {
+          try {
+            console.log(`🔄 Attempting to create user preferences (attempt ${retryCount + 1}/${maxRetries})...`);
+            
+            // First verify the user exists in the database
+            if (supabase && user?.id) {
+              const { data: userData, error: userError } = await supabase
+                .from('users')
+                .select('id')
+                .eq('id', user.id)
+                .single();
+              
+              if (userError || !userData) {
+                console.warn(`⚠️ User ${user.id} not found in database, attempt ${retryCount + 1}. Waiting before retry...`);
+                if (retryCount < maxRetries - 1) {
+                  await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1))); // Increasing delay
+                  retryCount++;
+                  continue;
+                } else {
+                  console.error('❌ User never appeared in database after all retries');
+                  break;
+                }
+              } else {
+                console.log(`✅ User ${user.id} verified in database`);
+              }
+            }
+            
+            // Use upsert to handle React Strict Mode double-invocation
+            const newPreferences = await userPreferencesService.upsert(defaultUserPreferences);
+            dispatch({ type: 'SET_USER_PREFERENCES', preferences: newPreferences });
+            preferencesCreated = true;
+            console.log('✅ User preferences created/updated successfully');
+            
+          } catch (prefError: any) {
+            console.warn(`❌ Failed to create user preferences (attempt ${retryCount + 1}):`, prefError?.message || prefError);
+            
+            // If foreign key constraint error, retry with exponential backoff
+            if (prefError?.message?.includes('foreign key constraint') || prefError?.message?.includes('violates foreign key')) {
+              if (retryCount < maxRetries - 1) {
+                const delay = 1000 * Math.pow(2, retryCount); // Exponential backoff: 1s, 2s, 4s
+                console.log(`🔄 Retrying user preferences creation in ${delay}ms due to foreign key constraint error...`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+                retryCount++;
+              } else {
+                console.error('❌ Failed to create user preferences after all retries due to foreign key constraint');
+                break;
+              }
+            } else {
+              // Non-foreign key error, don't retry
+              console.error('❌ Failed to create user preferences due to non-foreign key error:', prefError?.message || prefError);
+              break;
+            }
+          }
+        }
+        
+        if (!preferencesCreated) {
+          console.warn('⚠️ Continuing without user preferences - app functionality may be limited');
+          // Set loading to false even if preferences creation failed
+          dispatch({ type: 'SET_LOADING', loading: false });
+        }
       }
       
       dispatch({ type: 'SET_SYNC_STATUS', status: 'synced' });
@@ -519,6 +619,78 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
       }
     );
   }, [state.tasks]);
+
+  // Schedule Actions
+  const addSchedule = useCallback(async (scheduleData: Omit<Schedule, 'id' | 'created_at' | 'updated_at' | 'user_id'>): Promise<Schedule> => {
+    const tempId = `temp_${Date.now()}`;
+    const tempSchedule: Schedule = {
+      id: tempId,
+      ...scheduleData,
+      user_id: user?.id || '',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    // Validate project_id if provided
+    if (scheduleData.project_id) {
+      const project = state.projects.find(p => p.id === scheduleData.project_id);
+      if (!project) {
+        throw new Error('Selected project does not exist');
+      }
+      if (project.id.startsWith('temp_')) {
+        throw new Error('Cannot create schedule for unsaved project. Please wait for the project to be saved first.');
+      }
+    }
+
+    try {
+      // Apply optimistic update first
+      dispatch({ type: 'ADD_SCHEDULE', schedule: tempSchedule });
+      
+      // Create the schedule in database
+      const createdSchedule = await schedulesService.create(scheduleData);
+      console.log('Schedule created successfully:', createdSchedule);
+      
+      // Replace the temporary schedule with the real one
+      dispatch({ type: 'DELETE_SCHEDULE', scheduleId: tempId });
+      dispatch({ type: 'ADD_SCHEDULE', schedule: createdSchedule });
+      
+      return createdSchedule;
+    } catch (error) {
+      // Rollback on error - remove the temporary schedule
+      console.error('Error creating schedule:', error);
+      dispatch({ type: 'DELETE_SCHEDULE', scheduleId: tempId });
+      throw error;
+    }
+  }, [user?.id, state.projects]);
+
+  const updateSchedule = useCallback(async (id: string, updates: Partial<Schedule>): Promise<void> => {
+    const originalSchedule = state.schedules.find(s => s.id === id);
+    if (!originalSchedule) throw new Error('Schedule not found');
+
+    const updatedSchedule = { ...originalSchedule, ...updates };
+
+    await performOptimisticUpdate(
+      { type: 'UPDATE_SCHEDULE', schedule: updatedSchedule },
+      { type: 'UPDATE_SCHEDULE', schedule: originalSchedule },
+      async () => {
+        const result = await schedulesService.update(id, updates);
+        dispatch({ type: 'UPDATE_SCHEDULE', schedule: result });
+      }
+    );
+  }, [state.schedules]);
+
+  const deleteSchedule = useCallback(async (id: string): Promise<void> => {
+    const scheduleToDelete = state.schedules.find(s => s.id === id);
+    if (!scheduleToDelete) return;
+
+    await performOptimisticUpdate(
+      { type: 'DELETE_SCHEDULE', scheduleId: id },
+      { type: 'ADD_SCHEDULE', schedule: scheduleToDelete },
+      async () => {
+        await schedulesService.delete(id);
+      }
+    );
+  }, [state.schedules]);
 
   // User Preferences Actions
   const updateUserPreferences = useCallback(async (updates: Partial<UserPreferences>): Promise<void> => {
@@ -733,6 +905,9 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
     addTask,
     updateTask,
     deleteTask,
+    addSchedule,
+    updateSchedule,
+    deleteSchedule,
     updateUserPreferences,
     addTag,
     updateTag,

@@ -54,6 +54,9 @@ interface MainProjectContentComponentProps {
   allTasksForProjectContext: Task[];
   onAddTask: (task: Omit<Task, 'id' | 'created_at' | 'updated_at'>) => void;
   onUpdateProject?: (project: Project) => void;
+  onDeleteProject?: (projectId: string) => Promise<void>;
+  onEditTaskRequest?: (task: Task) => void;
+  onDeleteTask?: (taskId: string) => Promise<void>;
   allProjects: Project[];
 }
 
@@ -62,6 +65,9 @@ const MainProjectContentComponent: React.FC<MainProjectContentComponentProps> = 
   tasks,
   onAddTask,
   onUpdateProject,
+  onDeleteProject,
+  onEditTaskRequest,
+  onDeleteTask,
   allProjects,
 }) => {
   const [isNewTaskModalOpen, setIsNewTaskModalOpen] = useState(false);
@@ -232,8 +238,8 @@ const MainProjectContentComponent: React.FC<MainProjectContentComponentProps> = 
                 key={task.id} 
                 task={task} 
                 projectTitle={project.title}
-                onEditTaskRequest={() => {}}
-                onDeleteTask={() => {}}
+                onEditTaskRequest={onEditTaskRequest || (() => {})}
+                onDeleteTask={onDeleteTask || (() => Promise.resolve())}
               />
             ))}
           </div>
@@ -271,6 +277,7 @@ const MainProjectContentComponent: React.FC<MainProjectContentComponentProps> = 
             onUpdateProject(updatedProject);
             setIsEditProjectModalOpen(false);
           }}
+          onDeleteProject={onDeleteProject}
           project={project}
         />
       )}

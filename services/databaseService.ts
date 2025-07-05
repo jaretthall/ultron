@@ -1,7 +1,7 @@
 import { supabase } from '../lib/supabaseClient';
 import { getCustomAuthUser } from '../src/contexts/CustomAuthContext';
 import {
-  Project, Task, UserPreferences, Tag, TagCategory,
+  Project, Task, UserPreferences, Tag, TagCategory, Schedule,
   ProjectStatus, ProjectContext, TaskPriority, TaskStatus
 } from '../types';
 
@@ -91,9 +91,8 @@ export const projectsService = {
       id: generateUUID(), // Provide fallback UUID
       user_id: user.id,
       title: project.title,
-      description: project.description || '',
+      context: project.context || '',
       status: project.status || 'active',
-      context: project.context || 'personal',
       goals: project.goals || [],
       tags: project.tags || [],
       business_relevance: project.business_relevance ?? 50,
@@ -283,7 +282,7 @@ export const tasksService = {
       id: generateUUID(), // Provide fallback UUID
       user_id: user.id,
       title: task.title,
-      description: task.description || '',
+      context: task.context || '',
       priority: task.priority,
       status: task.status,
       estimated_hours: task.estimated_hours || 0,
@@ -676,6 +675,214 @@ export const tasksService = {
   }
 };
 
+// Schedules Service
+export const schedulesService = {
+  async getAll(): Promise<Schedule[]> {
+    if (!supabase) throw new Error('Supabase client not initialized');
+    
+    const { data, error } = await supabase
+      .from('schedules')
+      .select('*')
+      .order('start_date', { ascending: true });
+    
+    if (error) handleError('fetching schedules', error);
+    
+    // Convert JSONB fields back to strings for the interface
+    return (data || []).map(schedule => ({
+      ...schedule,
+      recurring: schedule.recurring ? JSON.stringify(schedule.recurring) : null,
+      reminders: schedule.reminders ? JSON.stringify(schedule.reminders) : null,
+      // tags is already an array, no conversion needed
+    }));
+  },
+
+  async getById(id: string): Promise<Schedule | null> {
+    if (!supabase) throw new Error('Supabase client not initialized');
+    
+    const { data, error } = await supabase
+      .from('schedules')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (error) {
+      if (error.code === 'PGRST116') return null; // No rows returned
+      handleError('fetching schedule by id', error);
+    }
+    
+    // Convert JSONB fields back to strings for the interface
+    if (data) {
+      data.recurring = data.recurring ? JSON.stringify(data.recurring) : null;
+      data.reminders = data.reminders ? JSON.stringify(data.reminders) : null;
+      // tags is already an array, no conversion needed
+    }
+    
+    return data;
+  },
+
+  async create(schedule: Omit<Schedule, 'id' | 'created_at' | 'updated_at' | 'user_id'>): Promise<Schedule> {
+    if (!supabase) throw new Error('Supabase client not initialized');
+    
+    // Get current user from custom auth
+    const user = getCustomAuthUser();
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+    
+    // Generate a client-side UUID as fallback
+    const generateUUID = () => {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    };
+    
+    // Clean the schedule data
+    const cleanSchedule: any = {
+      id: generateUUID(),
+      user_id: user.id,
+      title: schedule.title,
+      context: schedule.context || '',
+      start_date: schedule.start_date,
+      end_date: schedule.end_date,
+      all_day: schedule.all_day || false,
+      event_type: schedule.event_type || 'other',
+      location: schedule.location || null,
+      recurring: schedule.recurring ? (typeof schedule.recurring === 'string' ? JSON.parse(schedule.recurring) : schedule.recurring) : null,
+      reminders: schedule.reminders ? (typeof schedule.reminders === 'string' ? JSON.parse(schedule.reminders) : schedule.reminders) : null,
+      blocks_work_time: schedule.blocks_work_time || false,
+      tags: schedule.tags || [],
+    };
+    
+    // Only add optional fields if they have meaningful values
+    if (schedule.project_id) cleanSchedule.project_id = schedule.project_id;
+    
+    const { data, error } = await supabase
+      .from('schedules')
+      .insert([cleanSchedule])
+      .select()
+      .single();
+    
+    if (error) handleError('creating schedule', error);
+    
+    // Convert JSONB fields back to strings for the interface
+    if (data) {
+      data.recurring = data.recurring ? JSON.stringify(data.recurring) : null;
+      data.reminders = data.reminders ? JSON.stringify(data.reminders) : null;
+      // tags is already an array, no conversion needed
+    }
+    
+    return data;
+  },
+
+  async update(id: string, updates: Partial<Schedule>): Promise<Schedule> {
+    if (!supabase) throw new Error('Supabase client not initialized');
+    
+    // Handle JSON fields
+    const cleanUpdates: any = { ...updates };
+    if (cleanUpdates.recurring && typeof cleanUpdates.recurring === 'string') {
+      cleanUpdates.recurring = JSON.parse(cleanUpdates.recurring);
+    }
+    if (cleanUpdates.reminders && typeof cleanUpdates.reminders === 'string') {
+      cleanUpdates.reminders = JSON.parse(cleanUpdates.reminders);
+    }
+    // tags is already an array in the database, no conversion needed
+    
+    const { data, error } = await supabase
+      .from('schedules')
+      .update(cleanUpdates)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) handleError('updating schedule', error);
+    
+    // Convert JSONB fields back to strings for the interface
+    if (data) {
+      data.recurring = data.recurring ? JSON.stringify(data.recurring) : null;
+      data.reminders = data.reminders ? JSON.stringify(data.reminders) : null;
+      // tags is already an array, no conversion needed
+    }
+    
+    return data;
+  },
+
+  async delete(id: string): Promise<void> {
+    if (!supabase) throw new Error('Supabase client not initialized');
+    
+    const { error } = await supabase
+      .from('schedules')
+      .delete()
+      .eq('id', id);
+    
+    if (error) handleError('deleting schedule', error);
+  },
+
+  async getByProject(projectId: string): Promise<Schedule[]> {
+    if (!supabase) throw new Error('Supabase client not initialized');
+    
+    const { data, error } = await supabase
+      .from('schedules')
+      .select('*')
+      .eq('project_id', projectId)
+      .order('start_date', { ascending: true });
+    
+    if (error) handleError('fetching schedules by project', error);
+    
+    // Convert JSONB fields back to strings for the interface
+    return (data || []).map(schedule => ({
+      ...schedule,
+      recurring: schedule.recurring ? JSON.stringify(schedule.recurring) : null,
+      reminders: schedule.reminders ? JSON.stringify(schedule.reminders) : null,
+      // tags is already an array, no conversion needed
+    }));
+  },
+
+  async getByDateRange(startDate: string, endDate: string): Promise<Schedule[]> {
+    if (!supabase) throw new Error('Supabase client not initialized');
+    
+    const { data, error } = await supabase
+      .from('schedules')
+      .select('*')
+      .gte('start_date', startDate)
+      .lte('end_date', endDate)
+      .order('start_date', { ascending: true });
+    
+    if (error) handleError('fetching schedules by date range', error);
+    
+    // Convert JSONB fields back to strings for the interface
+    return (data || []).map(schedule => ({
+      ...schedule,
+      recurring: schedule.recurring ? JSON.stringify(schedule.recurring) : null,
+      reminders: schedule.reminders ? JSON.stringify(schedule.reminders) : null,
+      // tags is already an array, no conversion needed
+    }));
+  },
+
+  async getBlockingEvents(startDate: string, endDate: string): Promise<Schedule[]> {
+    if (!supabase) throw new Error('Supabase client not initialized');
+    
+    const { data, error } = await supabase
+      .from('schedules')
+      .select('*')
+      .gte('start_date', startDate)
+      .lte('end_date', endDate)
+      .eq('blocks_work_time', true)
+      .order('start_date', { ascending: true });
+    
+    if (error) handleError('fetching blocking events', error);
+    
+    // Convert JSONB fields back to strings for the interface
+    return (data || []).map(schedule => ({
+      ...schedule,
+      recurring: schedule.recurring ? JSON.stringify(schedule.recurring) : null,
+      reminders: schedule.reminders ? JSON.stringify(schedule.reminders) : null,
+      // tags is already an array, no conversion needed
+    }));
+  }
+};
+
 // User Preferences Service
 export const userPreferencesService = {
   async get(): Promise<UserPreferences | null> {
@@ -787,6 +994,67 @@ export const userPreferencesService = {
       .single();
     
     if (error) handleError('updating user preferences', error);
+    return data;
+  },
+
+  async upsert(preferences: Omit<UserPreferences, 'id' | 'user_id'>): Promise<UserPreferences> {
+    if (!supabase) throw new Error('Supabase client not initialized');
+    
+    // Get current user from custom auth
+    const user = getCustomAuthUser();
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+    
+    // Generate a client-side UUID as fallback in case database UUID generation fails
+    const generateUUID = () => {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    };
+    
+    // Construct clean preferences object
+    const cleanPreferences = {
+      id: generateUUID(), // Provide fallback UUID
+      user_id: user.id,
+      working_hours_start: preferences.working_hours_start || "09:00",
+      working_hours_end: preferences.working_hours_end || "17:00",
+      focus_block_duration: preferences.focus_block_duration ?? 90,
+      break_duration: preferences.break_duration ?? 15,
+      priority_weight_deadline: preferences.priority_weight_deadline ?? 0.4,
+      priority_weight_effort: preferences.priority_weight_effort ?? 0.3,
+      priority_weight_deps: preferences.priority_weight_deps ?? 0.3,
+      ai_provider: preferences.ai_provider || 'gemini',
+      selected_gemini_model: preferences.selected_gemini_model || 'gemini-1.5-flash',
+      ...(preferences.instructions && { instructions: preferences.instructions }),
+      ...(preferences.business_hours_start && { business_hours_start: preferences.business_hours_start }),
+      ...(preferences.business_hours_end && { business_hours_end: preferences.business_hours_end }),
+      ...(preferences.business_days && preferences.business_days.length > 0 && { business_days: preferences.business_days }),
+      ...(preferences.personal_time_weekday_evening !== undefined && { personal_time_weekday_evening: preferences.personal_time_weekday_evening }),
+      ...(preferences.personal_time_weekends !== undefined && { personal_time_weekends: preferences.personal_time_weekends }),
+      ...(preferences.personal_time_early_morning !== undefined && { personal_time_early_morning: preferences.personal_time_early_morning }),
+      ...(preferences.allow_business_in_personal_time !== undefined && { allow_business_in_personal_time: preferences.allow_business_in_personal_time }),
+      ...(preferences.allow_personal_in_business_time !== undefined && { allow_personal_in_business_time: preferences.allow_personal_in_business_time }),
+      ...(preferences.context_switch_buffer_minutes !== undefined && { context_switch_buffer_minutes: preferences.context_switch_buffer_minutes }),
+      ...(preferences.claude_api_key && { claude_api_key: preferences.claude_api_key }),
+      ...(preferences.openai_api_key && { openai_api_key: preferences.openai_api_key }),
+      ...(preferences.focus_blocks && preferences.focus_blocks.length > 0 && { focus_blocks: preferences.focus_blocks }),
+      ...(preferences.preferred_time_slots && preferences.preferred_time_slots.length > 0 && { preferred_time_slots: preferences.preferred_time_slots }),
+      ...(preferences.business_relevance_default !== undefined && { business_relevance_default: preferences.business_relevance_default })
+    };
+    
+    // Use upsert to handle both create and update cases
+    const { data, error } = await supabase
+      .from('user_preferences')
+      .upsert(cleanPreferences, {
+        onConflict: 'user_id'
+      })
+      .select()
+      .single();
+    
+    if (error) handleError('upserting user preferences', error);
     return data;
   }
 };

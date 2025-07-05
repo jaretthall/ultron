@@ -1,5 +1,5 @@
-import React from 'react';
-import { Project } from '../../../types';
+import React, { useState, useMemo } from 'react';
+import { Project, ProjectStatus } from '../../../types';
 import { calculateUrgencyScore } from '../../utils/projectUtils';
 
 interface LeftSidebarComponentProps {
@@ -13,20 +13,43 @@ const LeftSidebarComponent: React.FC<LeftSidebarComponentProps> = ({
   selectedProjectId,
   onSelectProject,
 }) => {
+  const [statusFilter, setStatusFilter] = useState<'all' | ProjectStatus>('all');
+
+  const filteredProjects = useMemo(() => {
+    if (statusFilter === 'all') return projects;
+    return projects.filter(project => project.status === statusFilter);
+  }, [projects, statusFilter]);
   return (
     <aside className="w-80 bg-slate-800 border-r border-slate-700 overflow-y-auto">
       <div className="p-4">
         <h2 className="text-lg font-semibold text-slate-200 mb-4">Projects</h2>
+        
+        {/* Status Filter */}
+        <div className="mb-4">
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as 'all' | ProjectStatus)}
+            className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2 text-sm focus:ring-sky-500 focus:border-sky-500"
+          >
+            <option value="all">All Projects</option>
+            <option value={ProjectStatus.ACTIVE}>Active</option>
+            <option value={ProjectStatus.COMPLETED}>Completed</option>
+            <option value={ProjectStatus.ON_HOLD}>On Hold</option>
+          </select>
+        </div>
+        
         <div className="space-y-2">
-          {projects.length === 0 ? (
+          {filteredProjects.length === 0 ? (
             <div className="text-center py-8">
               <svg className="mx-auto h-8 w-8 text-slate-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h12M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-12a2.25 2.25 0 01-2.25-2.25V3M3.75 21v-6.75A2.25 2.25 0 016 12h12a2.25 2.25 0 012.25 2.25V21M3.75 21H21" />
               </svg>
-              <p className="mt-2 text-sm text-slate-400">No projects yet</p>
+              <p className="mt-2 text-sm text-slate-400">
+                {statusFilter === 'all' ? 'No projects yet' : `No ${statusFilter} projects`}
+              </p>
             </div>
           ) : (
-            projects.map((project) => {
+            filteredProjects.map((project) => {
               const isSelected = project.id === selectedProjectId;
               const urgencyScore = calculateUrgencyScore(project.deadline);
               const isOverdue = project.deadline && new Date(project.deadline) < new Date() && project.status !== 'completed';

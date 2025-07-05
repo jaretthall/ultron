@@ -30,7 +30,7 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
     defaultDueDate 
 }) => {
   const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
+  const [context, setContext] = useState('');
   const [priority, setPriority] = useState<TaskPriority>(TaskPriority.MEDIUM);
   const [selectedProjectIdState, setSelectedProjectIdState] = useState<string>(
     defaultProjectId && projects.find(p => p.id === defaultProjectId) ? defaultProjectId : 'standalone'
@@ -38,6 +38,7 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
   const [dueDate, setDueDate] = useState('');
   const [tags, setTags] = useState('');
   const [estimatedHours, setEstimatedHours] = useState<number | string>(0);
+  const [progress, setProgress] = useState(0);
   const [formErrors, setFormErrors] = useState<TaskFormErrors>({});
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -52,15 +53,16 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
         );
         setDueDate(defaultDueDate || '');
         setTitle('');
-        setDescription('');
+        setContext('');
         setPriority(TaskPriority.MEDIUM);
         setTags('');
         setEstimatedHours(0);
+        setProgress(0);
         setFormErrors({});
         setErrorMessage('');
     } else {
         setTitle('');
-        setDescription('');
+        setContext('');
         setPriority(TaskPriority.MEDIUM);
         setSelectedProjectIdState(
             defaultProjectId && availableProjects.find(p => p.id === defaultProjectId) ? defaultProjectId : 'standalone'
@@ -68,6 +70,7 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
         setDueDate(defaultDueDate || '');
         setTags('');
         setEstimatedHours(0);
+        setProgress(0);
         setFormErrors({});
         setErrorMessage('');
     }
@@ -93,13 +96,14 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
 
   const resetFormAndClose = () => {
     setTitle('');
-    setDescription('');
+    setContext('');
     setPriority(TaskPriority.MEDIUM);
     setSelectedProjectIdState(
         defaultProjectId && availableProjects.find(p => p.id === defaultProjectId) ? defaultProjectId : 'standalone'
     );
     setDueDate(defaultDueDate || '');
     setTags('');
+    setProgress(0);
     setErrorMessage('');
     onClose();
   };
@@ -110,7 +114,7 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
     try {
       // Phase 6: Enhanced security validation
       const titleValidation = InputValidator.validateTitle(title);
-      const descriptionValidation = InputValidator.validateDescription(description);
+      const contextValidation = InputValidator.validateDescription(context);
       
       if (!titleValidation.valid) {
         setErrorMessage(titleValidation.error || 'Task title is required.');
@@ -118,9 +122,9 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
         return;
       }
       
-      if (!descriptionValidation.valid) {
-        setErrorMessage(descriptionValidation.error || 'Task description is invalid.');
-        trackUserInteraction('form_validation_error', 'new_task_modal', { error: 'invalid_description' });
+      if (!contextValidation.valid) {
+        setErrorMessage(contextValidation.error || 'Task context is invalid.');
+        trackUserInteraction('form_validation_error', 'new_task_modal', { error: 'invalid_context' });
         return;
       }
 
@@ -137,14 +141,14 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
 
       // Sanitize inputs
       const sanitizedTitle = InputValidator.sanitizeInput(title.trim());
-      const sanitizedDescription = InputValidator.sanitizeInput(description.trim());
+      const sanitizedContext = InputValidator.sanitizeInput(context.trim());
       const sanitizedTags = tags.split(',')
         .map(tag => InputValidator.sanitizeInput(tag.trim()))
         .filter(tag => tag);
 
       const newTaskData: Omit<Task, 'id' | 'created_at' | 'updated_at'> = {
         title: sanitizedTitle,
-        description: sanitizedDescription,
+        context: sanitizedContext,
         priority,
         status: TaskStatus.TODO,
         estimated_hours: estimatedHoursNum,
@@ -152,6 +156,7 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
         project_id: selectedProjectIdState === 'standalone' ? undefined : selectedProjectIdState,
         due_date: dueDate || undefined,
         tags: sanitizedTags,
+        progress: progress,
       };
 
       trackUserInteraction('task_creation_attempted', 'new_task_modal', { 
@@ -236,12 +241,18 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
               {formErrors.title && <p id="taskTitleError" className="text-xs text-red-400 mt-1">{formErrors.title}</p>}
             </div>
                       <div>
-              <label htmlFor="taskDescription" className="block text-sm font-medium text-slate-300 mb-1">Description</label>
+              <label htmlFor="taskContext" className="block text-sm font-medium text-slate-300 mb-1">
+                Context <span className="text-sky-400">*</span>
+                <span className="block text-xs text-slate-400 font-normal mt-0.5">
+                  Provide detailed context to help AI understand this task's purpose, requirements, and any important background information.
+                </span>
+              </label>
               <textarea
-                id="taskDescription"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={3}
+                id="taskContext"
+                value={context}
+                onChange={(e) => setContext(e.target.value)}
+                rows={4}
+                placeholder="Describe what this task involves, why it's important, any specific requirements, constraints, or context that would help the AI understand and prioritize this task effectively..."
                 className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
                 disabled={isSubmitting}
               />
@@ -313,7 +324,33 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
                 disabled={isSubmitting}
               />
             </div>
-                      <div className="flex justify-end space-x-3 pt-2">
+                      
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-1">
+                Progress: {progress}%
+              </label>
+              <div className="space-y-2">
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={progress}
+                  onChange={(e) => setProgress(Number(e.target.value))}
+                  className="w-full h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer slider"
+                  style={{
+                    background: `linear-gradient(to right, #06b6d4 0%, #06b6d4 ${progress}%, #475569 ${progress}%, #475569 100%)`
+                  }}
+                  disabled={isSubmitting}
+                />
+                <div className="flex justify-between text-xs text-slate-400">
+                  <span>Not Started</span>
+                  <span>In Progress</span>
+                  <span>Completed</span>
+                </div>
+              </div>
+            </div>
+                      
+            <div className="flex justify-end space-x-3 pt-2">
               <button
                 type="button"
                 onClick={handleCloseModal}

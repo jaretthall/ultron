@@ -76,13 +76,31 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, projectTitle, onEditTaskReque
           </span>
         </div>
       </div>
-      <div className="mt-3 pt-3 border-t border-slate-700 flex flex-col sm:flex-row justify-between text-xs text-slate-400">
-        <div>
-          Project: <span className="font-medium text-slate-300">{projectTitle}</span>
-          <span className="ml-4 text-[10px] text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity">Click to edit</span>
-        </div>
-        <div className="mt-1 sm:mt-0">
-          Due: <span className="font-medium text-slate-300">{task.due_date ? new Date(task.due_date).toLocaleDateString() : 'N/A'}</span>
+      <div className="mt-3 pt-3 border-t border-slate-700">
+        {/* Progress Bar */}
+        {task.progress !== undefined && task.progress > 0 && (
+          <div className="mb-3">
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-xs text-slate-400">Progress</span>
+              <span className="text-xs font-medium text-slate-300">{task.progress}%</span>
+            </div>
+            <div className="w-full bg-slate-700 rounded-full h-2">
+              <div 
+                className="bg-sky-500 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${task.progress}%` }}
+              ></div>
+            </div>
+          </div>
+        )}
+        
+        <div className="flex flex-col sm:flex-row justify-between text-xs text-slate-400">
+          <div>
+            Project: <span className="font-medium text-slate-300">{projectTitle}</span>
+            <span className="ml-4 text-[10px] text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity">Click to edit</span>
+          </div>
+          <div className="mt-1 sm:mt-0">
+            Due: <span className="font-medium text-slate-300">{task.due_date ? new Date(task.due_date).toLocaleDateString() : 'N/A'}</span>
+          </div>
         </div>
       </div>
        {task.tags && task.tags.length > 0 && (

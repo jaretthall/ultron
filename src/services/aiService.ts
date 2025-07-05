@@ -59,43 +59,112 @@ export const generateAIInsights = async (
   projects: Project[],
   tasks: Task[],
   userPreferences: UserPreferences,
-  _allowFallback: boolean = true
+  allowFallback: boolean = true
 ): Promise<AIServiceResult<AIInsights>> => {
-  try {
-    // Call the unified serverless function which handles provider selection and fallback
-    const response = await fetch('/api/ai-unified', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        action: 'insights',
-        projects,
-        tasks,
-        userPreferences
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error(`Server error: ${response.status}`);
+  const primaryProvider = userPreferences.ai_provider || 'gemini';
+  let currentProvider = primaryProvider;
+  let result: AIServiceResult<AIInsights> | null = null;
+  
+  // Try primary provider first, then fallback providers if enabled
+  while (currentProvider && !result?.success) {
+    if (!checkProviderAvailability(currentProvider, userPreferences)) {
+      console.warn(`Provider ${currentProvider} not available, trying next...`);
+      currentProvider = allowFallback ? getNextAvailableProvider(currentProvider, userPreferences) : null;
+      continue;
     }
 
-    const result = await response.json();
-    return result;
-
-  } catch (error) {
-    console.error('Error in unified AI insights:', error);
-    return {
-      data: {
-        blocked_tasks: [],
-        projects_needing_attention: [],
-        recommendations: ['AI analysis failed. Check provider configurations and try again.']
-      },
-      provider_used: 'none',
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
-    };
+    try {
+      console.log(`Attempting to generate insights with provider: ${currentProvider}`);
+      
+      switch (currentProvider) {
+        case 'gemini':
+          const geminiAnalysis = await generateGeminiWorkloadAnalysis(projects, tasks, userPreferences);
+          result = {
+            data: {
+              blocked_tasks: geminiAnalysis.blocked_tasks || [],
+              projects_needing_attention: geminiAnalysis.projects_needing_attention || [],
+              recommendations: geminiAnalysis.recommendations || [],
+              focus_recommendations: geminiAnalysis.focus_recommendations || [],
+              priority_balance_score: geminiAnalysis.priority_balance_score
+            },
+            provider_used: 'gemini',
+            success: true,
+            fallback_used: currentProvider !== primaryProvider
+          };
+          break;
+          
+        case 'claude':
+          const claudeAnalysis = await generateClaudeWorkloadAnalysis(projects, tasks, userPreferences);
+          result = {
+            data: {
+              blocked_tasks: claudeAnalysis.blocked_tasks || [],
+              projects_needing_attention: claudeAnalysis.projects_needing_attention || [],
+              recommendations: claudeAnalysis.recommendations || [],
+              focus_recommendations: claudeAnalysis.focus_recommendations || [],
+              priority_balance_score: claudeAnalysis.priority_balance_score
+            },
+            provider_used: 'claude',
+            success: true,
+            fallback_used: currentProvider !== primaryProvider
+          };
+          break;
+          
+        case 'openai':
+          const openaiAnalysis = await generateOpenAIWorkloadAnalysis(projects, tasks, userPreferences);
+          result = {
+            data: {
+              blocked_tasks: openaiAnalysis.blocked_tasks || [],
+              projects_needing_attention: openaiAnalysis.projects_needing_attention || [],
+              recommendations: openaiAnalysis.recommendations || [],
+              focus_recommendations: openaiAnalysis.focus_recommendations || [],
+              priority_balance_score: openaiAnalysis.priority_balance_score
+            },
+            provider_used: 'openai',
+            success: true,
+            fallback_used: currentProvider !== primaryProvider
+          };
+          break;
+          
+        default:
+          throw new Error(`Unknown provider: ${currentProvider}`);
+      }
+      
+    } catch (error) {
+      console.error(`Error with provider ${currentProvider}:`, error);
+      
+      if (allowFallback) {
+        currentProvider = getNextAvailableProvider(currentProvider, userPreferences);
+        if (currentProvider) {
+          console.log(`Falling back to provider: ${currentProvider}`);
+          continue;
+        }
+      }
+      
+      // If we get here, all providers failed or fallback is disabled
+      result = {
+        data: {
+          blocked_tasks: [],
+          projects_needing_attention: [],
+          recommendations: [`AI analysis failed with ${currentProvider}. ${allowFallback ? 'All fallback providers also failed.' : 'Fallback disabled.'}`]
+        },
+        provider_used: 'none',
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+      break;
+    }
   }
+
+  return result || {
+    data: {
+      blocked_tasks: [],
+      projects_needing_attention: [],
+      recommendations: ['No AI providers available. Please configure API keys in settings.']
+    },
+    provider_used: 'none',
+    success: false,
+    error: 'No providers available'
+  };
 };
 
 // Unified daily plan generation with fallback

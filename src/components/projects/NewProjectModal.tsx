@@ -10,14 +10,16 @@ interface NewProjectModalProps {
 
 const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAddProject }) => {
   const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
+  const [projectDescription, setProjectDescription] = useState('');
   const [goals, setGoals] = useState('');
   const [deadline, setDeadline] = useState('');
   const [status, setStatus] = useState<ProjectStatus>(ProjectStatus.ACTIVE);
-  const [context, setContext] = useState<ProjectContext>(ProjectContext.BUSINESS);
+  const [projectContext, setProjectContext] = useState<ProjectContext>(ProjectContext.BUSINESS);
   const [tags, setTags] = useState('');
   const [businessRelevance, setBusinessRelevance] = useState(5);
   const [preferredTimeSlots, setPreferredTimeSlots] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const timeSlotOptions = [
     'early-morning',
@@ -31,14 +33,16 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
   useEffect(() => {
     if (!isOpen) {
       setTitle('');
-      setDescription('');
+      setProjectDescription('');
       setGoals('');
       setDeadline('');
       setStatus(ProjectStatus.ACTIVE);
-      setContext(ProjectContext.BUSINESS);
+      setProjectContext(ProjectContext.BUSINESS);
       setTags('');
       setBusinessRelevance(5);
       setPreferredTimeSlots([]);
+      setIsSubmitting(false);
+      setErrorMessage('');
     }
   }, [isOpen]);
 
@@ -52,33 +56,45 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
     );
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (!title.trim()) {
-      alert('Project title is required.');
+      setErrorMessage('Project title is required.');
       return;
     }
 
-    const newProject: Project = {
-      id: `proj_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      title: title.trim(),
-      description: description.trim(),
-      goals: goals.split('\n').map(goal => goal.trim()).filter(goal => goal),
-      deadline: deadline || undefined,
-      status,
-      context,
-      tags: tags.split(',').map(tag => tag.trim()).filter(tag => tag),
-      business_relevance: businessRelevance,
-      preferred_time_slots: preferredTimeSlots,
-      // created_at, updated_at will be handled by backend/Supabase
-    };
-    onAddProject(newProject);
+    if (isSubmitting) return; // Prevent multiple submissions
+
+    setIsSubmitting(true);
+    setErrorMessage('');
+
+    try {
+      const newProjectData: Omit<Project, 'id' | 'created_at' | 'updated_at' | 'user_id'> = {
+        title: title.trim(),
+        context: projectDescription.trim(),
+        goals: goals.split('\n').map(goal => goal.trim()).filter(goal => goal),
+        deadline: deadline || undefined,
+        status,
+        project_context: projectContext,
+        tags: tags.split(',').map(tag => tag.trim()).filter(tag => tag),
+        business_relevance: businessRelevance,
+        preferred_time_slots: preferredTimeSlots,
+      };
+      
+      await onAddProject(newProjectData);
+      onClose(); // Close modal after successful creation
+    } catch (error: any) {
+      console.error('Error creating project:', error);
+      setErrorMessage(error.message || 'Failed to create project. Please try again.');
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div
         className="fixed inset-0 bg-slate-900 bg-opacity-75 backdrop-blur-sm flex items-center justify-center p-4 z-50"
-        onClick={onClose}
+        onClick={isSubmitting ? undefined : onClose}
         aria-modal="true"
         role="dialog"
         aria-labelledby="newProjectModalTitle"
@@ -89,12 +105,24 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
       >
         <div className="flex justify-between items-center mb-6">
           <h2 id="newProjectModalTitle" className="text-2xl font-semibold text-sky-400">Create New Project</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-200" aria-label="Close modal">
+          <button 
+            onClick={onClose} 
+            className="text-slate-400 hover:text-slate-200" 
+            aria-label="Close modal"
+            disabled={isSubmitting}
+          >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-7 h-7">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
+
+        {errorMessage && (
+          <div className="mb-4 p-3 bg-red-800/20 border border-red-600 rounded-lg">
+            <p className="text-red-400 text-sm">{errorMessage}</p>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="projectTitle" className="block text-sm font-medium text-slate-300 mb-1">Title <span className="text-red-500">*</span></label>
@@ -104,18 +132,27 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
+              disabled={isSubmitting}
               required
               aria-required="true"
+              disabled={isSubmitting}
             />
           </div>
           <div>
-            <label htmlFor="projectDescription" className="block text-sm font-medium text-slate-300 mb-1">Description</label>
+            <label htmlFor="projectDescription" className="block text-sm font-medium text-slate-300 mb-1">
+              Context <span className="text-sky-400">*</span>
+              <span className="block text-xs text-slate-400 font-normal mt-0.5">
+                Provide detailed context to help AI understand this project's purpose, goals, and any important background information.
+              </span>
+            </label>
             <textarea
               id="projectDescription"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              value={projectDescription}
+              onChange={(e) => setProjectDescription(e.target.value)}
+              placeholder="Describe what this project involves, its objectives, constraints, stakeholders, and any context that would help the AI understand and prioritize this project effectively..."
               rows={3}
               className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
+              disabled={isSubmitting}
             />
           </div>
           <div>
@@ -127,6 +164,7 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
               rows={3}
               placeholder="e.g., Finalize design mockups&#10;Develop core features&#10;User testing"
               className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
+              disabled={isSubmitting}
             />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -137,6 +175,7 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
                 value={status}
                 onChange={(e) => setStatus(e.target.value as ProjectStatus)}
                 className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
+              disabled={isSubmitting}
               >
                 {Object.values(ProjectStatus).map((statusValue: string) => (
                   <option key={statusValue} value={statusValue}>
@@ -146,12 +185,13 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
               </select>
             </div>
             <div>
-              <label htmlFor="projectContext" className="block text-sm font-medium text-slate-300 mb-1">Context</label>
+              <label htmlFor="projectContext" className="block text-sm font-medium text-slate-300 mb-1">Type</label>
               <select
                 id="projectContext"
-                value={context}
-                onChange={(e) => setContext(e.target.value as ProjectContext)}
+                value={projectContext}
+                onChange={(e) => setProjectContext(e.target.value as ProjectContext)}
                 className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
+              disabled={isSubmitting}
               >
                 {Object.values(ProjectContext).map((contextValue: string) => (
                   <option key={contextValue} value={contextValue}>
@@ -169,6 +209,7 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
               value={deadline}
               onChange={(e) => setDeadline(e.target.value)}
               className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
+              disabled={isSubmitting}
               aria-label="Project deadline"
             />
           </div>
@@ -219,21 +260,24 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
               onChange={(e) => setTags(e.target.value)}
               placeholder="e.g., development, Q3, client-project"
               className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
+              disabled={isSubmitting}
             />
           </div>
           <div className="flex justify-end space-x-3 pt-2">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-slate-300 bg-slate-600 hover:bg-slate-500 rounded-md transition-colors"
+              className="px-4 py-2 text-sm font-medium text-slate-300 bg-slate-600 hover:bg-slate-500 rounded-md transition-colors disabled:opacity-50"
+              disabled={isSubmitting}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 rounded-md transition-colors"
+              className="px-4 py-2 text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 rounded-md transition-colors disabled:bg-sky-800 disabled:cursor-not-allowed flex items-center justify-center min-w-[130px]"
+              disabled={isSubmitting}
             >
-              Create Project
+              {isSubmitting ? 'Creating...' : 'Create Project'}
             </button>
           </div>
         </form>

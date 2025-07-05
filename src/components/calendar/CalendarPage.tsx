@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { Task, /*TaskStatus*/ } from '../../../types';
+import { Task, Schedule, /*TaskStatus*/ } from '../../../types';
 import { useAppState } from '../../contexts/AppStateContext';
 import { formatDateForInput, isSameDate } from '../../utils/dateUtils';
 import NewTaskModal from '../tasks/NewTaskModal';
+import NewEventModal from './NewEventModal';
+import EditEventModal from './EditEventModal';
 import TaskScheduler from './TaskScheduler';
 import WorkingHoursManager from './WorkingHoursManager';
 import FocusBlockManager from './FocusBlockManager';
@@ -20,11 +22,14 @@ interface CalendarPageProps {
 }
 
 const CalendarPage: React.FC<CalendarPageProps> = ({ onTaskClick, onEditTask }) => {
-  const { state, /*updateTask,*/ addTask } = useAppState();
-  const { tasks, projects } = state;
+  const { state, /*updateTask,*/ addTask, addSchedule, updateSchedule, deleteSchedule } = useAppState();
+  const { tasks, projects, schedules } = state;
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showNewTaskModal, setShowNewTaskModal] = useState(false);
+  const [showNewEventModal, setShowNewEventModal] = useState(false);
+  const [showEditEventModal, setShowEditEventModal] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<Schedule | null>(null);
   const [isTaskSchedulerOpen, setIsTaskSchedulerOpen] = useState(false);
   const [isWorkingHoursOpen, setIsWorkingHoursOpen] = useState(false);
   const [isFocusBlockManagerOpen, setIsFocusBlockManagerOpen] = useState(false);
@@ -54,6 +59,10 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ onTaskClick, onEditTask }) 
       const date = new Date(year, month, day);
       const isSelected = selectedDate && isSameDate(date, selectedDate);
       const tasksOnDate = tasks.filter(task => task.due_date && isSameDate(task.due_date, date));
+      const eventsOnDate = schedules.filter(schedule => {
+        const scheduleDate = new Date(schedule.start_date);
+        return isSameDate(scheduleDate, date);
+      });
 
       cells.push(
         <div
@@ -64,19 +73,24 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ onTaskClick, onEditTask }) 
           `}
           onClick={() => setSelectedDate(date)}
           role="button"
-          aria-pressed={isSelected ? "true" : "false"}
-          aria-label={`Select ${date.toLocaleDateString()}, ${tasksOnDate.length} tasks`}
+          aria-pressed={isSelected}
+          aria-label={`Select ${date.toLocaleDateString()}, ${tasksOnDate.length} tasks, ${eventsOnDate.length} events`}
           tabIndex={0}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setSelectedDate(date);}}
         >
           <span className={`text-sm font-medium ${isSelected ? 'text-white' : 'text-slate-300'}`}>{day}</span>
           <div className="mt-1 space-y-0.5 overflow-y-auto max-h-16 text-xs">
-            {tasksOnDate.slice(0, 2).map(task => (
+            {tasksOnDate.slice(0, 1).map(task => (
                  <div key={task.id} className={`p-0.5 rounded-sm text-white truncate ${task.priority === 'urgent' ? 'bg-red-600' : task.priority === 'high' ? 'bg-orange-600' : 'bg-sky-800'}`}>
                     {task.title}
                  </div>
             ))}
-            {tasksOnDate.length > 2 && <div className="text-slate-400 text-[10px]">+{tasksOnDate.length - 2} more</div>}
+            {eventsOnDate.slice(0, 1).map(event => (
+                 <div key={event.id} className="p-0.5 rounded-sm text-white truncate bg-green-600">
+                    {event.title}
+                 </div>
+            ))}
+            {(tasksOnDate.length + eventsOnDate.length) > 2 && <div className="text-slate-400 text-[10px]">+{(tasksOnDate.length + eventsOnDate.length) - 2} more</div>}
           </div>
         </div>
       );
@@ -97,6 +111,10 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ onTaskClick, onEditTask }) 
   }
 
   const tasksForSelectedDate = selectedDate ? tasks.filter(task => task.due_date && isSameDate(task.due_date, selectedDate)) : [];
+  const eventsForSelectedDate = selectedDate ? schedules.filter(schedule => {
+    const scheduleDate = new Date(schedule.start_date);
+    return isSameDate(scheduleDate, selectedDate);
+  }) : [];
 
   // Default handlers if not provided as props
   const handleTaskClick = onTaskClick || ((task: Task) => {
@@ -118,6 +136,43 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ onTaskClick, onEditTask }) 
       setShowNewTaskModal(false);
     } catch (error) {
       console.error('Error adding task:', error);
+    }
+  };
+
+  const handleAddEvent = async (eventData: Omit<Schedule, 'id' | 'created_at' | 'updated_at'>) => {
+    try {
+      console.log('Adding event:', eventData);
+      await addSchedule(eventData);
+      setShowNewEventModal(false);
+    } catch (error) {
+      console.error('Error adding event:', error);
+    }
+  };
+
+  const handleEditEvent = (event: Schedule) => {
+    setSelectedEvent(event);
+    setShowEditEventModal(true);
+  };
+
+  const handleUpdateEvent = async (id: string, updates: Partial<Schedule>) => {
+    try {
+      await updateSchedule(id, updates);
+      setShowEditEventModal(false);
+      setSelectedEvent(null);
+    } catch (error) {
+      console.error('Error updating event:', error);
+      throw error;
+    }
+  };
+
+  const handleDeleteEvent = async (id: string) => {
+    try {
+      await deleteSchedule(id);
+      setShowEditEventModal(false);
+      setSelectedEvent(null);
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      throw error;
     }
   };
 
@@ -168,6 +223,16 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ onTaskClick, onEditTask }) 
             >
               <PlusIcon /> <span className="ml-2">Add Task</span>
             </button>
+            <button
+              onClick={() => setShowNewEventModal(true)}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-4 rounded-lg flex items-center text-sm"
+              aria-label="Add New Event"
+            >
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span>Add Event</span>
+            </button>
           </div>
         </div>
 
@@ -204,59 +269,124 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ onTaskClick, onEditTask }) 
           {selectedDate ? selectedDate.toLocaleDateString('default', { weekday: 'long', month: 'long', day: 'numeric' }) : 'No date selected'}
         </h3>
         <div className="flex-1 overflow-y-auto pt-2" aria-live="polite">
-          {tasksForSelectedDate.length > 0 ? (
-            <ul className="space-y-3">
-              {tasksForSelectedDate.map(task => (
-                <li 
-                  key={task.id} 
-                  className="p-3 bg-slate-700 hover:bg-slate-600 rounded-md cursor-pointer transition-all hover:scale-[1.02] hover:shadow-lg group"
-                  onClick={() => handleTaskClick(task)}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      handleTaskClick(task);
-                    }
-                  }}
-                  aria-label={`Edit task: ${task.title}`}
-                >
-                  <div className="flex justify-between items-start mb-2">
-                    <p className="font-medium text-slate-100 group-hover:text-sky-400 transition-colors">{task.title}</p>
-                    <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); handleEditTask(task); }}
-                        className="p-1 rounded text-slate-400 hover:text-sky-400 hover:bg-slate-600"
-                        aria-label={`Edit ${task.title}`}
-                        title="Edit task"
-                      >
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                      </button>
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); handleMarkComplete(task); }}
-                        className={`p-1 rounded text-slate-400 hover:text-green-400 hover:bg-slate-600 ${task.status === 'completed' ? 'text-green-400' : ''}`}
-                        aria-label={`Mark ${task.title} as ${task.status === 'completed' ? 'incomplete' : 'complete'}`}
-                        title={task.status === 'completed' ? 'Mark incomplete' : 'Mark complete'}
-                      >
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                      </button>
+          {tasksForSelectedDate.length > 0 && (
+            <div className="mb-4">
+              <h4 className="text-sm font-medium text-slate-300 mb-2">Tasks</h4>
+              <ul className="space-y-3">
+                {tasksForSelectedDate.map(task => (
+                  <li 
+                    key={task.id} 
+                    className="p-3 bg-slate-700 hover:bg-slate-600 rounded-md cursor-pointer transition-all hover:scale-[1.02] hover:shadow-lg group"
+                    onClick={() => handleTaskClick(task)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleTaskClick(task);
+                      }
+                    }}
+                    aria-label={`Edit task: ${task.title}`}
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <p className="font-medium text-slate-100 group-hover:text-sky-400 transition-colors">{task.title}</p>
+                      <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); handleEditTask(task); }}
+                          className="p-1 rounded text-slate-400 hover:text-sky-400 hover:bg-slate-600"
+                          aria-label={`Edit ${task.title}`}
+                          title="Edit task"
+                        >
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                        </button>
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); handleMarkComplete(task); }}
+                          className={`p-1 rounded text-slate-400 hover:text-green-400 hover:bg-slate-600 ${task.status === 'completed' ? 'text-green-400' : ''}`}
+                          aria-label={`Mark ${task.title} as ${task.status === 'completed' ? 'incomplete' : 'complete'}`}
+                          title={task.status === 'completed' ? 'Mark incomplete' : 'Mark complete'}
+                        >
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                  <p className="text-xs text-slate-400">{task.priority} - {task.status}</p>
-                  <p className="text-[10px] text-slate-600 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Click to edit or use buttons</p>
-                </li>
-              ))}
-            </ul>
-          ) : (
+                    <p className="text-xs text-slate-400">{task.priority} - {task.status}</p>
+                    <p className="text-[10px] text-slate-600 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Click to edit or use buttons</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          
+          {eventsForSelectedDate.length > 0 && (
+            <div className="mb-4">
+              <h4 className="text-sm font-medium text-slate-300 mb-2">Events</h4>
+              <ul className="space-y-3">
+                {eventsForSelectedDate.map(event => (
+                  <li 
+                    key={event.id} 
+                    className="p-3 bg-green-700 hover:bg-green-600 rounded-md cursor-pointer transition-all hover:scale-[1.02] hover:shadow-lg group"
+                    onClick={() => handleEditEvent(event)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleEditEvent(event);
+                      }
+                    }}
+                    aria-label={`Edit event: ${event.title}`}
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <p className="font-medium text-slate-100 group-hover:text-green-200 transition-colors">{event.title}</p>
+                      <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); handleEditEvent(event); }}
+                          className="p-1 rounded text-slate-200 hover:text-green-200 hover:bg-green-600"
+                          aria-label={`Edit ${event.title}`}
+                          title="Edit event"
+                        >
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                        </button>
+                        <button 
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            setSelectedEvent(event);
+                            setShowEditEventModal(true);
+                          }}
+                          className="p-1 rounded text-slate-200 hover:text-red-300 hover:bg-red-600"
+                          aria-label={`Delete ${event.title}`}
+                          title="Delete event"
+                        >
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                    <p className="text-xs text-slate-200">
+                      {new Date(event.start_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - 
+                      {new Date(event.end_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                    {event.context && <p className="text-xs text-slate-300 mt-1">{event.context}</p>}
+                    <p className="text-[10px] text-slate-300 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Click to edit or use buttons</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          
+          {tasksForSelectedDate.length === 0 && eventsForSelectedDate.length === 0 && (
             <div className="text-center py-10 text-slate-500">
               <svg className="mx-auto h-10 w-10 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
               </svg>
-              <p>No tasks due on this date.</p>
+              <p>No tasks or events on this date.</p>
             </div>
           )}
         </div>
@@ -268,6 +398,30 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ onTaskClick, onEditTask }) 
             onAddTask={handleAddTask}
             projects={projects}
             defaultDueDate={formatDateForInput(selectedDate)}
+        />
+      )}
+      
+      {showNewEventModal && (
+        <NewEventModal
+          isOpen={showNewEventModal}
+          onClose={() => setShowNewEventModal(false)}
+          onAddEvent={handleAddEvent}
+          projects={projects}
+          defaultDate={selectedDate ? formatDateForInput(selectedDate) : undefined}
+        />
+      )}
+      
+      {showEditEventModal && (
+        <EditEventModal
+          isOpen={showEditEventModal}
+          onClose={() => {
+            setShowEditEventModal(false);
+            setSelectedEvent(null);
+          }}
+          onUpdateEvent={handleUpdateEvent}
+          onDeleteEvent={handleDeleteEvent}
+          event={selectedEvent}
+          projects={projects}
         />
       )}
       

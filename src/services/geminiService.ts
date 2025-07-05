@@ -166,6 +166,23 @@ export const generateStrategicInsights = async (
 };
 
 // Enhanced daily plan generation leveraging TaskScheduler intelligence
+// Helper function to ensure Gemini is initialized with the user's API key
+const ensureGeminiInitialized = (userPreferences: UserPreferences): boolean => {
+  // Check for API key from environment variables first, then user preferences
+  const env = (import.meta as any).env;
+  const apiKey = env?.VITE_GEMINI_API_KEY || env?.VITE_API_KEY || userPreferences.gemini_api_key;
+  
+  if (!apiKey) {
+    return false;
+  }
+  
+  if (!geminiAI) {
+    return initializeGeminiService(apiKey);
+  }
+  
+  return true;
+};
+
 export const generateDailyPlan = async (
   date: Date,
   projects: Project[],
@@ -195,7 +212,7 @@ export const generateDailyPlan = async (
   };
 
   if (userPreferences.ai_provider === 'gemini') {
-    if (!geminiAI) {
+    if (!ensureGeminiInitialized(userPreferences)) {
       console.warn("Gemini API key not configured. Returning default plan.");
       return defaultPlan;
     }
@@ -288,7 +305,7 @@ export const generateWorkloadAnalysis = async (
   };
 
   if (userPreferences.ai_provider === 'gemini') {
-    if (!geminiAI) {
+    if (!ensureGeminiInitialized(userPreferences)) {
       console.warn("Gemini API key not configured. Returning default analysis.");
       return defaultAnalysis;
     }

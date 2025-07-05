@@ -72,6 +72,22 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, projectTitle, onEditTaskReque
         <p className={`text-xs text-slate-400 mb-3 ${task.status === TaskStatus.COMPLETED ? 'line-through' : ''} break-words max-h-16 overflow-hidden`}>
           {task.description || "No description."}
         </p>
+        
+        {/* Progress Bar */}
+        {task.progress !== undefined && task.progress > 0 && (
+          <div className="mb-3">
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-xs text-slate-400">Progress</span>
+              <span className="text-xs font-medium text-slate-300">{task.progress}%</span>
+            </div>
+            <div className="w-full bg-slate-700 rounded-full h-1.5">
+              <div 
+                className="bg-sky-500 h-1.5 rounded-full transition-all duration-300"
+                style={{ width: `${task.progress}%` }}
+              ></div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="mt-auto">

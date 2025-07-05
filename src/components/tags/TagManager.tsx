@@ -142,17 +142,17 @@ const TagManager: React.FC<TagManagerProps> = ({ onClose }) => {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl h-5/6 flex flex-col">
+    <div className="fixed inset-0 bg-slate-900 bg-opacity-75 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-slate-800 rounded-lg shadow-xl w-full max-w-6xl h-5/6 flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b">
+        <div className="flex items-center justify-between p-6 border-b border-slate-700">
           <div>
-            <h2 className="text-2xl font-bold">Tag Manager</h2>
-            <p className="text-gray-600">Manage tags, categories, and analyze usage patterns</p>
+            <h2 className="text-2xl font-bold text-slate-100">Tag Manager</h2>
+            <p className="text-slate-400">Manage tags, categories, and analyze usage patterns</p>
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-slate-400 hover:text-slate-200"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -161,7 +161,7 @@ const TagManager: React.FC<TagManagerProps> = ({ onClose }) => {
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b">
+        <div className="flex border-b border-slate-700">
           {[
             { id: 'tags', label: 'Tags', count: tags.length },
             { id: 'categories', label: 'Categories', count: categories.length },
@@ -172,8 +172,8 @@ const TagManager: React.FC<TagManagerProps> = ({ onClose }) => {
               onClick={() => setActiveTab(tab.id as any)}
               className={`px-6 py-3 font-medium ${
                 activeTab === tab.id
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'text-sky-400 border-b-2 border-sky-400'
+                  : 'text-slate-400 hover:text-slate-200'
               }`}
             >
               {tab.label} ({tab.count})
@@ -653,11 +653,11 @@ const TagModal: React.FC<TagModalProps> = ({ tag, categories, onSave, onClose })
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
-        <div className="flex items-center justify-between p-6 border-b">
-          <h3 className="text-lg font-semibold">{tag ? 'Edit Tag' : 'Create New Tag'}</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+    <div className="fixed inset-0 bg-slate-900 bg-opacity-75 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-slate-800 rounded-lg shadow-xl w-full max-w-md">
+        <div className="flex items-center justify-between p-6 border-b border-slate-700">
+          <h3 className="text-lg font-semibold text-slate-100">{tag ? 'Edit Tag' : 'Create New Tag'}</h3>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-200">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -666,34 +666,34 @@ const TagModal: React.FC<TagModalProps> = ({ tag, categories, onSave, onClose })
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+            <label className="block text-sm font-medium text-slate-300 mb-1">Name</label>
             <input
               type="text"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-lg px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
               placeholder="Enter tag name"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <label className="block text-sm font-medium text-slate-300 mb-1">Description</label>
             <textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-lg px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
               placeholder="Optional description"
               rows={2}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+            <label className="block text-sm font-medium text-slate-300 mb-1">Category</label>
             <select
               value={formData.category_id}
               onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
-              className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-lg px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
               required
             >
               {categories.map(category => (
@@ -703,19 +703,19 @@ const TagModal: React.FC<TagModalProps> = ({ tag, categories, onSave, onClose })
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Color</label>
+            <label className="block text-sm font-medium text-slate-300 mb-1">Color</label>
             <div className="flex items-center space-x-2">
               <input
                 type="color"
                 value={formData.color}
                 onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                className="w-12 h-10 border rounded cursor-pointer"
+                className="w-12 h-10 bg-slate-700 border-slate-600 rounded cursor-pointer"
               />
               <input
                 type="text"
                 value={formData.color}
                 onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                className="flex-1 border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="flex-1 bg-slate-700 border-slate-600 text-slate-100 rounded-lg px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
                 placeholder="#6B7280"
               />
             </div>
@@ -725,13 +725,13 @@ const TagModal: React.FC<TagModalProps> = ({ tag, categories, onSave, onClose })
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-600 border rounded-lg hover:bg-gray-50"
+              className="px-4 py-2 text-slate-300 bg-slate-600 border border-slate-500 rounded-lg hover:bg-slate-500"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700"
             >
               {tag ? 'Update' : 'Create'} Tag
             </button>
@@ -765,11 +765,11 @@ const CategoryModal: React.FC<CategoryModalProps> = ({ category, onSave, onClose
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
-        <div className="flex items-center justify-between p-6 border-b">
-          <h3 className="text-lg font-semibold">{category ? 'Edit Category' : 'Create New Category'}</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+    <div className="fixed inset-0 bg-slate-900 bg-opacity-75 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-slate-800 rounded-lg shadow-xl w-full max-w-md">
+        <div className="flex items-center justify-between p-6 border-b border-slate-700">
+          <h3 className="text-lg font-semibold text-slate-100">{category ? 'Edit Category' : 'Create New Category'}</h3>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-200">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -778,56 +778,56 @@ const CategoryModal: React.FC<CategoryModalProps> = ({ category, onSave, onClose
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Internal Name</label>
+            <label className="block text-sm font-medium text-slate-300 mb-1">Internal Name</label>
             <input
               type="text"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-lg px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
               placeholder="category_name"
               required
             />
-            <p className="text-xs text-gray-500 mt-1">Used internally for identification</p>
+            <p className="text-xs text-slate-400 mt-1">Used internally for identification</p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Display Label</label>
+            <label className="block text-sm font-medium text-slate-300 mb-1">Display Label</label>
             <input
               type="text"
               value={formData.label}
               onChange={(e) => setFormData({ ...formData, label: e.target.value })}
-              className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-lg px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
               placeholder="Category Name"
               required
             />
-            <p className="text-xs text-gray-500 mt-1">Displayed to users</p>
+            <p className="text-xs text-slate-400 mt-1">Displayed to users</p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <label className="block text-sm font-medium text-slate-300 mb-1">Description</label>
             <textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-lg px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
               placeholder="Optional description"
               rows={2}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Color</label>
+            <label className="block text-sm font-medium text-slate-300 mb-1">Color</label>
             <div className="flex items-center space-x-2">
               <input
                 type="color"
                 value={formData.color}
                 onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                className="w-12 h-10 border rounded cursor-pointer"
+                className="w-12 h-10 bg-slate-700 border-slate-600 rounded cursor-pointer"
               />
               <input
                 type="text"
                 value={formData.color}
                 onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                className="flex-1 border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="flex-1 bg-slate-700 border-slate-600 text-slate-100 rounded-lg px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
                 placeholder="#6B7280"
               />
             </div>
@@ -837,13 +837,13 @@ const CategoryModal: React.FC<CategoryModalProps> = ({ category, onSave, onClose
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-600 border rounded-lg hover:bg-gray-50"
+              className="px-4 py-2 text-slate-300 bg-slate-600 border border-slate-500 rounded-lg hover:bg-slate-500"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700"
             >
               {category ? 'Update' : 'Create'} Category
             </button>

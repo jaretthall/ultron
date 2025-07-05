@@ -37,11 +37,11 @@ export interface UniversalSyncFields {
 export interface Project extends UniversalSyncFields {
   id: string;
   title: string;
-  description: string;
+  context: string; // AI context - detailed description for AI understanding
   goals: string[];
   deadline?: string; // DateTime
   status: ProjectStatus;
-  context: ProjectContext;
+  project_context: ProjectContext; // business/personal/hybrid classification
   tags: string[];
   business_relevance?: number;
   preferred_time_slots?: string[];
@@ -54,10 +54,11 @@ export interface Task extends UniversalSyncFields {
   id: string;
   project_id?: string; // Reference to projects.id
   title: string;
-  description: string;
+  context: string; // AI context - detailed description for AI understanding
   priority: TaskPriority;
   estimated_hours: number; // Float
   status: TaskStatus;
+  progress?: number; // 0-100 percentage of task completion
   dependencies: string[]; // JSON array of task IDs
   due_date?: string; // DateTime
   tags: string[];
@@ -142,18 +143,25 @@ export interface Note extends UniversalSyncFields {
 
 export interface Schedule extends UniversalSyncFields {
   id: string; // CUID
-  project_id: string; // FK to Project
+  project_id?: string; // FK to Project - optional for standalone events
   title: string;
+  context?: string; // Description/notes about the event
   start_date: string; // DateTime
   end_date: string; // DateTime
   all_day?: boolean;
+  event_type?: 'meeting' | 'appointment' | 'deadline' | 'personal' | 'other';
+  location?: string;
   recurring?: string; // JSON object for recurrence rule
   reminders?: string; // JSON array of reminders
+  blocks_work_time?: boolean; // Whether this event blocks time for task scheduling
   tags: string[];
   created_at?: string;
   updated_at?: string;
   user_id?: string;
 }
+
+// Alias for better semantic meaning
+export type CalendarEvent = Schedule;
 
 export interface DocumentFile extends UniversalSyncFields {
   id: string; // CUID

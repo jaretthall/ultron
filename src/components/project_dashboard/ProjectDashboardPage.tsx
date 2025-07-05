@@ -23,9 +23,9 @@ const ProjectDashboardPage: React.FC<ProjectDashboardPageProps> = ({
   onAddTask,
   // onAddProject, - unused
   onEditProjectRequest,
-  // onDeleteProject, - unused
-  // onEditTaskRequest, - unused
-  // onDeleteTask, - unused
+  onDeleteProject,
+  onEditTaskRequest,
+  onDeleteTask,
   projectContextFilter = 'all'
 }) => {
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
@@ -80,6 +80,9 @@ const ProjectDashboardPage: React.FC<ProjectDashboardPageProps> = ({
         allTasksForProjectContext={tasks}
         onAddTask={handleAddTask}
         onUpdateProject={handleUpdateProject}
+        onDeleteProject={onDeleteProject}
+        onEditTaskRequest={onEditTaskRequest}
+        onDeleteTask={onDeleteTask}
         allProjects={projects}
       />
       <RightSidebarComponent />

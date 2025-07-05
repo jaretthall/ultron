@@ -5,24 +5,27 @@ interface EditProjectModalProps {
   isOpen: boolean;
   onClose: () => void;
   onUpdateProject: (project: Project) => void;
+  onDeleteProject?: (projectId: string) => Promise<void>;
   project: Project;
 }
 
 const EditProjectModal: React.FC<EditProjectModalProps> = ({ 
   isOpen, 
   onClose, 
-  onUpdateProject, 
+  onUpdateProject,
+  onDeleteProject, 
   project 
 }) => {
   const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
+  const [projectDescription, setProjectDescription] = useState('');
   const [goals, setGoals] = useState('');
   const [deadline, setDeadline] = useState('');
   const [status, setStatus] = useState<ProjectStatus>(ProjectStatus.ACTIVE);
-  const [context, setContext] = useState<ProjectContext>(ProjectContext.BUSINESS);
+  const [projectContext, setProjectContext] = useState<ProjectContext>(ProjectContext.BUSINESS);
   const [tags, setTags] = useState('');
   const [businessRelevance, setBusinessRelevance] = useState(5);
   const [preferredTimeSlots, setPreferredTimeSlots] = useState<string[]>([]);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const timeSlotOptions = [
     'early-morning',
@@ -36,11 +39,11 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
   useEffect(() => {
     if (isOpen && project) {
       setTitle(project.title || '');
-      setDescription(project.description || '');
+      setProjectDescription(project.context || '');
       setGoals(project.goals?.join('\n') || '');
       setDeadline(project.deadline ? project.deadline.split('T')[0] : '');
       setStatus(project.status);
-      setContext(project.context);
+      setProjectContext(project.project_context);
       setTags(project.tags?.join(', ') || '');
       setBusinessRelevance(project.business_relevance || 5);
       setPreferredTimeSlots(project.preferred_time_slots || []);
@@ -51,11 +54,11 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
     if (!isOpen) {
       // Reset form on close
       setTitle('');
-      setDescription('');
+      setProjectDescription('');
       setGoals('');
       setDeadline('');
       setStatus(ProjectStatus.ACTIVE);
-      setContext(ProjectContext.BUSINESS);
+      setProjectContext(ProjectContext.BUSINESS);
       setTags('');
       setBusinessRelevance(5);
       setPreferredTimeSlots([]);
@@ -74,11 +77,11 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
     const updatedProject: Project = {
       ...project,
       title: title.trim(),
-      description: description.trim(),
+      context: projectDescription.trim(),
       goals: goals.split('\n').map(goal => goal.trim()).filter(goal => goal),
       deadline: deadline || undefined,
       status,
-      context,
+      project_context: projectContext,
       tags: tags.split(',').map(tag => tag.trim()).filter(tag => tag),
       business_relevance: businessRelevance,
       preferred_time_slots: preferredTimeSlots,
@@ -92,6 +95,26 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
         ? prev.filter(s => s !== slot)
         : [...prev, slot]
     );
+  };
+
+  const handleDeleteProject = async () => {
+    if (onDeleteProject) {
+      try {
+        await onDeleteProject(project.id);
+        onClose();
+      } catch (error) {
+        console.error('Error deleting project:', error);
+        alert('Failed to delete project. Please try again.');
+      }
+    }
+  };
+
+  const handleMarkCompleted = () => {
+    const completedProject: Project = {
+      ...project,
+      status: ProjectStatus.COMPLETED,
+    };
+    onUpdateProject(completedProject);
   };
 
   const getUrgencyScore = () => {
@@ -178,8 +201,8 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
             <label htmlFor="projectDescription" className="block text-sm font-medium text-slate-300 mb-1">Description</label>
             <textarea
               id="projectDescription"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              value={projectDescription}
+              onChange={(e) => setProjectDescription(e.target.value)}
               rows={3}
               className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
             />
@@ -217,8 +240,8 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
               <label htmlFor="projectContext" className="block text-sm font-medium text-slate-300 mb-1">Context</label>
               <select
                 id="projectContext"
-                value={context}
-                onChange={(e) => setContext(e.target.value as ProjectContext)}
+                value={projectContext}
+                onChange={(e) => setProjectContext(e.target.value as ProjectContext)}
                 className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
               >
                 {Object.values(ProjectContext).map((contextValue: string) => (
@@ -292,23 +315,71 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
             />
           </div>
           
-          <div className="flex justify-end space-x-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-slate-300 bg-slate-600 hover:bg-slate-500 rounded-md transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 rounded-md transition-colors"
-            >
-              Update Project
-            </button>
+          <div className="flex justify-between pt-4">
+            <div className="flex space-x-2">
+              {project.status !== ProjectStatus.COMPLETED && (
+                <button
+                  type="button"
+                  onClick={handleMarkCompleted}
+                  className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md transition-colors"
+                >
+                  Mark Completed
+                </button>
+              )}
+              {onDeleteProject && (
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md transition-colors"
+                >
+                  Delete Project
+                </button>
+              )}
+            </div>
+            <div className="flex space-x-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 text-sm font-medium text-slate-300 bg-slate-600 hover:bg-slate-500 rounded-md transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 rounded-md transition-colors"
+              >
+                Update Project
+              </button>
+            </div>
           </div>
         </form>
       </div>
+      
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
+          <div className="bg-slate-800 p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-red-400 mb-4">Delete Project</h3>
+            <p className="text-slate-300 mb-4">
+              Are you sure you want to delete "{project.title}"? This action cannot be undone and will also delete all associated tasks.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="px-4 py-2 text-sm font-medium text-slate-300 bg-slate-600 hover:bg-slate-500 rounded-md transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteProject}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md transition-colors"
+              >
+                Delete Project
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

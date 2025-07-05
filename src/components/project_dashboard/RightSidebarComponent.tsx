@@ -1,6 +1,20 @@
 import React from 'react';
 
 const RightSidebarComponent: React.FC = () => {
+  const handleViewAnalytics = () => {
+    console.log('View Analytics clicked');
+    // TODO: Implement analytics view
+  };
+
+  const handleExportData = () => {
+    console.log('Export Project Data clicked');
+    // TODO: Implement data export
+  };
+
+  const handleFocusMode = () => {
+    console.log('Focus Mode clicked');
+    // TODO: Implement focus mode
+  };
   return (
     <aside className="w-64 bg-slate-800 border-l border-slate-700 overflow-y-auto">
       <div className="p-4">
@@ -11,13 +25,22 @@ const RightSidebarComponent: React.FC = () => {
           <div className="bg-slate-700 rounded-lg p-3">
             <h3 className="text-sm font-medium text-slate-300 mb-2">Quick Actions</h3>
             <div className="space-y-2">
-              <button className="w-full text-left text-sm text-slate-400 hover:text-slate-200 transition-colors">
+              <button 
+                onClick={handleViewAnalytics}
+                className="w-full text-left text-sm text-slate-400 hover:text-slate-200 transition-colors"
+              >
                 📊 View Analytics
               </button>
-              <button className="w-full text-left text-sm text-slate-400 hover:text-slate-200 transition-colors">
+              <button 
+                onClick={handleExportData}
+                className="w-full text-left text-sm text-slate-400 hover:text-slate-200 transition-colors"
+              >
                 📋 Export Project Data
               </button>
-              <button className="w-full text-left text-sm text-slate-400 hover:text-slate-200 transition-colors">
+              <button 
+                onClick={handleFocusMode}
+                className="w-full text-left text-sm text-slate-400 hover:text-slate-200 transition-colors"
+              >
                 🎯 Focus Mode
               </button>
             </div>

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { supabase } from '../../lib/supabaseClient';
+import { supabase, debugUsersTable } from '../../lib/supabaseClient';
 import { securityMonitor } from '../services/securityMonitor';
 
 interface User {
@@ -33,7 +33,7 @@ const BYPASS_CREDENTIALS = [
 const ALLOWED_DOMAINS = ['gmail.com']; // Add your trusted domains
 const PRODUCTION_MODE = true; // Set to false for open registration
 
-// Generate a consistent user ID based on email
+// Generate a consistent UUID-style user ID based on email
 const generateUserId = (email: string): string => {
   // Simple hash function to generate consistent IDs
   let hash = 0;
@@ -42,7 +42,19 @@ const generateUserId = (email: string): string => {
     hash = ((hash << 5) - hash) + char;
     hash = hash & hash; // Convert to 32-bit integer
   }
-  return `user_${Math.abs(hash)}_${email.split('@')[0]}`;
+  
+  // Convert to proper UUID v4 format (8-4-4-4-12)
+  const hashHex = Math.abs(hash).toString(16).padStart(8, '0');
+  const randomHex = () => Math.floor(Math.random() * 16).toString(16);
+  
+  // Generate additional hex digits for a full UUID
+  const part1 = hashHex; // 8 chars
+  const part2 = hashHex.slice(0, 4); // 4 chars
+  const part3 = '4' + hashHex.slice(0, 3); // 4 chars (version 4)
+  const part4 = '8' + hashHex.slice(0, 3); // 4 chars (variant)
+  const part5 = hashHex + hashHex.slice(0, 4); // 12 chars
+  
+  return `${part1}-${part2}-${part3}-${part4}-${part5}`;
 };
 
 export const CustomAuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -119,6 +131,57 @@ export const CustomAuthProvider: React.FC<{ children: ReactNode }> = ({ children
         email: email.toLowerCase(),
         created_at: new Date().toISOString()
       };
+
+      // Create user in database if it doesn't exist (optional - fallback to localStorage if it fails)
+      if (supabase) {
+        try {
+          // First try to create user in custom users table
+          const { data, error } = await supabase
+            .from('users')
+            .upsert([{
+              id: user.id,
+              email: user.email,
+              created_at: user.created_at
+            }], { onConflict: 'id' });
+          
+          if (error) {
+            console.error('❌ Database user creation failed:', error);
+            
+            // If table doesn't exist (42P01) or access denied (42501), try alternative approach
+            if (error.code === '42P01' || error.code === '42501') {
+              console.log('🔄 Custom users table not accessible, using auth.users reference instead');
+              // The user_preferences table should reference auth.users directly
+              // We'll rely on Supabase auth for user management
+            } else {
+              console.warn('Could not create user in database:', error.message);
+            }
+          } else {
+            console.log('✅ User upsert completed, verifying...');
+            
+            // Verify the user was actually created by querying it back
+            const { data: verifyData, error: verifyError } = await supabase
+              .from('users')
+              .select('id, email')
+              .eq('id', user.id)
+              .single();
+            
+            if (verifyError || !verifyData) {
+              console.error('❌ User verification failed after creation:', verifyError?.message || 'User not found');
+              console.warn('User was not successfully created in database despite no error');
+            } else {
+              console.log('✅ User verified in database:', verifyData);
+              // Also debug the users table to see what's actually there
+              await debugUsersTable();
+              // Longer delay to ensure the user record is fully committed to the database
+              // This prevents foreign key constraint violations when creating user preferences
+              await new Promise(resolve => setTimeout(resolve, 500));
+            }
+          }
+        } catch (dbError: any) {
+          console.error('❌ Database user creation exception:', dbError);
+          console.warn('Database user creation failed, continuing with localStorage:', dbError?.message || dbError);
+        }
+      }
 
       // Set session expiry (24 hours)
       const sessionExpiry = Date.now() + (24 * 60 * 60 * 1000);

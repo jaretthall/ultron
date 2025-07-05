@@ -5,7 +5,7 @@ import {
 
 // Supabase configuration - Prioritize environment variables
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
 
 const SUPABASE_URL_PLACEHOLDER = 'YOUR_SUPABASE_URL_PLACEHOLDER';
 const SUPABASE_ANON_KEY_PLACEHOLDER = 'YOUR_SUPABASE_ANON_KEY_PLACEHOLDER';
@@ -20,13 +20,19 @@ export const isSupabaseConfigured = (): boolean => {
   
   const keyValid = Boolean(supabaseAnonKey && 
                    supabaseAnonKey !== SUPABASE_ANON_KEY_PLACEHOLDER &&
-                   supabaseAnonKey.length > 50); // JWT tokens are typically much longer
+                   supabaseAnonKey.length > 30); // Support both JWT and publishable key formats
   
   return urlValid && keyValid;
 };
 
 // Initialize Supabase client with better error handling
 const initializeSupabase = () => {
+  console.log('🔍 Initializing Supabase client...');
+  console.log('- URL:', supabaseUrl);
+  console.log('- Key length:', supabaseAnonKey?.length || 0);
+  console.log('- URL valid:', supabaseUrl && supabaseUrl !== 'YOUR_SUPABASE_URL_PLACEHOLDER' && supabaseUrl.startsWith('https://'));
+  console.log('- Key valid:', supabaseAnonKey && supabaseAnonKey !== 'YOUR_SUPABASE_ANON_KEY_PLACEHOLDER' && supabaseAnonKey.length > 30);
+  
   if (!isSupabaseConfigured()) {
     console.warn(
       "⚠️ Supabase configuration issue detected:",
@@ -145,6 +151,44 @@ export const diagnoseJWTIssue = async () => {
   console.log('Auth keys in localStorage:', authKeys);
 };
 
+// Debug function to check users table contents
+export const debugUsersTable = async () => {
+  if (!supabase) {
+    console.error('❌ Supabase client not initialized');
+    return;
+  }
+
+  try {
+    console.log('🔍 Debugging users table...');
+    
+    // Try to count all users
+    const { count, error: countError } = await supabase
+      .from('users')
+      .select('*', { count: 'exact', head: true });
+    
+    if (countError) {
+      console.error('❌ Error counting users:', countError);
+    } else {
+      console.log(`📊 Total users in table: ${count}`);
+    }
+    
+    // Try to get all users (limit 10 for safety)
+    const { data: users, error: usersError } = await supabase
+      .from('users')
+      .select('id, email, created_at')
+      .limit(10);
+    
+    if (usersError) {
+      console.error('❌ Error fetching users:', usersError);
+    } else {
+      console.log('👥 Users in database:', users);
+    }
+    
+  } catch (error) {
+    console.error('❌ Exception while debugging users table:', error);
+  }
+};
+
 // Helper to create Insert types, typically omitting id and auto-generated fields like created_at/updated_at
 // For universal sync fields, they might be set by client or server, making them optional on insert.
 type BaseInsert<T extends { id: string; created_at?: string; updated_at?: string }> = Omit<T, 'id' | 'created_at' | 'updated_at'>;
@@ -203,4 +247,11 @@ export interface Database {
       // Define any database functions if you use them
     };
   };
+}
+
+// Expose debug functions globally for browser console access
+if (typeof window !== 'undefined') {
+  (window as any).debugUsersTable = debugUsersTable;
+  (window as any).testSupabaseConnection = testSupabaseConnection;
+  (window as any).clearAuthState = clearAuthState;
 }
