@@ -82,7 +82,7 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
         preferred_time_slots: preferredTimeSlots,
       };
       
-      await onAddProject(newProjectData);
+      onAddProject(newProjectData as Project);
       onClose(); // Close modal after successful creation
     } catch (error: any) {
       console.error('Error creating project:', error);
@@ -135,7 +135,6 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
               disabled={isSubmitting}
               required
               aria-required="true"
-              disabled={isSubmitting}
             />
           </div>
           <div>

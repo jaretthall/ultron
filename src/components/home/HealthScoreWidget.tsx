@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Project, Task, TaskStatus } from '../../../types';
-import { calculateProjectHealthScore, calculateUrgencyScore } from '../../utils/projectUtils';
+import { calculateProjectHealthScore, enrichProject } from '../../utils/projectUtils';
 
 interface HealthScoreWidgetProps {
   projects: Project[];
@@ -24,7 +24,10 @@ const HealthScoreWidget: React.FC<HealthScoreWidgetProps> = ({ projects, tasks }
     // Calculate project health scores
     const projectHealthScores = projects
       .filter(p => p.status === 'active')
-      .map(project => calculateProjectHealthScore(project, tasks));
+      .map(project => {
+        const enrichedProject = enrichProject(project, tasks);
+        return calculateProjectHealthScore(enrichedProject, tasks);
+      });
     
     const avgProjectHealth = projectHealthScores.length > 0 
       ? projectHealthScores.reduce((sum, score) => sum + score, 0) / projectHealthScores.length

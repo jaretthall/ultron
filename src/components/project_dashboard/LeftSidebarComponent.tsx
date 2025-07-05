@@ -70,7 +70,7 @@ const LeftSidebarComponent: React.FC<LeftSidebarComponentProps> = ({
                         {project.title}
                       </h3>
                       <p className={`text-xs mt-1 truncate ${isSelected ? 'text-sky-100' : 'text-slate-400'}`}>
-                        {project.description || 'No description'}
+                        {project.title || 'No description'}
                       </p>
                       
                       {/* Project Status and Context */}

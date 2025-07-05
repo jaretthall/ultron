@@ -4,7 +4,6 @@ import { useCustomAuth } from './CustomAuthContext';
 import { supabase } from '../../lib/supabaseClient';
 import { adaptiveDatabaseService } from '../../services/adaptiveDatabaseService';
 import { 
-  projectsService, 
   tasksService, 
   schedulesService,
   userPreferencesService, 

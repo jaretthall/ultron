@@ -45,7 +45,6 @@ const generateUserId = (email: string): string => {
   
   // Convert to proper UUID v4 format (8-4-4-4-12)
   const hashHex = Math.abs(hash).toString(16).padStart(8, '0');
-  const randomHex = () => Math.floor(Math.random() * 16).toString(16);
   
   // Generate additional hex digits for a full UUID
   const part1 = hashHex; // 8 chars
@@ -136,7 +135,7 @@ export const CustomAuthProvider: React.FC<{ children: ReactNode }> = ({ children
       if (supabase) {
         try {
           // First try to create user in custom users table
-          const { data, error } = await supabase
+          const { error } = await supabase
             .from('users')
             .upsert([{
               id: user.id,

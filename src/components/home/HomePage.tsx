@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Project, Task, ProjectContext, ProjectStatus, TaskStatus, TaskPriority } from '../../../types';
+import { Project, Task, ProjectContext, ProjectStatus, TaskStatus } from '../../../types';
 import { useAppState } from '../../contexts/AppStateContext';
 import NewTaskModal from '../tasks/NewTaskModal';
 import NewProjectModal from '../projects/NewProjectModal';

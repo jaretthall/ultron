@@ -89,7 +89,7 @@ const EnhancedTaskManagement: React.FC = () => {
   const filteredTasks = useMemo(() => {
     return tasks.filter((task: Task) => {
       const searchMatch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          task.description.toLowerCase().includes(searchTerm.toLowerCase());
+                          task.title.toLowerCase().includes(searchTerm.toLowerCase());
       
       const projectMatch = projectFilter === 'All Projects' ||
                            (projectFilter === 'standalone' && !task.project_id) ||

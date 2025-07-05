@@ -69,7 +69,7 @@ const TaskManagementPage: React.FC<TaskManagementPageProps> = ({
   const filteredTasks = useMemo(() => {
     return tasks.filter(task => {
       const searchMatch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          task.description.toLowerCase().includes(searchTerm.toLowerCase());
+                          task.title.toLowerCase().includes(searchTerm.toLowerCase());
       const projectMatch = projectFilter === 'All Projects' ||
                            (projectFilter === 'standalone' && !task.project_id) || // Corrected: was task.projectId
                            task.project_id === projectFilter; // Corrected: was task.projectId

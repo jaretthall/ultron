@@ -51,7 +51,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, projectTitle, onEditTaskReque
           <h3 className={`text-lg font-semibold text-slate-100 truncate group-hover:text-sky-400 ${task.status === TaskStatus.COMPLETED ? 'line-through text-slate-500 group-hover:text-slate-400' : ''}`}>
             {task.title}
           </h3>
-          <p className="text-sm text-slate-400 mt-1 truncate">{task.description || 'No description'}</p>
+          <p className="text-sm text-slate-400 mt-1 truncate">{task.title || 'No description'}</p>
         </div>
         <div className="flex items-center space-x-2 flex-shrink-0 self-start sm:self-center">
           <button 

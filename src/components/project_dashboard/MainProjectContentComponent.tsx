@@ -151,7 +151,7 @@ const MainProjectContentComponent: React.FC<MainProjectContentComponentProps> = 
             </ActionButton>
           </div>
         </div>
-        <p className="text-slate-400 mt-2 text-sm">{project.description}</p>
+        <p className="text-slate-400 mt-2 text-sm">{project.title}</p>
         
         {/* Project Metrics Bar */}
         <div className="mt-4 p-4 bg-slate-800 rounded-lg">

@@ -33,6 +33,7 @@ export const mockProjects: Project[] = [
     description: 'Second test project',
     goals: ['Goal 3'],
     status: ProjectStatus.ON_HOLD,
+    project_context: ProjectContext.PERSONAL,
     context: ProjectContext.PERSONAL,
     tags: ['test'],
     deadline: '2025-12-31',
@@ -58,7 +59,6 @@ export const mockTasks: Task[] = [
   {
     id: 'task-2',
     title: 'Test Task 2',
-    description: 'Second test task',
     project_id: 'project-1',
     priority: TaskPriority.MEDIUM,
     status: TaskStatus.IN_PROGRESS,

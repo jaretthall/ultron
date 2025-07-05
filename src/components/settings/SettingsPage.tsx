@@ -31,7 +31,6 @@ const SettingsPage: React.FC = () => {
   // Integration state
   const [showCalendarImport, setShowCalendarImport] = useState(false);
   const [outlookConnected, setOutlookConnected] = useState(false);
-  const [appleConnected, setAppleConnected] = useState(false);
   const [importedEvents, setImportedEvents] = useState<any[]>([]);
   const [isImporting, setIsImporting] = useState(false);
 
@@ -666,7 +665,7 @@ const SettingsPage: React.FC = () => {
                     </div>
                     {currentClaudeApiKey && (
                       <div className="text-sm text-slate-300">
-                        Key: ••••••••••••{currentClaudeApiKey.slice(-4)}
+                        Key: •••••••••••••••• (configured)
                       </div>
                     )}
                   </div>
@@ -841,9 +840,7 @@ const SettingsPage: React.FC = () => {
                           <p className="text-sm text-slate-400">Import your Apple Calendar events</p>
                         </div>
                       </div>
-                      <span className={`px-2 py-1 text-xs rounded-full ${appleConnected ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'}`}>
-                        {appleConnected ? 'Connected' : 'Not Connected'}
-                      </span>
+                      
                     </div>
                     <div className="space-y-3">
                       <div className="text-sm text-slate-300">

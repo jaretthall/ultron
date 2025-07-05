@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import { Project, Task, TaskStatus, TaskPriority, ProjectStatus, ProjectContext } from '../../../types';
-import { calculateUrgencyScore } from '../../utils/projectUtils';
 
 interface EnhancedHomeStatsProps {
   projects: Project[];
@@ -110,22 +109,22 @@ const EnhancedHomeStats: React.FC<EnhancedHomeStatsProps> = ({ projects, tasks }
 
     const deadlineStats = {
       dueTodayCount: allItems.filter(item => {
-        const dueDate = new Date('due_date' in item ? item.due_date! : item.deadline!);
+        const dueDate = new Date((item as any).due_date || (item as any).deadline);
         return dueDate <= todayEnd && dueDate >= now;
       }).length,
       
       dueThisWeekCount: allItems.filter(item => {
-        const dueDate = new Date('due_date' in item ? item.due_date! : item.deadline!);
+        const dueDate = new Date((item as any).due_date || (item as any).deadline);
         return dueDate <= thisWeekEnd && dueDate > todayEnd;
       }).length,
       
       overdueCount: allItems.filter(item => {
-        const dueDate = new Date('due_date' in item ? item.due_date! : item.deadline!);
+        const dueDate = new Date((item as any).due_date || (item as any).deadline);
         return dueDate < now;
       }).length,
       
       upcomingCount: allItems.filter(item => {
-        const dueDate = new Date('due_date' in item ? item.due_date! : item.deadline!);
+        const dueDate = new Date((item as any).due_date || (item as any).deadline);
         return dueDate > thisWeekEnd;
       }).length,
     };

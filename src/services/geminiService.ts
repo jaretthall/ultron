@@ -11,9 +11,7 @@ export const initializeGeminiService = (apiKey: string) => {
   }
   
   try {
-    geminiAI = new GoogleGenAI({
-      apiKey: apiKey
-    });
+    geminiAI = new GoogleGenAI(apiKey);
     return true;
   } catch (error) {
     console.error('Failed to initialize Gemini service:', error);
@@ -226,13 +224,12 @@ export const generateDailyPlan = async (
     const prompt = constructDailyPlanPrompt(date, projects, tasks, userPreferences, focusBlockData);
 
     try {
-      const response = await geminiAI.models.generateContent({
-        model: modelToUse,
-        contents: prompt,
-        config: { responseMimeType: "application/json" }
-      });
+      if (!geminiAI) {
+        throw new Error('Gemini AI not initialized');
+      }
+      const response = await geminiAI.getGenerativeModel({ model: modelToUse }).generateContent(prompt);
 
-      let jsonStr = response.text?.trim() || '';
+      let jsonStr = response.response.text()?.trim() || '';
       const fenceRegex = /^```(\w*)?\s*\n?(.*?)\n?\s*```$/s;
       const match = jsonStr.match(fenceRegex);
       if (match && match[2]) {
@@ -319,13 +316,12 @@ export const generateWorkloadAnalysis = async (
     const prompt = constructWorkloadAnalysisPrompt(projects, tasks, userPreferences, schedulingData);
 
     try {
-      const response = await geminiAI.models.generateContent({
-        model: modelToUse,
-        contents: prompt,
-        config: { responseMimeType: "application/json" }
-      });
+      if (!geminiAI) {
+        throw new Error('Gemini AI not initialized');
+      }
+      const response = await geminiAI.getGenerativeModel({ model: modelToUse }).generateContent(prompt);
 
-      let jsonStr = response.text?.trim() || '';
+      let jsonStr = response.response.text()?.trim() || '';
       const fenceRegex = /^```(\w*)?\s*\n?(.*?)\n?\s*```$/s;
       const match = jsonStr.match(fenceRegex);
       if (match && match[2]) {
@@ -577,4 +573,3 @@ export const getGeminiInsights = async (
     };
   }
 };
-

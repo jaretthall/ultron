@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Project, Task, TaskStatus, TaskPriority } from '../../../types';
-import { calculateUrgencyScore, calculateProjectHealthScore } from '../../utils/projectUtils';
+import { calculateUrgencyScore, calculateProjectHealthScore, enrichProject } from '../../utils/projectUtils';
 
 interface CriticalAlertsPanelProps {
   projects: Project[];
@@ -25,7 +25,8 @@ const CriticalAlertsPanel: React.FC<CriticalAlertsPanelProps> = ({ projects, tas
     // Check projects for critical issues
     projects.forEach(project => {
       const urgencyScore = calculateUrgencyScore(project.deadline);
-      const healthScore = calculateProjectHealthScore(project, tasks);
+      const enrichedProject = enrichProject(project, tasks);
+      const healthScore = calculateProjectHealthScore(enrichedProject, tasks);
       
       // Overdue projects
       if (project.deadline && new Date(project.deadline) < now && project.status !== 'completed') {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Task, Project, UserPreferences } from '../../../types';
+import { Task, Project } from '../../../types';
 import { generateAIDailyPlan, AIServiceResult, DailyPlan } from '../../services/aiService';
 import { useAppState } from '../../contexts/AppStateContext';
 

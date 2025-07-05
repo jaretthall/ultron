@@ -37,6 +37,7 @@ export interface UniversalSyncFields {
 export interface Project extends UniversalSyncFields {
   id: string;
   title: string;
+  description?: string;
   context: string; // AI context - detailed description for AI understanding
   goals: string[];
   deadline?: string; // DateTime
@@ -54,6 +55,7 @@ export interface Task extends UniversalSyncFields {
   id: string;
   project_id?: string; // Reference to projects.id
   title: string;
+  description?: string;
   context: string; // AI context - detailed description for AI understanding
   priority: TaskPriority;
   estimated_hours: number; // Float
@@ -61,6 +63,7 @@ export interface Task extends UniversalSyncFields {
   progress?: number; // 0-100 percentage of task completion
   dependencies: string[]; // JSON array of task IDs
   due_date?: string; // DateTime
+  deadline?: string;
   tags: string[];
   category?: string;
   task_context?: 'personal' | 'business' | 'inherited';
@@ -96,6 +99,7 @@ export interface UserPreferences {
   context_switch_buffer_minutes?: number;
   ai_provider: AIProvider;
   selected_gemini_model: string;
+  gemini_api_key?: string;
   claude_api_key?: string;
   selected_claude_model?: string;
   openai_api_key?: string;

@@ -81,11 +81,11 @@ export const generateAIInsights = async (
           const geminiAnalysis = await generateGeminiWorkloadAnalysis(projects, tasks, userPreferences);
           result = {
             data: {
-              blocked_tasks: geminiAnalysis.blocked_tasks || [],
-              projects_needing_attention: geminiAnalysis.projects_needing_attention || [],
-              recommendations: geminiAnalysis.recommendations || [],
-              focus_recommendations: geminiAnalysis.focus_recommendations || [],
-              priority_balance_score: geminiAnalysis.priority_balance_score
+              blocked_tasks: geminiAnalysis.strategic_insights.blocked_tasks || [],
+              projects_needing_attention: geminiAnalysis.strategic_insights.projects_needing_attention || [],
+              recommendations: geminiAnalysis.strategic_insights.focus_recommendations || [],
+              focus_recommendations: geminiAnalysis.strategic_insights.focus_recommendations || [],
+              priority_balance_score: geminiAnalysis.strategic_insights.priority_balance_score
             },
             provider_used: 'gemini',
             success: true,
@@ -176,7 +176,7 @@ export const generateAIDailyPlan = async (
   focusBlockData?: any[],
   allowFallback: boolean = true
 ): Promise<AIServiceResult<DailyPlan>> => {
-  const primaryProvider = userPreferences.ai_provider;
+  const primaryProvider = userPreferences.ai_provider || 'gemini';
   
   // Check if primary provider is available
   if (!checkProviderAvailability(primaryProvider, userPreferences)) {
@@ -267,7 +267,7 @@ export const generateAIWorkloadAnalysis = async (
   schedulingData?: any,
   allowFallback: boolean = true
 ): Promise<AIServiceResult<WorkloadAnalysis>> => {
-  const primaryProvider = userPreferences.ai_provider;
+  const primaryProvider = userPreferences.ai_provider || 'gemini';
   
   // Check if primary provider is available
   if (!checkProviderAvailability(primaryProvider, userPreferences)) {

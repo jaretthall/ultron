@@ -70,7 +70,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, projectTitle, onEditTaskReque
           </button>
         </div>
         <p className={`text-xs text-slate-400 mb-3 ${task.status === TaskStatus.COMPLETED ? 'line-through' : ''} break-words max-h-16 overflow-hidden`}>
-          {task.description || "No description."}
+          {task.title || "No description."}
         </p>
         
         {/* Progress Bar */}

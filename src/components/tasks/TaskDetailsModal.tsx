@@ -214,7 +214,7 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
           {/* Task Description */}
           <div>
             <h3 className="text-lg font-medium text-slate-200 mb-2">Description</h3>
-            <p className="text-slate-400">{task.description || 'No description provided'}</p>
+            <p className="text-slate-400">{task.title || 'No description provided'}</p>
           </div>
 
           {/* Task Details */}
