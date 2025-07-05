@@ -31,6 +31,7 @@ const SettingsPage: React.FC = () => {
   // Integration state
   const [showCalendarImport, setShowCalendarImport] = useState(false);
   const [outlookConnected, setOutlookConnected] = useState(false);
+  const [appleConnected] = useState(false);
   const [importedEvents, setImportedEvents] = useState<any[]>([]);
   const [isImporting, setIsImporting] = useState(false);
 

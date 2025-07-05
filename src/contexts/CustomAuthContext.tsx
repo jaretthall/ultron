@@ -30,7 +30,6 @@ const BYPASS_CREDENTIALS = [
 ];
 
 // Production security: Only allow predefined emails
-const ALLOWED_DOMAINS = ['gmail.com']; // Add your trusted domains
 const PRODUCTION_MODE = true; // Set to false for open registration
 
 // Generate a consistent UUID-style user ID based on email

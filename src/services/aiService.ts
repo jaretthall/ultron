@@ -62,7 +62,7 @@ export const generateAIInsights = async (
   allowFallback: boolean = true
 ): Promise<AIServiceResult<AIInsights>> => {
   const primaryProvider = userPreferences.ai_provider || 'gemini';
-  let currentProvider = primaryProvider;
+  let currentProvider: string | null = primaryProvider;
   let result: AIServiceResult<AIInsights> | null = null;
   
   // Try primary provider first, then fallback providers if enabled
@@ -81,11 +81,11 @@ export const generateAIInsights = async (
           const geminiAnalysis = await generateGeminiWorkloadAnalysis(projects, tasks, userPreferences);
           result = {
             data: {
-              blocked_tasks: geminiAnalysis.strategic_insights.blocked_tasks || [],
-              projects_needing_attention: geminiAnalysis.strategic_insights.projects_needing_attention || [],
-              recommendations: geminiAnalysis.strategic_insights.focus_recommendations || [],
-              focus_recommendations: geminiAnalysis.strategic_insights.focus_recommendations || [],
-              priority_balance_score: geminiAnalysis.strategic_insights.priority_balance_score
+              blocked_tasks: geminiAnalysis.bottleneck_detection.resource_bottlenecks || [],
+              projects_needing_attention: geminiAnalysis.bottleneck_detection.dependency_bottlenecks || [],
+              recommendations: geminiAnalysis.strategic_recommendations || [],
+              focus_recommendations: geminiAnalysis.strategic_recommendations || [],
+              priority_balance_score: geminiAnalysis.work_life_balance.balance_score
             },
             provider_used: 'gemini',
             success: true,
@@ -97,11 +97,11 @@ export const generateAIInsights = async (
           const claudeAnalysis = await generateClaudeWorkloadAnalysis(projects, tasks, userPreferences);
           result = {
             data: {
-              blocked_tasks: claudeAnalysis.blocked_tasks || [],
-              projects_needing_attention: claudeAnalysis.projects_needing_attention || [],
-              recommendations: claudeAnalysis.recommendations || [],
-              focus_recommendations: claudeAnalysis.focus_recommendations || [],
-              priority_balance_score: claudeAnalysis.priority_balance_score
+              blocked_tasks: claudeAnalysis.bottleneck_detection.resource_bottlenecks || [],
+              projects_needing_attention: claudeAnalysis.bottleneck_detection.dependency_bottlenecks || [],
+              recommendations: claudeAnalysis.strategic_recommendations || [],
+              focus_recommendations: claudeAnalysis.strategic_recommendations || [],
+              priority_balance_score: claudeAnalysis.work_life_balance.balance_score
             },
             provider_used: 'claude',
             success: true,
@@ -113,11 +113,11 @@ export const generateAIInsights = async (
           const openaiAnalysis = await generateOpenAIWorkloadAnalysis(projects, tasks, userPreferences);
           result = {
             data: {
-              blocked_tasks: openaiAnalysis.blocked_tasks || [],
-              projects_needing_attention: openaiAnalysis.projects_needing_attention || [],
-              recommendations: openaiAnalysis.recommendations || [],
-              focus_recommendations: openaiAnalysis.focus_recommendations || [],
-              priority_balance_score: openaiAnalysis.priority_balance_score
+              blocked_tasks: openaiAnalysis.bottleneck_detection.resource_bottlenecks || [],
+              projects_needing_attention: openaiAnalysis.bottleneck_detection.dependency_bottlenecks || [],
+              recommendations: openaiAnalysis.strategic_recommendations || [],
+              focus_recommendations: openaiAnalysis.strategic_recommendations || [],
+              priority_balance_score: openaiAnalysis.work_life_balance.balance_score
             },
             provider_used: 'openai',
             success: true,

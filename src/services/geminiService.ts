@@ -11,7 +11,7 @@ export const initializeGeminiService = (apiKey: string) => {
   }
   
   try {
-    geminiAI = new GoogleGenAI(apiKey);
+    geminiAI = new GoogleGenAI({ apiKey });
     return true;
   } catch (error) {
     console.error('Failed to initialize Gemini service:', error);
@@ -227,9 +227,12 @@ export const generateDailyPlan = async (
       if (!geminiAI) {
         throw new Error('Gemini AI not initialized');
       }
-      const response = await geminiAI.getGenerativeModel({ model: modelToUse }).generateContent(prompt);
+      const response = await geminiAI.models.generateContent({
+        model: modelToUse,
+        contents: prompt
+      });
 
-      let jsonStr = response.response.text()?.trim() || '';
+      let jsonStr = response.text?.trim() || '';
       const fenceRegex = /^```(\w*)?\s*\n?(.*?)\n?\s*```$/s;
       const match = jsonStr.match(fenceRegex);
       if (match && match[2]) {
@@ -319,9 +322,12 @@ export const generateWorkloadAnalysis = async (
       if (!geminiAI) {
         throw new Error('Gemini AI not initialized');
       }
-      const response = await geminiAI.getGenerativeModel({ model: modelToUse }).generateContent(prompt);
+      const response = await geminiAI.models.generateContent({
+        model: modelToUse,
+        contents: prompt
+      });
 
-      let jsonStr = response.response.text()?.trim() || '';
+      let jsonStr = response.text?.trim() || '';
       const fenceRegex = /^```(\w*)?\s*\n?(.*?)\n?\s*```$/s;
       const match = jsonStr.match(fenceRegex);
       if (match && match[2]) {
