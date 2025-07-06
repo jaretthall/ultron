@@ -27,7 +27,17 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
     <header className="bg-slate-800 border-b border-slate-700 px-4 py-3">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <h1 className="text-xl font-bold text-white">Nexus AI Assistant</h1>
+          <div className="flex items-center space-x-3">
+            <img 
+              src="/Ultron_logo.png" 
+              alt="Ultron Logo" 
+              className="w-8 h-8 rounded"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+            <h1 className="text-xl font-bold text-white">Ultron</h1>
+          </div>
           <nav className="hidden md:flex space-x-1" data-testid="main-navigation">
             <Link to="/" className={getLinkClassName('/')}>Home</Link>
             <Link to="/projects" className={getLinkClassName('/projects')}>Projects</Link>

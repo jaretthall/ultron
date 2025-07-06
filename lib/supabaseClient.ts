@@ -57,12 +57,6 @@ const initializeSupabase = () => {
         },
         heartbeatIntervalMs: 30000,
         reconnectAfterMs: (tries: number) => Math.min(tries * 1000, 10000)
-      },
-      global: {
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        }
       }
     });
 

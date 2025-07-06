@@ -2,7 +2,7 @@
 
 This file tracks significant changes and version updates made by Claude during development of the Ultron Productivity Command Center.
 
-## Current Version: 3.0.1
+## Current Version: 3.0.2
 
 ## Version Management Protocol
 
@@ -56,6 +56,23 @@ Use semantic versioning: `3.x.y`
 ```
 
 ## Version History
+
+### Version 3.0.2 (2025-01-06)
+**Critical Bug Fixes - Header and Database Connection Issues**
+- Fixed header branding regression: Changed "Nexus AI Assistant" back to "Ultron"
+- Added Ultron logo to header navigation bar
+- Updated Dashboard title from "Nexus Dashboard" to "Ultron Dashboard" 
+- Updated export filenames from "nexus_workspace_snapshot.json" to "ultron_workspace_snapshot.json"
+- Fixed Supabase Headers error: "Failed to execute 'set' on 'Headers': Invalid value"
+- Removed problematic global headers configuration from Supabase client
+- Restored proper database connectivity by fixing header configuration
+
+**Files Modified:**
+- `src/components/project_dashboard/HeaderComponent.tsx` - Fixed app name and added logo
+- `src/components/Dashboard.tsx` - Updated dashboard branding and export filenames
+- `lib/supabaseClient.ts` - Removed problematic headers causing connection errors
+
+**Deployment Status:** Database connectivity restored, branding corrected
 
 ### Version 3.0.1 (2025-01-06)
 **Major Production Deployment Fixes**

@@ -79,7 +79,7 @@ const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
     try {
       const snapshot = await generateWorkspaceSnapshot(projects, tasks, userPreferences);
       setExportedData(snapshot);
-      downloadJson(snapshot, 'nexus_workspace_snapshot.json');
+      downloadJson(snapshot, 'ultron_workspace_snapshot.json');
     } catch (err) {
       console.error("Export failed:", err);
       setError(err instanceof Error ? err.message : 'An unknown error occurred during export.');
@@ -110,8 +110,8 @@ const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 p-4 md:p-8">
       <header className="mb-8">
-        <h1 className="text-4xl font-bold text-sky-400">Nexus Dashboard</h1>
-        <p className="text-slate-400 mt-1">Workspace Overview & AI-Powered Insights Export</p>
+        <h1 className="text-4xl font-bold text-sky-400">Ultron Dashboard</h1>
+        <p className="text-slate-400 mt-1">AI-Powered Productivity Command Center</p>
       </header>
 
       {/* Stats Section */}
@@ -176,7 +176,7 @@ const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
         {error && <p className="text-red-400 mt-4 text-sm" role="alert">Error: {error}</p>}
         {exportedData && !isLoading && !error && (
           <p className="text-emerald-400 mt-4 text-sm" role="status">
-            Workspace snapshot successfully generated and download initiated! (nexus_workspace_snapshot.json)
+            Workspace snapshot successfully generated and download initiated! (ultron_workspace_snapshot.json)
           </p>
         )}
          {(projects.length === 0 && !isLoading) && (
