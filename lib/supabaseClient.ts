@@ -273,7 +273,9 @@ export interface Database {
 
 // Expose debug functions globally for browser console access
 if (typeof window !== 'undefined') {
+  (window as any).supabase = supabase;
   (window as any).debugUsersTable = debugUsersTable;
   (window as any).testSupabaseConnection = testSupabaseConnection;
   (window as any).clearAuthState = clearAuthState;
+  console.log('🌐 Exposed Supabase client to window object');
 }

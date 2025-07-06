@@ -2,7 +2,7 @@
 
 This file tracks significant changes and version updates made by Claude during development of the Ultron Productivity Command Center.
 
-## Current Version: 3.0.2
+## Current Version: 3.0.4
 
 ## Version Management Protocol
 
@@ -56,6 +56,20 @@ Use semantic versioning: `3.x.y`
 ```
 
 ## Version History
+
+### Version 3.0.4 (2025-01-06)
+**Database Connectivity Fix - Supabase Client Exposure**
+- Fixed Supabase client not being exposed to global window object for debugging
+- Added explicit `window.supabase` assignment to enable console-based testing
+- Updated version tracking across all required files (package.json, SettingsPage.tsx, claude.md)
+
+**Files Modified:**
+- `lib/supabaseClient.ts` - Exposed Supabase client to window for debugging access
+- `package.json` - Updated version to 3.0.4
+- `src/components/settings/SettingsPage.tsx` - Updated application version display
+- `claude.md` - Updated current version and added version history
+
+**Debugging Impact:** This should allow `window.supabase` and `window.testSupabaseConnection()` to work properly in browser console for connection testing.
 
 ### Version 3.0.2 (2025-01-06)
 **Critical Bug Fixes - Header and Database Connection Issues**
