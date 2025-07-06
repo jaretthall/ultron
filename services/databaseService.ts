@@ -1642,7 +1642,10 @@ export const tagFilteringService = {
 // Real-time subscriptions
 export const subscriptions = {
   subscribeToProjects(callback: (payload: any) => void) {
-    if (!supabase) throw new Error('Supabase client not initialized');
+    if (!supabase) {
+      console.warn('Supabase client not initialized - skipping real-time subscription');
+      return { unsubscribe: () => {} }; // Return mock subscription
+    }
     
     return supabase
       .channel('projects')
@@ -1654,7 +1657,10 @@ export const subscriptions = {
   },
 
   subscribeToTasks(callback: (payload: any) => void) {
-    if (!supabase) throw new Error('Supabase client not initialized');
+    if (!supabase) {
+      console.warn('Supabase client not initialized - skipping real-time subscription');
+      return { unsubscribe: () => {} }; // Return mock subscription
+    }
     
     return supabase
       .channel('tasks')
