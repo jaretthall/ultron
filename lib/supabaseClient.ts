@@ -54,6 +54,14 @@ const initializeSupabase = () => {
       realtime: {
         params: {
           eventsPerSecond: 10
+        },
+        heartbeatIntervalMs: 30000,
+        reconnectAfterMs: (tries) => Math.min(tries * 1000, 10000)
+      },
+      global: {
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         }
       }
     });

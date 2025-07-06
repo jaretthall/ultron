@@ -1642,6 +1642,11 @@ export const tagFilteringService = {
 // Real-time subscriptions
 export const subscriptions = {
   subscribeToProjects(callback: (payload: any) => void) {
+    console.warn('Real-time subscriptions temporarily disabled due to WebSocket issues');
+    return { unsubscribe: () => {} }; // Return mock subscription
+    
+    // Disabled temporarily due to WebSocket connection issues
+    /*
     if (!supabase) {
       console.warn('Supabase client not initialized - skipping real-time subscription');
       return { unsubscribe: () => {} }; // Return mock subscription
@@ -1654,9 +1659,15 @@ export const subscriptions = {
         callback
       )
       .subscribe();
+    */
   },
 
   subscribeToTasks(callback: (payload: any) => void) {
+    console.warn('Real-time subscriptions temporarily disabled due to WebSocket issues');
+    return { unsubscribe: () => {} }; // Return mock subscription
+    
+    // Disabled temporarily due to WebSocket connection issues
+    /*
     if (!supabase) {
       console.warn('Supabase client not initialized - skipping real-time subscription');
       return { unsubscribe: () => {} }; // Return mock subscription
@@ -1669,6 +1680,7 @@ export const subscriptions = {
         callback
       )
       .subscribe();
+    */
   },
 
   unsubscribe(subscription: any) {
