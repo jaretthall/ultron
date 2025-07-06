@@ -74,20 +74,40 @@ export const supabase = supabaseSingleton;
 
 // Export a function to test the connection
 export const testSupabaseConnection = async () => {
+  console.log('🔍 Testing Supabase connection...');
+  
   if (!supabase) {
+    console.error('❌ Supabase client not initialized');
     throw new Error('Supabase client not initialized');
   }
 
   try {
-    const { error } = await supabase.auth.getSession();
-    if (error) {
-      console.error('Supabase connection test failed:', error);
+    // Test auth connection
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    console.log('Session test:', { sessionData, sessionError });
+    
+    // Test database connection by trying to read from projects table
+    const { data: projects, error: projectsError } = await supabase
+      .from('projects')
+      .select('id, title')
+      .limit(1);
+    
+    console.log('Database test:', { 
+      projectsCount: projects?.length || 0, 
+      error: projectsError,
+      projects: projects 
+    });
+    
+    if (projectsError) {
+      console.error('❌ Database connection failed:', projectsError);
       return false;
     }
+    
     console.log('✅ Supabase connection test successful');
+    console.log(`📊 Found ${projects?.length || 0} projects in database`);
     return true;
   } catch (error) {
-    console.error('Supabase connection test failed:', error);
+    console.error('❌ Supabase connection test failed:', error);
     return false;
   }
 };

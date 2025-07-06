@@ -19,7 +19,9 @@
       "Bash(npx jest:*)",
       "Bash(npm run build:*)",
       "Bash(mv:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(mkdir:*)",
+      "Bash(cp:*)"
     ],
     "deny": []
   }

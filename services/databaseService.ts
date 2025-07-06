@@ -41,14 +41,30 @@ const handleError = (context: string, error: any): never => {
 // Projects Service
 export const projectsService = {
   async getAll(): Promise<Project[]> {
-    if (!supabase) throw new Error('Supabase client not initialized');
+    console.log('🔍 projectsService.getAll() called');
     
+    if (!supabase) {
+      console.error('❌ Supabase client not initialized in projectsService.getAll()');
+      throw new Error('Supabase client not initialized');
+    }
+    
+    console.log('📊 Fetching projects from Supabase...');
     const { data, error } = await supabase
       .from('projects')
       .select('*')
       .order('created_at', { ascending: false });
     
-    if (error) handleError('fetching projects', error);
+    console.log('📊 Projects fetch result:', { 
+      projectCount: data?.length || 0, 
+      error: error,
+      sample: data?.[0] || null 
+    });
+    
+    if (error) {
+      console.error('❌ Error fetching projects:', error);
+      handleError('fetching projects', error);
+    }
+    
     return data || [];
   },
 
