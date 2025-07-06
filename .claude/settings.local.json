@@ -17,7 +17,8 @@
       "Bash(npm run test:ci:*)",
       "Bash(timeout 30s npm test -- --coverage --passWithNoTests)",
       "Bash(npx jest:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(mv:*)"
     ],
     "deny": []
   }
