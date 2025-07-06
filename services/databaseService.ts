@@ -1641,7 +1641,7 @@ export const tagFilteringService = {
 
 // Real-time subscriptions
 export const subscriptions = {
-  subscribeToProjects(callback: (payload: any) => void) {
+  subscribeToProjects(_callback: (payload: any) => void) {
     console.warn('Real-time subscriptions temporarily disabled due to WebSocket issues');
     return { unsubscribe: () => {} }; // Return mock subscription
     
@@ -1662,7 +1662,7 @@ export const subscriptions = {
     */
   },
 
-  subscribeToTasks(callback: (payload: any) => void) {
+  subscribeToTasks(_callback: (payload: any) => void) {
     console.warn('Real-time subscriptions temporarily disabled due to WebSocket issues');
     return { unsubscribe: () => {} }; // Return mock subscription
     

@@ -56,7 +56,7 @@ const initializeSupabase = () => {
           eventsPerSecond: 10
         },
         heartbeatIntervalMs: 30000,
-        reconnectAfterMs: (tries) => Math.min(tries * 1000, 10000)
+        reconnectAfterMs: (tries: number) => Math.min(tries * 1000, 10000)
       },
       global: {
         headers: {
