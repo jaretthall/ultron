@@ -75,31 +75,50 @@ export const supabase = supabaseSingleton;
 // Export a function to test the connection
 export const testSupabaseConnection = async () => {
   console.log('🔍 Testing Supabase connection...');
+  console.log('🔗 Client config:', {
+    url: supabaseUrl,
+    keyLength: supabaseAnonKey?.length || 0,
+    clientReady: !!supabase
+  });
   
   if (!supabase) {
     console.error('❌ Supabase client not initialized');
-    throw new Error('Supabase client not initialized');
+    return false;
   }
 
   try {
+    console.log('🔐 Testing auth session...');
     // Test auth connection
     const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-    console.log('Session test:', { sessionData, sessionError });
+    console.log('🔐 Session test result:', { 
+      hasSession: !!sessionData?.session,
+      sessionError: sessionError?.message || null,
+      user: sessionData?.session?.user?.email || 'No user'
+    });
     
+    console.log('📊 Testing database connection...');
     // Test database connection by trying to read from projects table
     const { data: projects, error: projectsError } = await supabase
       .from('projects')
       .select('id, title')
       .limit(1);
     
-    console.log('Database test:', { 
+    console.log('📊 Database test result:', { 
       projectsCount: projects?.length || 0, 
-      error: projectsError,
+      errorCode: projectsError?.code || null,
+      errorMessage: projectsError?.message || null,
+      errorDetails: projectsError?.details || null,
+      errorHint: projectsError?.hint || null,
       projects: projects 
     });
     
     if (projectsError) {
-      console.error('❌ Database connection failed:', projectsError);
+      console.error('❌ Database connection failed with error:', {
+        code: projectsError.code,
+        message: projectsError.message,
+        details: projectsError.details,
+        hint: projectsError.hint
+      });
       return false;
     }
     
@@ -107,7 +126,11 @@ export const testSupabaseConnection = async () => {
     console.log(`📊 Found ${projects?.length || 0} projects in database`);
     return true;
   } catch (error) {
-    console.error('❌ Supabase connection test failed:', error);
+    console.error('❌ Supabase connection test failed with exception:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack
+    });
     return false;
   }
 };
