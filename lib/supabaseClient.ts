@@ -5,7 +5,7 @@ import {
 
 // Supabase configuration - Prioritize environment variables
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
 
 const SUPABASE_URL_PLACEHOLDER = 'YOUR_SUPABASE_URL_PLACEHOLDER';
 const SUPABASE_ANON_KEY_PLACEHOLDER = 'YOUR_SUPABASE_ANON_KEY_PLACEHOLDER';
@@ -20,7 +20,8 @@ export const isSupabaseConfigured = (): boolean => {
   
   const keyValid = Boolean(supabaseAnonKey && 
                    supabaseAnonKey !== SUPABASE_ANON_KEY_PLACEHOLDER &&
-                   supabaseAnonKey.length > 30); // Support both JWT and publishable key formats
+                   supabaseAnonKey.length > 30 &&
+                   (supabaseAnonKey.startsWith('eyJ') || supabaseAnonKey.startsWith('sb_'))); // Support both JWT and publishable key formats
   
   return urlValid && keyValid;
 };
@@ -42,6 +43,7 @@ const initializeSupabase = () => {
     NODE_ENV: process.env.NODE_ENV,
     VERCEL: process.env.VERCEL,
     VERCEL_ENV: process.env.VERCEL_ENV,
+    keyType: supabaseAnonKey?.startsWith('eyJ') ? 'JWT (anon)' : supabaseAnonKey?.startsWith('sb_') ? 'Publishable' : 'Unknown',
     allEnvKeys: Object.keys(import.meta.env).filter(key => key.includes('SUPABASE'))
   });
   
