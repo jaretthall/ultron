@@ -21,8 +21,14 @@
       "Bash(mv:*)",
       "Bash(git push:*)",
       "Bash(mkdir:*)",
-      "Bash(cp:*)"
+      "Bash(cp:*)",
+      "Bash(git reset:*)"
     ],
     "deny": []
-  }
+  },
+  "enabledMcpjsonServers": [
+    "github",
+    "postgres",
+    "vercel"
+  ]
 }
