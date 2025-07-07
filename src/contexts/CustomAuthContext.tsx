@@ -177,7 +177,7 @@ export const CustomAuthProvider: React.FC<{ children: ReactNode }> = ({ children
               console.warn('User was not successfully created in database despite no error');
             } else {
               console.log('✅ User verified in database:', verifyData);
-              // User successfully verified in database
+              console.log('✅ User successfully verified in database');
               // Longer delay to ensure the user record is fully committed to the database
               // This prevents foreign key constraint violations when creating user preferences
               await new Promise(resolve => setTimeout(resolve, 500));
@@ -299,8 +299,9 @@ export const CustomAuthProvider: React.FC<{ children: ReactNode }> = ({ children
         loading: false,
         isAuthenticated: false
       });
-    } catch (error: any) {
-      console.error('Sign out error:', error);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Sign out error:', errorMessage);
     }
   };
 
