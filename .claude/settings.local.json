@@ -22,7 +22,10 @@
       "Bash(git push:*)",
       "Bash(mkdir:*)",
       "Bash(cp:*)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "mcp__github__get_file_contents",
+      "mcp__github__create_or_update_file",
+      "Bash(rm:*)"
     ],
     "deny": []
   },
