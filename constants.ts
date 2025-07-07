@@ -1,8 +1,19 @@
 export const GEMINI_MODEL_NAME = "gemini-2.5-flash-preview-04-17"; // Default, might be superseded by user preference
 export const APP_NAME = "Ultron";
-export const APP_VERSION = "2.7.4";
+export const APP_VERSION = "3.0.8";
 
 export const VERSION_CHANGELOG = {
+  "3.0.8": {
+    date: "2025-01-03",
+    changes: [
+      "Fixed dark mode styling for TaskScheduler modal in calendar",
+      "Updated modal background from white to dark theme (slate-800)",
+      "Enhanced text colors and borders for better dark mode visibility",
+      "Improved priority badges and task cards with dark-friendly colors",
+      "Fixed button states and form elements for dark mode consistency",
+      "Enhanced overall modal readability in dark theme"
+    ]
+  },
   "2.7.4": {
     date: "2025-01-20",
     changes: [

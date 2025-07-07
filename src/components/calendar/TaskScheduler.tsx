@@ -271,12 +271,12 @@ const TaskScheduler: React.FC<TaskSchedulerProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl h-5/6 flex flex-col">
+      <div className="bg-slate-800 text-slate-100 rounded-lg shadow-xl w-full max-w-6xl h-5/6 flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b">
+        <div className="flex items-center justify-between p-6 border-b border-slate-600">
           <div>
             <h2 className="text-2xl font-bold">Task Scheduler</h2>
-            <p className="text-gray-600">
+            <p className="text-slate-400">
               Intelligent scheduling for {selectedDate.toLocaleDateString('default', { 
                 weekday: 'long', 
                 year: 'numeric', 
@@ -287,7 +287,7 @@ const TaskScheduler: React.FC<TaskSchedulerProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-slate-400 hover:text-slate-300"
             title="Close Task Scheduler"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -297,25 +297,25 @@ const TaskScheduler: React.FC<TaskSchedulerProps> = ({
         </div>
 
         {/* Controls */}
-        <div className="flex items-center justify-between p-4 border-b bg-gray-50">
+        <div className="flex items-center justify-between p-4 border-b border-slate-600 bg-slate-700">
           <div className="flex items-center space-x-4">
-            <div className="flex border rounded-lg">
+            <div className="flex border border-slate-600 rounded-lg">
               <button
                 onClick={() => setScheduleMode('automatic')}
                 className={`px-3 py-2 text-sm ${
                   scheduleMode === 'automatic'
                     ? 'bg-blue-600 text-white'
-                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                    : 'bg-slate-600 text-slate-200 hover:bg-slate-500'
                 }`}
               >
                 Automatic
               </button>
               <button
                 onClick={() => setScheduleMode('manual')}
-                className={`px-3 py-2 text-sm border-l ${
+                className={`px-3 py-2 text-sm border-l border-slate-600 ${
                   scheduleMode === 'manual'
                     ? 'bg-blue-600 text-white'
-                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                    : 'bg-slate-600 text-slate-200 hover:bg-slate-500'
                 }`}
               >
                 Manual
@@ -325,7 +325,7 @@ const TaskScheduler: React.FC<TaskSchedulerProps> = ({
             <select
               value={filterContext}
               onChange={(e) => setFilterContext(e.target.value as any)}
-              className="border rounded-lg px-3 py-2 text-sm"
+              className="border border-slate-600 bg-slate-600 text-slate-100 rounded-lg px-3 py-2 text-sm"
               title="Filter tasks by context"
             >
               <option value="all">All Contexts</option>
@@ -336,7 +336,7 @@ const TaskScheduler: React.FC<TaskSchedulerProps> = ({
             <select
               value={filterEnergyLevel}
               onChange={(e) => setFilterEnergyLevel(e.target.value as any)}
-              className="border rounded-lg px-3 py-2 text-sm"
+              className="border border-slate-600 bg-slate-600 text-slate-100 rounded-lg px-3 py-2 text-sm"
               title="Filter tasks by energy level"
             >
               <option value="all">All Energy Levels</option>
@@ -358,8 +358,8 @@ const TaskScheduler: React.FC<TaskSchedulerProps> = ({
         {/* Content */}
         <div className="flex-1 overflow-hidden flex">
           {/* Available Tasks */}
-          <div className="w-1/3 border-r">
-            <div className="p-4 border-b">
+          <div className="w-1/3 border-r border-slate-600">
+            <div className="p-4 border-b border-slate-600">
               <h3 className="font-semibold">Available Tasks ({filteredTasks.length})</h3>
             </div>
             <div className="overflow-auto h-full p-4">
@@ -367,22 +367,22 @@ const TaskScheduler: React.FC<TaskSchedulerProps> = ({
                 {filteredTasks.map(task => (
                   <div
                     key={task.id}
-                    className="border rounded-lg p-3 hover:shadow-md transition-shadow cursor-move"
+                    className="border border-slate-600 bg-slate-700 rounded-lg p-3 hover:bg-slate-600 transition-colors cursor-move"
                     draggable
                   >
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="font-medium text-sm">{task.title}</h4>
                       <span className={`px-2 py-1 text-xs rounded ${
-                        task.priority === 'urgent' ? 'bg-red-100 text-red-800' :
-                        task.priority === 'high' ? 'bg-orange-100 text-orange-800' :
-                        task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-green-100 text-green-800'
+                        task.priority === 'urgent' ? 'bg-red-900/50 text-red-300' :
+                        task.priority === 'high' ? 'bg-orange-900/50 text-orange-300' :
+                        task.priority === 'medium' ? 'bg-yellow-900/50 text-yellow-300' :
+                        'bg-green-900/50 text-green-300'
                       }`}>
                         {task.priority}
                       </span>
                     </div>
                     
-                    <div className="text-xs text-gray-600 space-y-1">
+                    <div className="text-xs text-slate-400 space-y-1">
                       <div>Duration: {task.estimated_hours}h</div>
                       {task.energy_level && (
                         <div>Energy: {task.energy_level}</div>
@@ -401,8 +401,8 @@ const TaskScheduler: React.FC<TaskSchedulerProps> = ({
           </div>
 
           {/* Time Slots */}
-          <div className="w-1/3 border-r">
-            <div className="p-4 border-b">
+          <div className="w-1/3 border-r border-slate-600">
+            <div className="p-4 border-b border-slate-600">
               <h3 className="font-semibold">Time Slots</h3>
             </div>
             <div className="overflow-auto h-full p-4">
@@ -411,7 +411,7 @@ const TaskScheduler: React.FC<TaskSchedulerProps> = ({
                   <div
                     key={index}
                     className={`border rounded-lg p-3 ${
-                      slot.available ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-gray-50'
+                      slot.available ? 'border-green-600 bg-green-900/20' : 'border-slate-600 bg-slate-700'
                     }`}
                   >
                     <div className="flex items-center justify-between">
@@ -420,10 +420,10 @@ const TaskScheduler: React.FC<TaskSchedulerProps> = ({
                       </span>
                       <div className="flex items-center space-x-2">
                         <span className={`px-2 py-1 text-xs rounded ${
-                          slot.type === 'focus' ? 'bg-blue-100 text-blue-800' :
-                          slot.type === 'business' ? 'bg-purple-100 text-purple-800' :
-                          slot.type === 'personal' ? 'bg-green-100 text-green-800' :
-                          'bg-gray-100 text-gray-800'
+                          slot.type === 'focus' ? 'bg-blue-900/50 text-blue-300' :
+                          slot.type === 'business' ? 'bg-purple-900/50 text-purple-300' :
+                          slot.type === 'personal' ? 'bg-green-900/50 text-green-300' :
+                          'bg-slate-700 text-slate-300'
                         }`}>
                           {slot.type}
                         </span>
@@ -442,7 +442,7 @@ const TaskScheduler: React.FC<TaskSchedulerProps> = ({
 
           {/* Scheduled Tasks */}
           <div className="w-1/3">
-            <div className="p-4 border-b">
+            <div className="p-4 border-b border-slate-600">
               <h3 className="font-semibold">Scheduled Tasks ({scheduledTasks.length})</h3>
             </div>
             <div className="overflow-auto h-full p-4">
@@ -450,16 +450,16 @@ const TaskScheduler: React.FC<TaskSchedulerProps> = ({
                 {scheduledTasks.map(task => (
                   <div
                     key={task.id}
-                    className="border rounded-lg p-3 bg-blue-50 border-blue-200"
+                    className="border rounded-lg p-3 bg-blue-900/20 border-blue-500/30"
                   >
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="font-medium text-sm">{task.title}</h4>
-                      <span className="text-xs text-blue-600 font-medium">
+                      <span className="text-xs text-blue-300 font-medium">
                         Score: {task.energy_match_score}
                       </span>
                     </div>
                     
-                    <div className="text-xs text-gray-600 space-y-1">
+                    <div className="text-xs text-slate-400 space-y-1">
                       <div className="font-medium">
                         {task.scheduled_start} - {task.scheduled_end}
                       </div>
@@ -474,14 +474,14 @@ const TaskScheduler: React.FC<TaskSchedulerProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between p-4 border-t bg-gray-50">
-          <div className="text-sm text-gray-600">
+        <div className="flex items-center justify-between p-4 border-t border-slate-600 bg-slate-700">
+          <div className="text-sm text-slate-400">
             {scheduledTasks.length} tasks scheduled • {filteredTasks.length - scheduledTasks.length} remaining
           </div>
           <div className="flex items-center space-x-3">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-gray-600 border rounded-lg hover:bg-gray-50"
+              className="px-4 py-2 text-slate-300 border border-slate-600 rounded-lg hover:bg-slate-600"
             >
               Cancel
             </button>

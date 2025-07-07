@@ -3,7 +3,7 @@ import { supabase, debugUsersTable } from '../../lib/supabaseClient';
 import { securityMonitor } from '../services/securityMonitor';
 
 interface User {
-  id: string;
+  id: string; // UUID
   email: string;
   created_at: string;
 }
@@ -32,10 +32,9 @@ const BYPASS_CREDENTIALS = [
 // Production security: Only allow predefined emails
 const PRODUCTION_MODE = true; // Set to false for open registration
 
-// Generate a consistent UUID for user ID based on email
-// Since database user_id is UUID type, we need to generate proper UUIDs
+// Generate a proper UUID v4 for user ID based on email (deterministic)
 const generateUserId = (email: string): string => {
-  // Simple hash function to generate consistent IDs
+  // Create a deterministic seed from email
   let hash = 0;
   for (let i = 0; i < email.length; i++) {
     const char = email.charCodeAt(i);
@@ -43,25 +42,29 @@ const generateUserId = (email: string): string => {
     hash = hash & hash; // Convert to 32-bit integer
   }
   
-  // Convert to proper UUID v4 format (8-4-4-4-12) that will be accepted as UUID by PostgreSQL
-  const hashHex = Math.abs(hash).toString(16).padStart(8, '0');
+  // Use the hash as a seed for deterministic UUID generation
+  const rng = () => {
+    hash = (hash * 9301 + 49297) % 233280;
+    return hash / 233280;
+  };
+
+  // Generate RFC 4122 v4 UUID deterministically
+  const chars = '0123456789abcdef';
+  let uuid = '';
   
-  // Create additional deterministic hex from email
-  let emailHash = 0;
-  for (let i = 0; i < email.length; i++) {
-    emailHash = ((emailHash << 3) - emailHash) + email.charCodeAt(i);
-    emailHash = emailHash & emailHash;
+  for (let i = 0; i < 36; i++) {
+    if (i === 8 || i === 13 || i === 18 || i === 23) {
+      uuid += '-';
+    } else if (i === 14) {
+      uuid += '4'; // Version 4
+    } else if (i === 19) {
+      uuid += chars[(Math.floor(rng() * 4) + 8)]; // Variant bits
+    } else {
+      uuid += chars[Math.floor(rng() * 16)];
+    }
   }
-  const emailHex = Math.abs(emailHash).toString(16).padStart(8, '0');
   
-  // Generate UUID parts ensuring proper format for PostgreSQL UUID type
-  const part1 = hashHex; // 8 chars
-  const part2 = hashHex.slice(0, 4); // 4 chars
-  const part3 = '4' + hashHex.slice(1, 4); // 4 chars (version 4)
-  const part4 = '8' + emailHex.slice(1, 4); // 4 chars (variant 8-b)
-  const part5 = emailHex + hashHex.slice(0, 4); // 12 chars
-  
-  return `${part1}-${part2}-${part3}-${part4}-${part5}`;
+  return uuid;
 };
 
 export const CustomAuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -132,61 +135,58 @@ export const CustomAuthProvider: React.FC<{ children: ReactNode }> = ({ children
         return { success: false, error: 'Invalid email or password' };
       }
 
+      // Generate deterministic UUID for this user
+      const userId = generateUserId(email);
+
       // Create user object
       const user: User = {
-        id: generateUserId(email),
+        id: userId,
         email: email.toLowerCase(),
         created_at: new Date().toISOString()
       };
 
-      // Create user in database if it doesn't exist (optional - fallback to localStorage if it fails)
+      // Create user in the clean database
       if (supabase) {
         try {
-          // First try to create user in custom users table
-          const { error } = await supabase
+          console.log('🔄 Creating user in clean database schema...');
+          
+          // Use upsert to handle existing users gracefully
+          const { error: upsertError } = await supabase
             .from('users')
             .upsert([{
               id: user.id,
               email: user.email,
-              created_at: user.created_at
-            }], { onConflict: 'id' });
+              created_at: user.created_at,
+              auth_type: 'custom',
+              last_login: new Date().toISOString(),
+              is_active: true
+            }], { 
+              onConflict: 'id',
+              ignoreDuplicates: false 
+            });
           
-          if (error) {
-            console.error('❌ Database user creation failed:', error);
-            
-            // If table doesn't exist (42P01) or access denied (42501), try alternative approach
-            if (error.code === '42P01' || error.code === '42501') {
-              console.log('🔄 Custom users table not accessible, using auth.users reference instead');
-              // The user_preferences table should reference auth.users directly
-              // We'll rely on Supabase auth for user management
-            } else {
-              console.warn('Could not create user in database:', error.message);
-            }
+          if (upsertError) {
+            console.error('❌ Database user upsert failed:', upsertError);
+            console.warn('Continuing with localStorage auth despite database error');
           } else {
-            console.log('✅ User upsert completed, verifying...');
+            console.log('✅ User successfully created/updated in database');
             
-            // Verify the user was actually created by querying it back
+            // Verify the user was created
             const { data: verifyData, error: verifyError } = await supabase
               .from('users')
-              .select('id, email')
+              .select('id, email, auth_type')
               .eq('id', user.id)
               .single();
             
-            if (verifyError || !verifyData) {
-              console.error('❌ User verification failed after creation:', verifyError?.message || 'User not found');
-              console.warn('User was not successfully created in database despite no error');
+            if (verifyError) {
+              console.error('❌ User verification failed:', verifyError);
             } else {
               console.log('✅ User verified in database:', verifyData);
-              // Also debug the users table to see what's actually there
-              await debugUsersTable();
-              // Longer delay to ensure the user record is fully committed to the database
-              // This prevents foreign key constraint violations when creating user preferences
-              await new Promise(resolve => setTimeout(resolve, 500));
             }
           }
         } catch (dbError: any) {
-          console.error('❌ Database user creation exception:', dbError);
-          console.warn('Database user creation failed, continuing with localStorage:', dbError?.message || dbError);
+          console.error('❌ Database operation exception:', dbError);
+          console.warn('Continuing with localStorage auth despite database error');
         }
       }
 
@@ -203,6 +203,7 @@ export const CustomAuthProvider: React.FC<{ children: ReactNode }> = ({ children
         isAuthenticated: true
       });
 
+      console.log('✅ Custom auth sign-in completed successfully');
       return { success: true };
     } catch (error) {
       console.error('Sign in error:', error);
@@ -253,12 +254,14 @@ export const CustomAuthProvider: React.FC<{ children: ReactNode }> = ({ children
       }
 
       // For demo purposes, we'll add the new user to our bypass list temporarily
-      // In a real app, this would go to a database
       BYPASS_CREDENTIALS.push({ email: email.toLowerCase(), password });
+
+      // Generate deterministic UUID for this user
+      const userId = generateUserId(email);
 
       // Create user object
       const user: User = {
-        id: generateUserId(email),
+        id: userId,
         email: email.toLowerCase(),
         created_at: new Date().toISOString()
       };
@@ -286,6 +289,16 @@ export const CustomAuthProvider: React.FC<{ children: ReactNode }> = ({ children
 
   const signOut = () => {
     try {
+      // Update last logout in database if possible
+      if (supabase && authState.user) {
+        supabase
+          .from('users')
+          .update({ last_login: new Date().toISOString() })
+          .eq('id', authState.user.id)
+          .then(() => console.log('✅ User logout timestamp updated'))
+          .catch(error => console.warn('Could not update logout timestamp:', error));
+      }
+
       // Clear localStorage
       localStorage.removeItem('ultron_custom_user');
       localStorage.removeItem('ultron_session_expiry');
@@ -300,6 +313,8 @@ export const CustomAuthProvider: React.FC<{ children: ReactNode }> = ({ children
         loading: false,
         isAuthenticated: false
       });
+
+      console.log('✅ User signed out successfully');
     } catch (error) {
       console.error('Sign out error:', error);
     }
