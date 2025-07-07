@@ -28,22 +28,43 @@ export const isSupabaseConfigured = (): boolean => {
 // Initialize Supabase client with better error handling
 const initializeSupabase = () => {
   console.log('🔍 Initializing Supabase client...');
-  console.log('- URL:', supabaseUrl);
+  console.log('- Raw URL:', supabaseUrl);
+  console.log('- Raw Key:', supabaseAnonKey);
+  console.log('- URL type:', typeof supabaseUrl);
+  console.log('- Key type:', typeof supabaseAnonKey);
+  console.log('- URL length:', supabaseUrl?.length || 0);
   console.log('- Key length:', supabaseAnonKey?.length || 0);
   console.log('- URL valid:', supabaseUrl && supabaseUrl !== 'YOUR_SUPABASE_URL_PLACEHOLDER' && supabaseUrl.startsWith('https://'));
   console.log('- Key valid:', supabaseAnonKey && supabaseAnonKey !== 'YOUR_SUPABASE_ANON_KEY_PLACEHOLDER' && supabaseAnonKey.length > 30);
   
+  // Additional debug for Vercel environment
+  console.log('🌐 Environment Debug:', {
+    NODE_ENV: process.env.NODE_ENV,
+    VERCEL: process.env.VERCEL,
+    VERCEL_ENV: process.env.VERCEL_ENV,
+    allEnvKeys: Object.keys(import.meta.env).filter(key => key.includes('SUPABASE'))
+  });
+  
   if (!isSupabaseConfigured()) {
-    console.warn(
-      "⚠️ Supabase configuration issue detected:",
+    console.error(
+      "❌ Supabase configuration FAILED:",
       "\n- URL:", supabaseUrl,
+      "\n- URL type:", typeof supabaseUrl,
+      "\n- Key type:", typeof supabaseAnonKey,
       "\n- Key length:", supabaseAnonKey?.length || 0,
-      "\nPlease check your environment variables or update lib/supabaseClient.ts"
+      "\n⚠️ Cannot create Supabase client with invalid credentials"
     );
     return null;
   }
 
+  // Double-check values before passing to createClient
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.error('❌ Supabase URL or Key is null/undefined, cannot create client');
+    return null;
+  }
+
   try {
+    console.log('🔧 Creating Supabase client with valid credentials...');
     const client = createClient<Database>(supabaseUrl, supabaseAnonKey, {
       auth: {
         autoRefreshToken: true,
@@ -64,6 +85,8 @@ const initializeSupabase = () => {
     return client;
   } catch (error) {
     console.error('❌ Error initializing Supabase client:', error);
+    console.error('❌ URL that caused error:', supabaseUrl);
+    console.error('❌ Key that caused error:', supabaseAnonKey?.substring(0, 20) + '...');
     return null;
   }
 };
