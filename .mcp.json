@@ -1,0 +1,23 @@
+{
+  "mcpServers": {
+    "github": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-github"],
+      "env": {}
+    },
+    "postgres": {
+      "command": "npx", 
+      "args": ["@modelcontextprotocol/server-postgres"],
+      "env": {
+        "DATABASE_URL": "${DATABASE_URL}"
+      }
+    },
+    "vercel": {
+      "command": "node",
+      "args": ["/home/hackintosh/.npm-global/lib/node_modules/@vercel/mcp-adapter/dist/index.mjs"],
+      "env": {
+        "VERCEL_PROJECT_ID": "${VERCEL_PROJECT_ID}"
+      }
+    }
+  }
+} 
