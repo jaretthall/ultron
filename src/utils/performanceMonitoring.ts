@@ -3,6 +3,8 @@
  * Tracks and reports application performance metrics
  */
 
+import * as React from 'react';
+
 interface PerformanceMetric {
   name: string;
   value: number;
@@ -375,7 +377,7 @@ export function withPerformanceTracking<P extends object>(
       performanceMonitor.trackComponentRender(name, endTime - startTime);
     });
 
-    return <WrappedComponent {...props} />;
+    return React.createElement(WrappedComponent, props);
   });
 }
 
@@ -407,20 +409,16 @@ if (typeof window !== 'undefined' && 'PerformanceObserver' in window) {
   // Track Largest Contentful Paint (LCP)
   new PerformanceObserver((list) => {
     for (const entry of list.getEntries()) {
-      performanceMonitor.trackNetworkRequest('LCP', entry.startTime, true, entry.size);
+      const lcpEntry = entry as any; // LCP entries have size property
+      performanceMonitor.trackNetworkRequest('LCP', entry.startTime, true, lcpEntry.size);
     }
   }).observe({ type: 'largest-contentful-paint', buffered: true });
 
   // Track First Input Delay (FID)
   new PerformanceObserver((list) => {
     for (const entry of list.getEntries()) {
-      performanceMonitor.addMetric({
-        name: 'first_input_delay',
-        value: entry.processingStart - entry.startTime,
-        timestamp: Date.now(),
-        category: 'component',
-        metadata: { type: 'FID' }
-      });
+      const fidEntry = entry as any; // FID entries have processingStart property
+      performanceMonitor.trackComponentRender('first_input_delay', fidEntry.processingStart - entry.startTime);
     }
   }).observe({ type: 'first-input', buffered: true });
 }
