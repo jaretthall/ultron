@@ -118,14 +118,11 @@ export default defineConfig(({ mode }) => {
               // AI services chunk (large dependencies)
               ai: ['@google/genai'],
               
-              // Analytics and charts (if used)
-              analytics: ['recharts', 'date-fns'],
-              
-              // Calendar and date utilities
-              calendar: ['react-calendar', 'date-fns/format', 'date-fns/parse'],
+              // Date utilities
+              dates: ['date-fns'],
               
               // Utility libraries
-              utils: ['lodash', 'uuid', 'crypto-js']
+              utils: ['uuid']
             },
           },
         },
