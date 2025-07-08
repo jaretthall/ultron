@@ -630,14 +630,14 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
       updated_at: new Date().toISOString()
     };
 
-    // Validate project_id if provided
-    if (scheduleData.project_id) {
-      const project = state.projects.find(p => p.id === scheduleData.project_id);
-      if (!project) {
-        throw new Error('Selected project does not exist');
+    // Validate task_id if provided (schedules link to tasks, not projects)
+    if (scheduleData.task_id) {
+      const task = state.tasks.find(t => t.id === scheduleData.task_id);
+      if (!task) {
+        throw new Error('Selected task does not exist');
       }
-      if (project.id.startsWith('temp_')) {
-        throw new Error('Cannot create schedule for unsaved project. Please wait for the project to be saved first.');
+      if (task.id.startsWith('temp_')) {
+        throw new Error('Cannot create schedule for unsaved task. Please wait for the task to be saved first.');
       }
     }
 

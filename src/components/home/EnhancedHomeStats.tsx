@@ -39,6 +39,40 @@ interface StatsData {
 }
 
 const EnhancedHomeStats: React.FC<EnhancedHomeStatsProps> = ({ projects, tasks }) => {
+  // Memoize static icons to prevent re-creation on every render
+  const icons = useMemo(() => ({
+    check: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
+    clock: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
+    trending: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+      </svg>
+    ),
+    exclamation: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 19.5c-.77.833.192 2.5 1.732 2.5z" />
+      </svg>
+    ),
+    calendar: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      </svg>
+    ),
+    chart: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+      </svg>
+    )
+  }), []);
+
   const stats = useMemo((): StatsData => {
     const now = new Date();
     const today = now.toDateString();
@@ -167,7 +201,7 @@ const EnhancedHomeStats: React.FC<EnhancedHomeStatsProps> = ({ projects, tasks }
     subtitle?: string; 
     color?: string;
     icon?: React.ReactNode;
-  }> = ({ title, value, subtitle, color = 'text-slate-300', icon }) => (
+  }> = React.memo(({ title, value, subtitle, color = 'text-slate-300', icon }) => (
     <div className="bg-slate-700 rounded-lg p-4">
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-sm font-medium text-slate-400">{title}</h3>
@@ -176,7 +210,7 @@ const EnhancedHomeStats: React.FC<EnhancedHomeStatsProps> = ({ projects, tasks }
       <div className={`text-2xl font-bold ${color}`}>{value}</div>
       {subtitle && <p className="text-xs text-slate-500 mt-1">{subtitle}</p>}
     </div>
-  );
+  ));
 
   return (
     <div className="space-y-6">
@@ -188,11 +222,7 @@ const EnhancedHomeStats: React.FC<EnhancedHomeStatsProps> = ({ projects, tasks }
             title="Completed Today"
             value={stats.completionStats.tasksCompletedToday}
             color="text-green-400"
-            icon={
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            }
+            icon={icons.check}
           />
           <StatCard
             title="This Week"

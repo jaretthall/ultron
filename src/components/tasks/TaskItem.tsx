@@ -114,4 +114,18 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, projectTitle, onEditTaskReque
   );
 };
 
-export default TaskItem;
+// Memoize TaskItem for performance optimization
+export default React.memo(TaskItem, (prevProps, nextProps) => {
+  // Optimize re-renders by checking specific properties
+  return (
+    prevProps.task.id === nextProps.task.id &&
+    prevProps.task.title === nextProps.task.title &&
+    prevProps.task.status === nextProps.task.status &&
+    prevProps.task.priority === nextProps.task.priority &&
+    prevProps.task.description === nextProps.task.description &&
+    prevProps.task.updated_at === nextProps.task.updated_at &&
+    prevProps.projectTitle === nextProps.projectTitle &&
+    prevProps.onEditTaskRequest === nextProps.onEditTaskRequest &&
+    prevProps.onDeleteTask === nextProps.onDeleteTask
+  );
+});

@@ -1,20 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import HeaderComponent from './src/components/project_dashboard/HeaderComponent';
-import ProjectDashboardPage from './src/components/project_dashboard/ProjectDashboardPage';
-import HomePage from './src/components/home/HomePage';
-import TaskManagementPage from './src/components/tasks/TaskManagementPage';
-import CalendarPage from './src/components/calendar/CalendarPage';
-import DocumentsPage from './src/components/documents/DocumentsPage';
-import SettingsPage from './src/components/settings/SettingsPage';
-import AIDashboard from './src/components/ai/AIDashboard';
-import AnalyticsDashboard from './src/components/analytics/AnalyticsDashboard';
-import GlobalSearch from './src/components/GlobalSearch';
 import { Project, Task } from './types';
 import LoadingSpinner from './src/components/LoadingSpinner';
 import EditProjectModal from './src/components/projects/EditProjectModal';
 import EditTaskModal from './src/components/tasks/EditTaskModal';
 import FeedbackToast from './src/components/FeedbackToast';
+
+// Lazy load heavy components for better performance
+const ProjectDashboardPage = lazy(() => import('./src/components/project_dashboard/ProjectDashboardPage'));
+const HomePage = lazy(() => import('./src/components/home/HomePage'));
+const TaskManagementPage = lazy(() => import('./src/components/tasks/TaskManagementPage'));
+const CalendarPage = lazy(() => import('./src/components/calendar/CalendarPage'));
+const DocumentsPage = lazy(() => import('./src/components/documents/DocumentsPage'));
+const SettingsPage = lazy(() => import('./src/components/settings/SettingsPage'));
+const AIDashboard = lazy(() => import('./src/components/ai/AIDashboard'));
+const AnalyticsDashboard = lazy(() => import('./src/components/analytics/AnalyticsDashboard'));
+const GlobalSearch = lazy(() => import('./src/components/GlobalSearch'));
 import { AppStateProvider, useAppState } from './src/contexts/AppStateContext';
 // Phase 6: Production Readiness - Security & Monitoring
 import { 
@@ -309,7 +311,15 @@ const AppWithAuthContent: React.FC = () => {
       )}
 
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <Routes>
+        <Suspense fallback={
+          <div className="flex items-center justify-center h-96">
+            <div className="text-center">
+              <LoadingSpinner />
+              <p className="mt-4 text-slate-400">Loading page...</p>
+            </div>
+          </div>
+        }>
+          <Routes>
           <Route path="/" element={
             state.userPreferences ? (
               <HomePage 
@@ -355,7 +365,8 @@ const AppWithAuthContent: React.FC = () => {
           <Route path="/analytics" element={
             <AnalyticsDashboard onNavigate={() => {}} />
           } />
-        </Routes>
+          </Routes>
+        </Suspense>
       </main>
 
       {/* Global Search Modal */}

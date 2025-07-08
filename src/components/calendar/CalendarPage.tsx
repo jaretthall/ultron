@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Task, Schedule, /*TaskStatus*/ } from '../../../types';
 import { useAppState } from '../../contexts/AppStateContext';
 import { formatDateForInput, isSameDate } from '../../utils/dateUtils';
@@ -34,21 +34,38 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ onTaskClick, onEditTask }) 
   const [isWorkingHoursOpen, setIsWorkingHoursOpen] = useState(false);
   const [isFocusBlockManagerOpen, setIsFocusBlockManagerOpen] = useState(false);
 
-  const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  // Memoize static data
+  const daysOfWeek = useMemo(() => ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], []);
 
-  const getDaysInMonth = (year: number, month: number) => {
-    return new Date(year, month + 1, 0).getDate();
-  };
-
-  const getFirstDayOfMonth = (year: number, month: number) => {
-    return new Date(year, month, 1).getDay();
-  };
-
-  const renderCalendarGrid = () => {
+  // Memoize calendar calculations
+  const calendarData = useMemo(() => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
-    const numDays = getDaysInMonth(year, month);
-    const firstDay = getFirstDayOfMonth(year, month);
+    const numDays = new Date(year, month + 1, 0).getDate();
+    const firstDay = new Date(year, month, 1).getDay();
+    
+    return { year, month, numDays, firstDay };
+  }, [currentDate]);
+
+  // Memoize filtered tasks and events for selected date
+  const selectedDateData = useMemo(() => {
+    if (!selectedDate) return { tasks: [], events: [] };
+    
+    const tasksForDate = tasks.filter(task => 
+      task.due_date && isSameDate(task.due_date, selectedDate)
+    );
+    
+    const eventsForDate = schedules.filter(schedule => {
+      const scheduleDate = new Date(schedule.start_date);
+      return isSameDate(scheduleDate, selectedDate);
+    });
+    
+    return { tasks: tasksForDate, events: eventsForDate };
+  }, [selectedDate, tasks, schedules]);
+
+  // Memoize calendar grid rendering
+  const calendarGrid = useMemo(() => {
+    const { year, month, numDays, firstDay } = calendarData;
     const cells = [];
 
     for (let i = 0; i < firstDay; i++) {
@@ -96,34 +113,34 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ onTaskClick, onEditTask }) 
       );
     }
     return cells;
-  };
+  }, [calendarData, tasks, schedules, selectedDate]);
 
-  const prevMonth = () => {
+  // Memoize navigation functions
+  const prevMonth = useCallback(() => {
     setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
-  };
-  const nextMonth = () => {
+  }, []);
+  
+  const nextMonth = useCallback(() => {
     setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
-  };
-  const goToToday = () => {
+  }, []);
+  
+  const goToToday = useCallback(() => {
     const today = new Date();
     setCurrentDate(new Date(today.getFullYear(), today.getMonth(), 1));
     setSelectedDate(today);
-  }
+  }, []);
 
-  const tasksForSelectedDate = selectedDate ? tasks.filter(task => task.due_date && isSameDate(task.due_date, selectedDate)) : [];
-  const eventsForSelectedDate = selectedDate ? schedules.filter(schedule => {
-    const scheduleDate = new Date(schedule.start_date);
-    return isSameDate(scheduleDate, selectedDate);
-  }) : [];
+  // Use memoized data instead of re-filtering
+  const { tasks: tasksForSelectedDate, events: eventsForSelectedDate } = selectedDateData;
 
-  // Default handlers if not provided as props
-  const handleTaskClick = onTaskClick || ((task: Task) => {
+  // Memoize event handlers to prevent re-renders
+  const handleTaskClick = useCallback(onTaskClick || ((task: Task) => {
     console.log('Task clicked:', task.title);
-  });
+  }), [onTaskClick]);
 
-  const handleEditTask = onEditTask || ((task: Task) => {
+  const handleEditTask = useCallback(onEditTask || ((task: Task) => {
     console.log('Edit task:', task.title);
-  });
+  }), [onEditTask]);
 
   const handleMarkComplete = (task: Task) => {
     console.log('Mark complete:', task.title);
@@ -254,7 +271,7 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ onTaskClick, onEditTask }) 
           {daysOfWeek.map(day => <div key={day} className="py-2 border-b border-x border-slate-700">{day}</div>)}
         </div>
         <div className="grid grid-cols-7 flex-1 overflow-y-auto bg-slate-800 rounded-b-lg">
-          {renderCalendarGrid()}
+          {calendarGrid}
         </div>
       </div>
 
@@ -456,4 +473,11 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ onTaskClick, onEditTask }) 
   );
 };
 
-export default CalendarPage;
+// Memoize CalendarPage for performance optimization
+export default React.memo(CalendarPage, (prevProps, nextProps) => {
+  // Optimize re-renders by checking specific properties
+  return (
+    prevProps.onTaskClick === nextProps.onTaskClick &&
+    prevProps.onEditTask === nextProps.onEditTask
+  );
+});

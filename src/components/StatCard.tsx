@@ -64,4 +64,14 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, color = 'text-s
   );
 };
 
-export default StatCard; 
+// Memoize StatCard for performance optimization
+export default React.memo(StatCard, (prevProps, nextProps) => {
+  // Optimize re-renders by checking specific properties
+  return (
+    prevProps.title === nextProps.title &&
+    prevProps.value === nextProps.value &&
+    prevProps.color === nextProps.color &&
+    prevProps.onClick === nextProps.onClick &&
+    prevProps.icon === nextProps.icon
+  );
+}); 

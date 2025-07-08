@@ -91,7 +91,7 @@ const NewEventModal: React.FC<NewEventModalProps> = ({
         all_day: allDay,
         event_type: eventType,
         location: location.trim() || undefined,
-        project_id: projectId || undefined,
+        task_id: projectId || undefined, // Using task_id field
         blocks_work_time: blocksWorkTime,
         tags: tags.split(',').map(tag => tag.trim()).filter(tag => tag),
       };

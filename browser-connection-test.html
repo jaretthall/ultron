@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Supabase Connection Test - Ultron</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #0f0f23; color: #fff; }
+        .test-result { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #0f5132; border: 1px solid #28a745; }
+        .error { background: #721c24; border: 1px solid #dc3545; }
+        .info { background: #055160; border: 1px solid #17a2b8; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        pre { background: #1e1e1e; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🛠️ Ultron - Supabase Connection Test</h1>
+    
+    <div class="info test-result">
+        <strong>Environment Check:</strong>
+        <pre id="env-check">Loading...</pre>
+    </div>
+    
+    <button onclick="testConnection()">🔍 Test Database Connection</button>
+    <button onclick="testAuth()">🔐 Test Authentication</button>
+    <button onclick="createTestData()">📊 Create Test Project</button>
+    <button onclick="clearResults()">🧹 Clear Results</button>
+    
+    <div id="test-results"></div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.skypack.dev/@supabase/supabase-js';
+        
+        // Environment check
+        const envCheck = {
+            url: 'https://mldklirjxxxegcxyweug.supabase.co',
+            keyLength: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1sZGtsaXJqeHh4ZWdjeHl3ZXVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkwNzg4NDUsImV4cCI6MjA2NDY1NDg0NX0.CXeXX_ltTy4GWTloUr2LmjENXQ5bDF7F18TDlVHUcR4'.length,
+            userAgent: navigator.userAgent,
+            timestamp: new Date().toISOString()
+        };
+        
+        document.getElementById('env-check').textContent = JSON.stringify(envCheck, null, 2);
+        
+        const supabase = createClient(
+            'https://mldklirjxxxegcxyweug.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1sZGtsaXJqeHh4ZWdjeHl3ZXVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkwNzg4NDUsImV4cCI6MjA2NDY1NDg0NX0.CXeXX_ltTy4GWTloUr2LmjENXQ5bDF7F18TDlVHUcR4'
+        );
+        
+        function addResult(type, title, content) {
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = `<strong>${title}</strong><pre>${content}</pre>`;
+            document.getElementById('test-results').appendChild(div);
+        }
+        
+        window.testConnection = async function() {
+            addResult('info', '🔍 Testing Database Connection...', 'Starting connection test...');
+            
+            try {
+                const { data, error } = await supabase
+                    .from('projects')
+                    .select('id, title, created_at')
+                    .limit(5);
+                
+                if (error) {
+                    addResult('error', '❌ Database Connection Failed', JSON.stringify(error, null, 2));
+                } else {
+                    addResult('success', '✅ Database Connection Successful', 
+                        `Found ${data.length} projects:\n${JSON.stringify(data, null, 2)}`);
+                }
+            } catch (error) {
+                addResult('error', '❌ Connection Exception', error.message);
+            }
+        };
+        
+        window.testAuth = async function() {
+            addResult('info', '🔐 Testing Authentication...', 'Checking auth status...');
+            
+            try {
+                const { data: { session }, error } = await supabase.auth.getSession();
+                
+                if (error) {
+                    addResult('error', '❌ Auth Error', JSON.stringify(error, null, 2));
+                } else if (session) {
+                    addResult('success', '✅ User Authenticated', 
+                        `User: ${session.user.email}\nExpires: ${new Date(session.expires_at * 1000)}`);
+                } else {
+                    addResult('info', 'ℹ️ No Active Session', 'User not logged in (this is normal for fresh database)');
+                }
+            } catch (error) {
+                addResult('error', '❌ Auth Exception', error.message);
+            }
+        };
+        
+        window.createTestData = async function() {
+            addResult('info', '📊 Creating Test Project...', 'Attempting to create test data...');
+            
+            try {
+                const testProject = {
+                    id: 'test-' + Date.now(),
+                    title: 'Test Project from Browser',
+                    context: 'Testing database connectivity and data creation',
+                    status: 'active',
+                    goals: ['Test database', 'Verify connection'],
+                    tags: ['test', 'browser'],
+                    business_relevance: 5,
+                    user_id: 'test-user-browser',
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                };
+                
+                const { data, error } = await supabase
+                    .from('projects')
+                    .insert([testProject])
+                    .select()
+                    .single();
+                
+                if (error) {
+                    addResult('error', '❌ Failed to Create Test Data', JSON.stringify(error, null, 2));
+                } else {
+                    addResult('success', '✅ Test Project Created Successfully', JSON.stringify(data, null, 2));
+                }
+            } catch (error) {
+                addResult('error', '❌ Test Data Exception', error.message);
+            }
+        };
+        
+        window.clearResults = function() {
+            document.getElementById('test-results').innerHTML = '';
+        };
+        
+        // Auto-run connection test on load
+        window.addEventListener('load', () => {
+            setTimeout(testConnection, 1000);
+        });
+    </script>
+</body>
+</html>

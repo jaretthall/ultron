@@ -109,4 +109,17 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, projectTitle, onEditTaskReque
   );
 };
 
-export default TaskCard;
+// Memoize TaskCard for performance optimization
+export default React.memo(TaskCard, (prevProps, nextProps) => {
+  // Optimize re-renders by checking specific properties
+  return (
+    prevProps.task.id === nextProps.task.id &&
+    prevProps.task.title === nextProps.task.title &&
+    prevProps.task.status === nextProps.task.status &&
+    prevProps.task.priority === nextProps.task.priority &&
+    prevProps.task.updated_at === nextProps.task.updated_at &&
+    prevProps.projectTitle === nextProps.projectTitle &&
+    prevProps.onEditTaskRequest === nextProps.onEditTaskRequest &&
+    prevProps.onDeleteTask === nextProps.onDeleteTask
+  );
+});

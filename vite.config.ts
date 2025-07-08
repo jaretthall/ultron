@@ -105,11 +105,27 @@ export default defineConfig(({ mode }) => {
         rollupOptions: {
           output: {
             manualChunks: {
-              // Vendor chunk splitting for better caching
+              // Core React chunks
               vendor: ['react', 'react-dom'],
-              ui: ['@headlessui/react', 'lucide-react'],
               router: ['react-router-dom'],
+              
+              // UI and components chunks
+              ui: ['@headlessui/react', 'lucide-react'],
+              
+              // Database and API chunks
               supabase: ['@supabase/supabase-js'],
+              
+              // AI services chunk (large dependencies)
+              ai: ['@google/generative-ai'],
+              
+              // Analytics and charts (if used)
+              analytics: ['recharts', 'date-fns'],
+              
+              // Calendar and date utilities
+              calendar: ['react-calendar', 'date-fns/format', 'date-fns/parse'],
+              
+              // Utility libraries
+              utils: ['lodash', 'uuid', 'crypto-js']
             },
           },
         },

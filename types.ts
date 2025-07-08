@@ -146,8 +146,8 @@ export interface Note extends UniversalSyncFields {
 }
 
 export interface Schedule extends UniversalSyncFields {
-  id: string; // CUID
-  project_id?: string; // FK to Project - optional for standalone events
+  id: string; // UUID
+  task_id?: string; // FK to Task - schedules are linked to tasks, not projects directly
   title: string;
   context?: string; // Description/notes about the event
   start_date: string; // DateTime

@@ -61,7 +61,7 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
       setAllDay(event.all_day || false);
       setEventType(event.event_type || 'other');
       setLocation(event.location || '');
-      setProjectId(event.project_id || '');
+      setProjectId(event.task_id || ''); // Using task_id since schedules link to tasks, not projects
       setBlocksWorkTime(event.blocks_work_time || false);
       setTags(Array.isArray(event.tags) ? event.tags.join(', ') : '');
     }
@@ -129,7 +129,7 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
         all_day: allDay,
         event_type: eventType,
         location: location.trim() || undefined,
-        project_id: projectId || undefined,
+        task_id: projectId || undefined, // Using task_id field
         blocks_work_time: blocksWorkTime,
         tags: tags.split(',').map(tag => tag.trim()).filter(tag => tag),
       };

@@ -1,5 +1,9 @@
 import { supabase } from '../lib/supabaseClient';
 import { getCustomAuthUser } from '../src/contexts/CustomAuthContext';
+import { IdGenerator } from '../src/utils/idGeneration';
+import { enhanceError } from '../src/utils/errorHandling';
+import { RetryableOperations } from '../src/utils/retryLogic';
+import { dataCache, CACHE_KEYS, CACHE_TTL, cacheInvalidation, withCache } from '../src/utils/dataCache';
 import {
   Project, Task, UserPreferences, Tag, TagCategory, Schedule,
   ProjectStatus, ProjectContext, TaskPriority, TaskStatus
@@ -27,15 +31,10 @@ class DatabaseServiceError extends Error {
   }
 }
 
-// Helper function to handle database errors
+// Enhanced error handler using Phase 2 error handling system
 const handleError = (context: string, error: any): never => {
-  console.error(`Database error in ${context}:`, error);
-  throw new DatabaseServiceError({
-    message: error?.message || 'An unknown database error occurred',
-    details: error?.details,
-    hint: error?.hint,
-    code: error?.code
-  });
+  // Use the enhanced error handling system
+  throw enhanceError(error, context);
 };
 
 // Projects Service
@@ -44,126 +43,180 @@ export const projectsService = {
     console.log('🔍 projectsService.getAll() called');
     
     if (!supabase) {
-      console.error('❌ Supabase client not initialized in projectsService.getAll()');
-      throw new Error('Supabase client not initialized');
+      throw enhanceError(new Error('Supabase client not initialized'), 'projectsService.getAll');
     }
-    
-    console.log('📊 Fetching projects from Supabase...');
-    const { data, error } = await supabase
-      .from('projects')
-      .select('*')
-      .order('created_at', { ascending: false });
-    
-    console.log('📊 Projects fetch result:', { 
-      projectCount: data?.length || 0, 
-      error: error,
-      sample: data?.[0] || null 
-    });
-    
-    if (error) {
-      console.error('❌ Error fetching projects:', error);
-      handleError('fetching projects', error);
-    }
-    
-    return data || [];
+
+    // Use cache for frequently accessed projects data
+    return withCache(
+      CACHE_KEYS.ALL_PROJECTS,
+      async () => {
+        return RetryableOperations.databaseRead(async () => {
+          console.log('📊 Fetching projects from Supabase...');
+          const { data, error } = await supabase!!
+            .from('projects')
+            .select('*')
+            .order('created_at', { ascending: false });
+          
+          console.log('📊 Projects fetch result:', { 
+            projectCount: data?.length || 0, 
+            error: error,
+            sample: data?.[0] || null 
+          });
+          
+          if (error) {
+            handleError('fetching projects', error);
+          }
+          
+          return data || [];
+        }, 'projectsService.getAll');
+      },
+      CACHE_TTL.MEDIUM
+    );
   },
 
   async getById(id: string): Promise<Project | null> {
-    if (!supabase) throw new Error('Supabase client not initialized');
-    
-    const { data, error } = await supabase
-      .from('projects')
-      .select('*')
-      .eq('id', id)
-      .single();
-    
-    if (error) {
-      if (error.code === 'PGRST116') return null; // No rows returned
-      handleError('fetching project by id', error);
+    if (!supabase) {
+      throw enhanceError(new Error('Supabase client not initialized'), 'projectsService.getById');
     }
-    return data;
+    
+    // Validate ID format
+    const idValidation = IdGenerator.validateEntityId(id, 'Project');
+    if (!idValidation.isValid) {
+      throw enhanceError(new Error(idValidation.error!), 'project ID validation');
+    }
+    
+    return RetryableOperations.databaseRead(async () => {
+      const { data, error } = await supabase!
+        .from('projects')
+        .select('*')
+        .eq('id', id)
+        .single();
+      
+      if (error) {
+        if (error.code === 'PGRST116') return null; // No rows returned
+        handleError('fetching project by ID', error);
+      }
+      return data;
+    }, 'projectsService.getById');
   },
 
   async create(project: Omit<Project, 'id' | 'created_at' | 'updated_at' | 'user_id'>): Promise<Project> {
-    if (!supabase) throw new Error('Supabase client not initialized');
+    if (!supabase) {
+      throw enhanceError(new Error('Supabase client not initialized'), 'projectsService.create');
+    }
     
     // Get current user from custom auth
     const user = getCustomAuthUser();
     if (!user) {
-      throw new Error('User not authenticated');
+      throw enhanceError(new Error('User not authenticated'), 'project creation authentication');
     }
     
-    // Generate a client-side UUID as fallback
-    const generateUUID = () => {
-      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        const r = Math.random() * 16 | 0;
-        const v = c == 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-      });
-    };
+    // Validate user ID format
+    const userIdValidation = IdGenerator.validateEntityId(user.id, 'User');
+    if (!userIdValidation.isValid) {
+      throw enhanceError(new Error(userIdValidation.error!), 'user ID validation');
+    }
     
-    // Clean the project data to remove any unwanted fields
-    const cleanProject: any = {
-      id: generateUUID(), // Provide fallback UUID
-      user_id: user.id,
-      title: project.title,
-      context: project.context || '',
-      status: project.status || 'active',
-      goals: project.goals || [],
-      tags: project.tags || [],
-      business_relevance: project.business_relevance ?? 50,
-      preferred_time_slots: project.preferred_time_slots || [],
-    };
-    
-    // Only add optional fields if they have meaningful values
-    if (project.deadline) cleanProject.deadline = project.deadline;
-    
-    const { data, error } = await supabase
-      .from('projects')
-      .insert([cleanProject])
-      .select()
-      .single();
-    
-    if (error) handleError('creating project', error);
-    return data;
+    return RetryableOperations.databaseWrite(async () => {
+      // Clean the project data to remove any unwanted fields
+      const cleanProject: any = {
+        id: IdGenerator.generateProjectId(), // Generate proper UUID
+        user_id: user.id,
+        title: project.title,
+        context: project.context || '',
+        status: project.status || 'active',
+        goals: project.goals || [],
+        tags: project.tags || [],
+        business_relevance: project.business_relevance ?? 50,
+        preferred_time_slots: project.preferred_time_slots || [],
+      };
+      
+      // Only add optional fields if they have meaningful values
+      if (project.deadline) cleanProject.deadline = project.deadline;
+      
+      const { data, error } = await supabase!
+        .from('projects')
+        .insert([cleanProject])
+        .select()
+        .single();
+      
+      if (error) handleError('creating project', error);
+      
+      // Invalidate relevant caches after successful creation
+      cacheInvalidation.projects();
+      
+      return data;
+    }, 'projectsService.create');
   },
 
   async update(id: string, updates: Partial<Project>): Promise<Project> {
-    if (!supabase) throw new Error('Supabase client not initialized');
+    if (!supabase) {
+      throw enhanceError(new Error('Supabase client not initialized'), 'projectsService.update');
+    }
     
-    const { data, error } = await supabase
-      .from('projects')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single();
+    // Validate ID format
+    const idValidation = IdGenerator.validateEntityId(id, 'Project');
+    if (!idValidation.isValid) {
+      throw enhanceError(new Error(idValidation.error!), 'project ID validation');
+    }
     
-    if (error) handleError('updating project', error);
-    return data;
+    return RetryableOperations.databaseWrite(async () => {
+      const { data, error } = await supabase!
+        .from('projects')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) handleError('updating project', error);
+      
+      // Invalidate specific project and related caches
+      cacheInvalidation.project(id);
+      
+      return data;
+    }, 'projectsService.update');
   },
 
   async delete(id: string): Promise<void> {
-    if (!supabase) throw new Error('Supabase client not initialized');
+    if (!supabase) {
+      throw enhanceError(new Error('Supabase client not initialized'), 'projectsService.delete');
+    }
     
-    const { error } = await supabase
-      .from('projects')
-      .delete()
-      .eq('id', id);
+    // Validate ID format
+    const idValidation = IdGenerator.validateEntityId(id, 'Project');
+    if (!idValidation.isValid) {
+      throw enhanceError(new Error(idValidation.error!), 'project ID validation');
+    }
     
-    if (error) handleError('deleting project', error);
+    return RetryableOperations.databaseWrite(async () => {
+      const { error } = await supabase!
+        .from('projects')
+        .delete()
+        .eq('id', id);
+      
+      if (error) handleError('deleting project', error);
+      
+      // Invalidate all project-related caches after deletion
+      cacheInvalidation.projects();
+      
+    }, 'projectsService.delete');
   },
 
   async getByStatus(status: ProjectStatus): Promise<Project[]> {
-    if (!supabase) throw new Error('Supabase client not initialized');
+    if (!supabase) {
+      throw enhanceError(new Error('Supabase client not initialized'), 'projectsService.getByStatus');
+    }
     
-    const { data, error } = await supabase
-      .from('projects')
-      .select('*')
-      .eq('status', status)
-      .order('created_at', { ascending: false });
-    
-    if (error) handleError('fetching projects by status', error);
-    return data || [];
+    return RetryableOperations.databaseRead(async () => {
+      const { data, error } = await supabase!
+        .from('projects')
+        .select('*')
+        .eq('status', status)
+        .order('created_at', { ascending: false });
+      
+      if (error) handleError('fetching projects by status', error);
+      return data || [];
+    }, 'projectsService.getByStatus');
   },
 
   async getByContext(context: ProjectContext): Promise<Project[]> {
@@ -250,17 +303,30 @@ export const tasksService = {
   async getAll(): Promise<Task[]> {
     if (!supabase) throw new Error('Supabase client not initialized');
     
-    const { data, error } = await supabase
-      .from('tasks')
-      .select('*')
-      .order('created_at', { ascending: false });
-    
-    if (error) handleError('fetching tasks', error);
-    return data || [];
+    // Use cache for frequently accessed tasks data
+    return withCache(
+      CACHE_KEYS.ALL_TASKS,
+      async () => {
+        const { data, error } = await supabase
+          .from('tasks')
+          .select('*')
+          .order('created_at', { ascending: false });
+        
+        if (error) handleError('fetching tasks', error);
+        return data || [];
+      },
+      CACHE_TTL.MEDIUM
+    );
   },
 
   async getById(id: string): Promise<Task | null> {
     if (!supabase) throw new Error('Supabase client not initialized');
+    
+    // Validate ID format
+    const idValidation = IdGenerator.validateEntityId(id, 'Task');
+    if (!idValidation.isValid) {
+      throw new Error(idValidation.error);
+    }
     
     const { data, error } = await supabase
       .from('tasks')
@@ -284,18 +350,23 @@ export const tasksService = {
       throw new Error('User not authenticated');
     }
     
-    // Generate a client-side UUID as fallback
-    const generateUUID = () => {
-      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        const r = Math.random() * 16 | 0;
-        const v = c == 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-      });
-    };
+    // Validate user ID format
+    const userIdValidation = IdGenerator.validateEntityId(user.id, 'User');
+    if (!userIdValidation.isValid) {
+      throw new Error(userIdValidation.error);
+    }
+    
+    // Validate project ID if provided
+    if (task.project_id) {
+      const projectIdValidation = IdGenerator.validateEntityId(task.project_id, 'Project');
+      if (!projectIdValidation.isValid) {
+        throw new Error(projectIdValidation.error);
+      }
+    }
     
     // Clean the task data to remove any unwanted fields
     const cleanTask: any = {
-      id: generateUUID(), // Provide fallback UUID
+      id: IdGenerator.generateTaskId(), // Generate proper UUID
       user_id: user.id,
       title: task.title,
       context: task.context || '',
@@ -322,6 +393,10 @@ export const tasksService = {
       .single();
     
     if (error) handleError('creating task', error);
+    
+    // Invalidate task-related caches after successful creation
+    cacheInvalidation.tasks();
+    
     return data;
   },
 
@@ -336,6 +411,10 @@ export const tasksService = {
       .single();
     
     if (error) handleError('updating task', error);
+    
+    // Invalidate specific task and related caches
+    cacheInvalidation.task(id);
+    
     return data;
   },
 
@@ -348,6 +427,9 @@ export const tasksService = {
       .eq('id', id);
     
     if (error) handleError('deleting task', error);
+    
+    // Invalidate all task-related caches after deletion
+    cacheInvalidation.tasks();
   },
 
   async getByProject(projectId: string): Promise<Task[]> {
@@ -508,37 +590,53 @@ export const tasksService = {
   },
 
   /**
-   * Check if adding a dependency would create a circular dependency
+   * Check if adding a dependency would create a circular dependency - OPTIMIZED
    */
   async wouldCreateCircularDependency(taskId: string, newDependencyId: string): Promise<boolean> {
+    // Get all tasks once for in-memory graph traversal
+    const { data: allTasks, error } = await supabase
+      .from('tasks')
+      .select('id, dependencies')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      handleError('fetching tasks for circular dependency check', error);
+      return false;
+    }
+
+    if (!allTasks) return false;
+    
+    // Build dependency map for efficient lookups
+    const taskDependencies = new Map<string, string[]>();
+    for (const task of allTasks) {
+      taskDependencies.set(task.id, task.dependencies || []);
+    }
+    
+    // Use in-memory graph traversal instead of database calls
     const visited = new Set<string>();
     const recursionStack = new Set<string>();
     
-    const hasCycle = async (currentTaskId: string): Promise<boolean> => {
+    const hasCycle = (currentTaskId: string): boolean => {
       if (recursionStack.has(currentTaskId)) return true;
       if (visited.has(currentTaskId)) return false;
       
       visited.add(currentTaskId);
       recursionStack.add(currentTaskId);
       
-      // Get current task's dependencies
-      const currentTask = await this.getById(currentTaskId);
-      if (!currentTask) return false;
-      
-      // If we're checking the task that would get the new dependency, include it
+      // Get dependencies from map instead of database
       const dependencies = currentTaskId === taskId 
-        ? [...currentTask.dependencies, newDependencyId]
-        : currentTask.dependencies;
+        ? [...(taskDependencies.get(currentTaskId) || []), newDependencyId]
+        : (taskDependencies.get(currentTaskId) || []);
       
       for (const depId of dependencies) {
-        if (await hasCycle(depId)) return true;
+        if (hasCycle(depId)) return true;
       }
       
       recursionStack.delete(currentTaskId);
       return false;
     };
     
-    return await hasCycle(taskId);
+    return hasCycle(taskId);
   },
 
   /**
@@ -547,26 +645,38 @@ export const tasksService = {
   async getBlockedTasks(): Promise<Array<Task & { blockingTasks: Task[], blockingTaskTitles: string[] }>> {
     if (!supabase) throw new Error('Supabase client not initialized');
     
-    // Get all non-completed tasks with dependencies
-    const { data: tasksWithDeps, error } = await supabase
+    // Get all tasks in one query to build dependency map
+    const { data: allTasks, error: tasksError } = await supabase
       .from('tasks')
-      .select('*')
-      .neq('status', 'completed')
-      .not('dependencies', 'eq', '{}');
+      .select('id, title, status, dependencies, project_id, description, due_date, priority, created_at, updated_at, tags, user_id')
+      .order('created_at', { ascending: false });
+
+    if (tasksError) handleError('fetching all tasks for blocked analysis', tasksError);
     
-    if (error) handleError('fetching tasks with dependencies', error);
+    if (!allTasks) return [];
     
+    // Build task lookup map for efficient dependency resolution
+    const taskMap = new Map(allTasks.map(task => [task.id, task]));
     const blockedTasks: Array<Task & { blockingTasks: Task[], blockingTaskTitles: string[] }> = [];
     
-    for (const task of tasksWithDeps || []) {
-      const dependencies = await this.getTaskDependencies(task.id);
-      const incompleteDeps = dependencies.filter(dep => dep.status !== 'completed');
+    // Process tasks with dependencies
+    for (const task of allTasks) {
+      if (task.status === 'completed' || !task.dependencies?.length) continue;
       
-      if (incompleteDeps.length > 0) {
+      // Resolve dependencies using map lookup instead of database queries
+      const blockingTasks: Task[] = [];
+      for (const depId of task.dependencies) {
+        const depTask = taskMap.get(depId);
+        if (depTask && depTask.status !== 'completed') {
+          blockingTasks.push(depTask);
+        }
+      }
+      
+      if (blockingTasks.length > 0) {
         blockedTasks.push({
           ...task,
-          blockingTasks: incompleteDeps,
-          blockingTaskTitles: incompleteDeps.map(dep => dep.title)
+          blockingTasks,
+          blockingTaskTitles: blockingTasks.map(dep => dep.title)
         });
       }
     }
@@ -580,21 +690,33 @@ export const tasksService = {
   async getAvailableTasks(): Promise<Task[]> {
     if (!supabase) throw new Error('Supabase client not initialized');
     
-    // Get all non-completed tasks
-    const allTasks = await this.getByStatus(TaskStatus.TODO);
-    const inProgressTasks = await this.getByStatus(TaskStatus.IN_PROGRESS);
-    const nonCompletedTasks = [...allTasks, ...inProgressTasks];
+    // Get all tasks in one query to build dependency map
+    const { data: allTasks, error } = await supabase
+      .from('tasks')
+      .select('id, title, status, dependencies, project_id, description, due_date, priority, created_at, updated_at, tags, user_id')
+      .order('created_at', { ascending: false });
+
+    if (error) handleError('fetching all tasks for available analysis', error);
     
+    if (!allTasks) return [];
+    
+    // Build task lookup map for efficient dependency resolution
+    const taskMap = new Map(allTasks.map(task => [task.id, task]));
     const availableTasks: Task[] = [];
     
-    for (const task of nonCompletedTasks) {
-      if (task.dependencies.length === 0) {
+    // Process non-completed tasks
+    for (const task of allTasks) {
+      if (task.status === 'completed') continue;
+      
+      if (!task.dependencies?.length) {
         // No dependencies - always available
         availableTasks.push(task);
       } else {
-        // Check if all dependencies are completed
-        const dependencies = await this.getTaskDependencies(task.id);
-        const hasIncompleteDeps = dependencies.some(dep => dep.status !== 'completed');
+        // Check if all dependencies are completed using map lookup
+        const hasIncompleteDeps = task.dependencies.some(depId => {
+          const depTask = taskMap.get(depId);
+          return depTask && depTask.status !== 'completed';
+        });
         
         if (!hasIncompleteDeps) {
           availableTasks.push(task);
@@ -677,17 +799,61 @@ export const tasksService = {
    * Get tasks ordered by dynamic priority score
    */
   async getTasksByDynamicPriority(): Promise<Array<Task & { priorityScore: number }>> {
-    const allTasks = await this.getAll();
+    // Get all tasks in one query
+    const { data: allTasks, error } = await supabase
+      .from('tasks')
+      .select('id, title, status, dependencies, project_id, description, due_date, priority, created_at, updated_at, tags, user_id, estimated_hours')
+      .order('created_at', { ascending: false });
+
+    if (error) handleError('fetching tasks for priority calculation', error);
+    if (!allTasks) return [];
+
+    // Build task map for efficient lookups
+    const taskMap = new Map(allTasks.map(task => [task.id, task]));
     const tasksWithScores: Array<Task & { priorityScore: number }> = [];
     
+    // Calculate priority scores in batch without individual database calls
     for (const task of allTasks) {
       if (task.status !== 'completed') {
-        const priorityScore = await this.calculateDynamicPriority(task.id);
+        const priorityScore = this.calculateDynamicPriorityBatch(task, taskMap, allTasks);
         tasksWithScores.push({ ...task, priorityScore });
       }
     }
     
     return tasksWithScores.sort((a, b) => b.priorityScore - a.priorityScore);
+  },
+
+  /**
+   * Calculate dynamic priority score without database calls (batch optimized)
+   */
+  calculateDynamicPriorityBatch(task: Task, taskMap: Map<string, Task>, allTasks: Task[]): number {
+    let score = 0;
+    
+    // Base priority score
+    const priorityScores: { [key: string]: number } = {
+      'urgent': 100,
+      'high': 75,
+      'medium': 50,
+      'low': 25
+    };
+    score += priorityScores[task.priority] || 50;
+    
+    // Deadline urgency (if due date exists)
+    if (task.due_date) {
+      const daysUntilDue = Math.ceil((new Date(task.due_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+      if (daysUntilDue <= 0) score += 50; // Overdue
+      else if (daysUntilDue <= 3) score += 30; // Due soon
+      else if (daysUntilDue <= 7) score += 15; // Due this week
+    }
+    
+    // Dependency impact (how many tasks are blocked by this one)
+    const dependents = allTasks.filter(t => t.dependencies?.includes(task.id));
+    score += dependents.length * 10; // Each dependent adds 10 points
+    
+    // Estimated effort (higher effort = slightly higher priority for batching)
+    score += Math.min((task.estimated_hours || 0) * 2, 20); // Cap at 20 points
+    
+    return score;
   }
 };
 
@@ -745,18 +911,9 @@ export const schedulesService = {
       throw new Error('User not authenticated');
     }
     
-    // Generate a client-side UUID as fallback
-    const generateUUID = () => {
-      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        const r = Math.random() * 16 | 0;
-        const v = c == 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-      });
-    };
-    
     // Clean the schedule data
     const cleanSchedule: any = {
-      id: generateUUID(),
+      id: IdGenerator.generateScheduleId(),
       user_id: user.id,
       title: schedule.title,
       context: schedule.context || '',
@@ -771,8 +928,8 @@ export const schedulesService = {
       tags: schedule.tags || [],
     };
     
-    // Only add optional fields if they have meaningful values
-    if (schedule.project_id) cleanSchedule.project_id = schedule.project_id;
+    // Note: schedules table doesn't have project_id column based on actual schema
+    // Removed project_id assignment since column doesn't exist
     
     const { data, error } = await supabase
       .from('schedules')
@@ -835,16 +992,20 @@ export const schedulesService = {
     if (error) handleError('deleting schedule', error);
   },
 
-  async getByProject(projectId: string): Promise<Schedule[]> {
+  // Note: Removed getByProject method since schedules table doesn't have project_id column
+  // If you need to get schedules related to a project, you'll need to:
+  // 1. Get tasks for the project
+  // 2. Get schedules for those tasks using task_id
+  async getByTask(taskId: string): Promise<Schedule[]> {
     if (!supabase) throw new Error('Supabase client not initialized');
     
     const { data, error } = await supabase
       .from('schedules')
       .select('*')
-      .eq('project_id', projectId)
+      .eq('task_id', taskId)
       .order('start_date', { ascending: true });
     
-    if (error) handleError('fetching schedules by project', error);
+    if (error) handleError('fetching schedules by task', error);
     
     // Convert JSONB fields back to strings for the interface
     return (data || []).map(schedule => ({
@@ -944,18 +1105,9 @@ export const userPreferencesService = {
       return await this.update(preferences);
     }
     
-    // Generate a client-side UUID as fallback in case database UUID generation fails
-    const generateUUID = () => {
-      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        const r = Math.random() * 16 | 0;
-        const v = c == 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-      });
-    };
-    
     // Construct clean preferences object
     const cleanPreferences = {
-      id: generateUUID(), // Provide fallback UUID
+      id: IdGenerator.generatePreferencesId(), // Generate proper UUID
       user_id: user.id,
       working_hours_start: preferences.working_hours_start || "09:00",
       working_hours_end: preferences.working_hours_end || "17:00",
@@ -1022,18 +1174,9 @@ export const userPreferencesService = {
       throw new Error('User not authenticated');
     }
     
-    // Generate a client-side UUID as fallback in case database UUID generation fails
-    const generateUUID = () => {
-      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        const r = Math.random() * 16 | 0;
-        const v = c == 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-      });
-    };
-    
     // Construct clean preferences object
     const cleanPreferences = {
-      id: generateUUID(), // Provide fallback UUID
+      id: IdGenerator.generatePreferencesId(), // Generate proper UUID
       user_id: user.id,
       working_hours_start: preferences.working_hours_start || "09:00",
       working_hours_end: preferences.working_hours_end || "17:00",
@@ -1655,54 +1798,94 @@ export const tagFilteringService = {
   }
 };
 
-// Real-time subscriptions
+// Optimized Real-time subscriptions
+import { realtimeManager } from '../src/utils/realtimeOptimized';
+
 export const subscriptions = {
-  subscribeToProjects(_callback: (payload: any) => void) {
-    console.warn('Real-time subscriptions temporarily disabled due to WebSocket issues');
-    return { unsubscribe: () => {} }; // Return mock subscription
-    
-    // Disabled temporarily due to WebSocket connection issues
-    /*
-    if (!supabase) {
-      console.warn('Supabase client not initialized - skipping real-time subscription');
-      return { unsubscribe: () => {} }; // Return mock subscription
-    }
-    
-    return supabase
-      .channel('projects')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'projects' }, 
-        callback
-      )
-      .subscribe();
-    */
+  /**
+   * Subscribe to project changes with optimized performance
+   */
+  async subscribeToProjects(callback: (payload: any) => void) {
+    return realtimeManager.subscribe(
+      'projects_subscription',
+      {
+        table: 'projects',
+        event: '*',
+        throttleMs: 1000, // Throttle updates to once per second
+        batchUpdates: true // Batch multiple updates together
+      },
+      callback
+    );
   },
 
-  subscribeToTasks(_callback: (payload: any) => void) {
-    console.warn('Real-time subscriptions temporarily disabled due to WebSocket issues');
-    return { unsubscribe: () => {} }; // Return mock subscription
-    
-    // Disabled temporarily due to WebSocket connection issues
-    /*
-    if (!supabase) {
-      console.warn('Supabase client not initialized - skipping real-time subscription');
-      return { unsubscribe: () => {} }; // Return mock subscription
-    }
-    
-    return supabase
-      .channel('tasks')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'tasks' }, 
-        callback
-      )
-      .subscribe();
-    */
+  /**
+   * Subscribe to task changes with optimized performance
+   */
+  async subscribeToTasks(callback: (payload: any) => void) {
+    return realtimeManager.subscribe(
+      'tasks_subscription',
+      {
+        table: 'tasks',
+        event: '*',
+        throttleMs: 500, // More frequent updates for tasks
+        batchUpdates: true
+      },
+      callback
+    );
   },
 
-  unsubscribe(subscription: any) {
-    if (subscription) {
-      supabase?.removeChannel(subscription);
-    }
+  /**
+   * Subscribe to schedule changes
+   */
+  async subscribeToSchedules(callback: (payload: any) => void) {
+    return realtimeManager.subscribe(
+      'schedules_subscription',
+      {
+        table: 'schedules',
+        event: '*',
+        throttleMs: 2000, // Less frequent for schedules
+        batchUpdates: false
+      },
+      callback
+    );
+  },
+
+  /**
+   * Subscribe to specific project tasks
+   */
+  async subscribeToProjectTasks(projectId: string, callback: (payload: any) => void) {
+    return realtimeManager.subscribe(
+      `project_tasks_${projectId}`,
+      {
+        table: 'tasks',
+        event: '*',
+        filter: `project_id=eq.${projectId}`,
+        throttleMs: 500,
+        batchUpdates: true
+      },
+      callback
+    );
+  },
+
+  /**
+   * Unsubscribe from specific subscription
+   */
+  unsubscribe(subscriptionId: string) {
+    realtimeManager.unsubscribe(subscriptionId);
+  },
+
+  /**
+   * Unsubscribe from all subscriptions
+   */
+  unsubscribeAll() {
+    realtimeManager.unsubscribeAll();
+  },
+
+  /**
+   * Get real-time connection statistics
+   */
+  getStats() {
+    return realtimeManager.getStats();
   }
 };
 

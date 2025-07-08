@@ -25,7 +25,9 @@
       "Bash(git reset:*)",
       "mcp__github__get_file_contents",
       "mcp__github__create_or_update_file",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(npm install:*)",
+      "Bash(node:*)"
     ],
     "deny": []
   },
