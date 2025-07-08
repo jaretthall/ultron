@@ -6,7 +6,7 @@
 import React, { createContext, useContext, useReducer, useEffect, useCallback, ReactNode } from 'react';
 import { Task, TaskStatus } from '../../types';
 import { useCustomAuth } from './CustomAuthContext';
-import { adaptiveDatabaseService } from '../../services/adaptiveDatabaseService';
+// import { adaptiveDatabaseService } from '../../services/adaptiveDatabaseService';
 import { tasksService, subscriptions } from '../../services/databaseService';
 import { performanceMonitor } from '../utils/performanceMonitoring';
 

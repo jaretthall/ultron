@@ -4,7 +4,7 @@
  */
 
 import { supabase } from '../../lib/supabaseClient';
-import { dataCache, cacheInvalidation, CACHE_KEYS } from './dataCache';
+import { cacheInvalidation } from './dataCache';
 
 interface SubscriptionOptions {
   table: string;
@@ -71,7 +71,7 @@ class OptimizedRealtimeManager {
         ? { event: options.event || '*', schema: 'public', table: options.table, filter: options.filter }
         : { event: options.event || '*', schema: 'public', table: options.table };
 
-      channel.on('postgres_changes', filter, optimizedCallback);
+      channel.on('postgres_changes' as any, filter, optimizedCallback);
 
       // Subscribe with error handling
       channel.subscribe((status) => {
@@ -137,7 +137,7 @@ class OptimizedRealtimeManager {
    * Intelligent cache invalidation based on real-time events
    */
   private handleCacheInvalidation(table: string, payload: any) {
-    const { eventType, new: newRecord, old: oldRecord } = payload;
+    const { eventType, new: newRecord } = payload;
 
     switch (table) {
       case 'projects':

@@ -3,7 +3,7 @@ import { getCustomAuthUser } from '../src/contexts/CustomAuthContext';
 import { IdGenerator } from '../src/utils/idGeneration';
 import { enhanceError } from '../src/utils/errorHandling';
 import { RetryableOperations } from '../src/utils/retryLogic';
-import { dataCache, CACHE_KEYS, CACHE_TTL, cacheInvalidation, withCache } from '../src/utils/dataCache';
+import { CACHE_KEYS, CACHE_TTL, cacheInvalidation, withCache } from '../src/utils/dataCache';
 import {
   Project, Task, UserPreferences, Tag, TagCategory, Schedule,
   ProjectStatus, ProjectContext, TaskPriority, TaskStatus
@@ -307,7 +307,7 @@ export const tasksService = {
     return withCache(
       CACHE_KEYS.ALL_TASKS,
       async () => {
-        const { data, error } = await supabase
+        const { data, error } = await supabase!
           .from('tasks')
           .select('*')
           .order('created_at', { ascending: false });
@@ -594,7 +594,7 @@ export const tasksService = {
    */
   async wouldCreateCircularDependency(taskId: string, newDependencyId: string): Promise<boolean> {
     // Get all tasks once for in-memory graph traversal
-    const { data: allTasks, error } = await supabase
+    const { data: allTasks, error } = await supabase!
       .from('tasks')
       .select('id, dependencies')
       .order('created_at', { ascending: false });
@@ -668,13 +668,13 @@ export const tasksService = {
       for (const depId of task.dependencies) {
         const depTask = taskMap.get(depId);
         if (depTask && depTask.status !== 'completed') {
-          blockingTasks.push(depTask);
+          blockingTasks.push(depTask as Task);
         }
       }
       
       if (blockingTasks.length > 0) {
         blockedTasks.push({
-          ...task,
+          ...(task as Task),
           blockingTasks,
           blockingTaskTitles: blockingTasks.map(dep => dep.title)
         });
@@ -691,9 +691,9 @@ export const tasksService = {
     if (!supabase) throw new Error('Supabase client not initialized');
     
     // Get all tasks in one query to build dependency map
-    const { data: allTasks, error } = await supabase
+    const { data: allTasks, error } = await supabase!
       .from('tasks')
-      .select('id, title, status, dependencies, project_id, description, due_date, priority, created_at, updated_at, tags, user_id')
+      .select('id, title, status, dependencies, project_id, description, due_date, priority, created_at, updated_at, tags, user_id, context, estimated_hours')
       .order('created_at', { ascending: false });
 
     if (error) handleError('fetching all tasks for available analysis', error);
@@ -710,16 +710,16 @@ export const tasksService = {
       
       if (!task.dependencies?.length) {
         // No dependencies - always available
-        availableTasks.push(task);
+        availableTasks.push(task as Task);
       } else {
         // Check if all dependencies are completed using map lookup
-        const hasIncompleteDeps = task.dependencies.some(depId => {
+        const hasIncompleteDeps = task.dependencies.some((depId: string) => {
           const depTask = taskMap.get(depId);
           return depTask && depTask.status !== 'completed';
         });
         
         if (!hasIncompleteDeps) {
-          availableTasks.push(task);
+          availableTasks.push(task as Task);
         }
       }
     }
@@ -800,23 +800,22 @@ export const tasksService = {
    */
   async getTasksByDynamicPriority(): Promise<Array<Task & { priorityScore: number }>> {
     // Get all tasks in one query
-    const { data: allTasks, error } = await supabase
+    const { data: allTasks, error } = await supabase!
       .from('tasks')
-      .select('id, title, status, dependencies, project_id, description, due_date, priority, created_at, updated_at, tags, user_id, estimated_hours')
+      .select('id, title, status, dependencies, project_id, description, due_date, priority, created_at, updated_at, tags, user_id, estimated_hours, context')
       .order('created_at', { ascending: false });
 
     if (error) handleError('fetching tasks for priority calculation', error);
     if (!allTasks) return [];
 
     // Build task map for efficient lookups
-    const taskMap = new Map(allTasks.map(task => [task.id, task]));
     const tasksWithScores: Array<Task & { priorityScore: number }> = [];
     
     // Calculate priority scores in batch without individual database calls
     for (const task of allTasks) {
       if (task.status !== 'completed') {
-        const priorityScore = this.calculateDynamicPriorityBatch(task, taskMap, allTasks);
-        tasksWithScores.push({ ...task, priorityScore });
+        const priorityScore = this.calculateDynamicPriorityBatch(task as Task, allTasks as Task[]);
+        tasksWithScores.push({ ...(task as Task), priorityScore });
       }
     }
     
@@ -826,7 +825,7 @@ export const tasksService = {
   /**
    * Calculate dynamic priority score without database calls (batch optimized)
    */
-  calculateDynamicPriorityBatch(task: Task, taskMap: Map<string, Task>, allTasks: Task[]): number {
+  calculateDynamicPriorityBatch(task: Task, allTasks: Task[]): number {
     let score = 0;
     
     // Base priority score

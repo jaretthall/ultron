@@ -147,6 +147,28 @@ class PerformanceMonitor {
   }
 
   /**
+   * Track Web Vitals performance metrics
+   */
+  trackWebVital(name: string, value: number, metadata?: Record<string, any>) {
+    this.addMetric({
+      name,
+      value,
+      timestamp: Date.now(),
+      category: 'component',
+      metadata
+    });
+
+    // Log poor Web Vitals scores
+    if (name === 'largest_contentful_paint' && value > 2500) {
+      console.warn(`Poor LCP detected (${value}ms)`);
+    } else if (name === 'first_input_delay' && value > 100) {
+      console.warn(`Poor FID detected (${value}ms)`);
+    } else if (name === 'cumulative_layout_shift' && value > 0.1) {
+      console.warn(`Poor CLS detected (${value})`);
+    }
+  }
+
+  /**
    * Get performance summary
    */
   getPerformanceSummary(timeWindowMs: number = 60000) {
@@ -404,21 +426,95 @@ export async function withDatabaseTracking<T>(
   }
 }
 
+// Web Vitals Performance Entry Interfaces
+interface LargestContentfulPaintEntry extends PerformanceEntry {
+  readonly element?: Element;
+  readonly id?: string;
+  readonly loadTime: DOMHighResTimeStamp;
+  readonly renderTime: DOMHighResTimeStamp;
+  readonly size: number;
+  readonly url?: string;
+}
+
+interface FirstInputDelayEntry extends PerformanceEntry {
+  readonly cancelable: boolean;
+  readonly processingStart: DOMHighResTimeStamp;
+  readonly target?: EventTarget;
+}
+
+// interface LayoutShiftEntry extends PerformanceEntry {
+//   readonly hadRecentInput: boolean;
+//   readonly lastInputTime: DOMHighResTimeStamp;
+//   readonly sources: LayoutShiftAttribution[];
+//   readonly value: number;
+// }
+
+interface LayoutShiftAttribution {
+  readonly currentRect: DOMRectReadOnly;
+  readonly node?: Node;
+  readonly previousRect: DOMRectReadOnly;
+}
+
+interface CumulativeLayoutShiftEntry extends PerformanceEntry {
+  readonly hadRecentInput: boolean;
+  readonly lastInputTime: DOMHighResTimeStamp;
+  readonly sources: LayoutShiftAttribution[];
+  readonly value: number;
+}
+
 // Initialize performance observer for Web Vitals
 if (typeof window !== 'undefined' && 'PerformanceObserver' in window) {
   // Track Largest Contentful Paint (LCP)
   new PerformanceObserver((list) => {
     for (const entry of list.getEntries()) {
-      const lcpEntry = entry as any; // LCP entries have size property
-      performanceMonitor.trackNetworkRequest('LCP', entry.startTime, true, lcpEntry.size);
+      const lcpEntry = entry as LargestContentfulPaintEntry;
+      performanceMonitor.trackWebVital('largest_contentful_paint', entry.startTime, {
+        size: lcpEntry.size,
+        element: lcpEntry.element?.tagName || 'unknown',
+        url: lcpEntry.url
+      });
     }
   }).observe({ type: 'largest-contentful-paint', buffered: true });
 
   // Track First Input Delay (FID)
   new PerformanceObserver((list) => {
     for (const entry of list.getEntries()) {
-      const fidEntry = entry as any; // FID entries have processingStart property
-      performanceMonitor.trackComponentRender('first_input_delay', fidEntry.processingStart - entry.startTime);
+      const fidEntry = entry as FirstInputDelayEntry;
+      const delay = fidEntry.processingStart - entry.startTime;
+      performanceMonitor.trackWebVital('first_input_delay', delay, {
+        processingStart: fidEntry.processingStart,
+        startTime: entry.startTime,
+        target: fidEntry.target?.constructor.name || 'unknown'
+      });
     }
   }).observe({ type: 'first-input', buffered: true });
+
+  // Track Cumulative Layout Shift (CLS)
+  new PerformanceObserver((list) => {
+    for (const entry of list.getEntries()) {
+      const clsEntry = entry as CumulativeLayoutShiftEntry;
+      // Only track layout shifts that weren't caused by user input
+      if (!clsEntry.hadRecentInput) {
+        performanceMonitor.trackWebVital('cumulative_layout_shift', clsEntry.value, {
+          hadRecentInput: clsEntry.hadRecentInput,
+          lastInputTime: clsEntry.lastInputTime,
+          sources: clsEntry.sources.map(source => ({
+            node: source.node?.nodeName || 'unknown',
+            currentRect: {
+              width: source.currentRect.width,
+              height: source.currentRect.height,
+              x: source.currentRect.x,
+              y: source.currentRect.y
+            },
+            previousRect: {
+              width: source.previousRect.width,
+              height: source.previousRect.height,
+              x: source.previousRect.x,
+              y: source.previousRect.y
+            }
+          }))
+        });
+      }
+    }
+  }).observe({ type: 'layout-shift', buffered: true });
 }

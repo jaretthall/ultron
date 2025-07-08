@@ -846,32 +846,36 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    const projectSubscription = subscriptions.subscribeToProjects((payload) => {
-      console.log('Real-time project change:', payload);
-      if (payload.eventType === 'INSERT') {
-        dispatch({ type: 'ADD_PROJECT', project: payload.new });
-      } else if (payload.eventType === 'UPDATE') {
-        dispatch({ type: 'UPDATE_PROJECT', project: payload.new });
-      } else if (payload.eventType === 'DELETE') {
-        dispatch({ type: 'DELETE_PROJECT', projectId: payload.old.id });
-      }
-    });
+    const setupSubscriptions = async () => {
+      await subscriptions.subscribeToProjects((payload) => {
+        console.log('Real-time project change:', payload);
+        if (payload.eventType === 'INSERT') {
+          dispatch({ type: 'ADD_PROJECT', project: payload.new });
+        } else if (payload.eventType === 'UPDATE') {
+          dispatch({ type: 'UPDATE_PROJECT', project: payload.new });
+        } else if (payload.eventType === 'DELETE') {
+          dispatch({ type: 'DELETE_PROJECT', projectId: payload.old.id });
+        }
+      });
 
-    const taskSubscription = subscriptions.subscribeToTasks((payload) => {
-      console.log('Real-time task change:', payload);
-      if (payload.eventType === 'INSERT') {
-        dispatch({ type: 'ADD_TASK', task: payload.new });
-      } else if (payload.eventType === 'UPDATE') {
-        dispatch({ type: 'UPDATE_TASK', task: payload.new });
-      } else if (payload.eventType === 'DELETE') {
-        dispatch({ type: 'DELETE_TASK', taskId: payload.old.id });
-      }
-    });
+      await subscriptions.subscribeToTasks((payload) => {
+        console.log('Real-time task change:', payload);
+        if (payload.eventType === 'INSERT') {
+          dispatch({ type: 'ADD_TASK', task: payload.new });
+        } else if (payload.eventType === 'UPDATE') {
+          dispatch({ type: 'UPDATE_TASK', task: payload.new });
+        } else if (payload.eventType === 'DELETE') {
+          dispatch({ type: 'DELETE_TASK', taskId: payload.old.id });
+        }
+      });
 
-    return () => {
-      subscriptions.unsubscribe(projectSubscription);
-      subscriptions.unsubscribe(taskSubscription);
+      return () => {
+        subscriptions.unsubscribe('projects_subscription');
+        subscriptions.unsubscribe('tasks_subscription');
+      };
     };
+
+    setupSubscriptions();
   }, [isAuthenticated]);
 
   // Monitor online status

@@ -6,7 +6,7 @@
 import React, { createContext, useContext, useReducer, useEffect, useCallback, ReactNode } from 'react';
 import { Project } from '../../types';
 import { useCustomAuth } from './CustomAuthContext';
-import { adaptiveDatabaseService } from '../../services/adaptiveDatabaseService';
+import { projectsService } from '../../services/databaseService';
 import { subscriptions } from '../../services/databaseService';
 import { performanceMonitor } from '../utils/performanceMonitoring';
 
@@ -110,7 +110,7 @@ export const ProjectsProvider: React.FC<{ children: ReactNode }> = ({ children }
     try {
       performanceMonitor.trackComponentRender('ProjectsProvider.loadProjects', performance.now(), false, false);
       
-      const projects = await adaptiveDatabaseService.projectsService.getAll();
+      const projects = await projectsService.getAll();
       dispatch({ type: 'SET_PROJECTS', projects });
     } catch (error: any) {
       console.error('Failed to load projects:', error);
@@ -125,7 +125,7 @@ export const ProjectsProvider: React.FC<{ children: ReactNode }> = ({ children }
     dispatch({ type: 'SET_LOADING', loading: true });
     
     try {
-      const project = await adaptiveDatabaseService.projectsService.create(projectData);
+      const project = await projectsService.create(projectData);
       dispatch({ type: 'ADD_PROJECT', project });
       return project;
     } catch (error: any) {
@@ -141,7 +141,7 @@ export const ProjectsProvider: React.FC<{ children: ReactNode }> = ({ children }
     dispatch({ type: 'SET_LOADING', loading: true });
     
     try {
-      const project = await adaptiveDatabaseService.projectsService.update(id, updates);
+      const project = await projectsService.update(id, updates);
       dispatch({ type: 'UPDATE_PROJECT', project });
       return project;
     } catch (error: any) {
@@ -157,7 +157,7 @@ export const ProjectsProvider: React.FC<{ children: ReactNode }> = ({ children }
     dispatch({ type: 'SET_LOADING', loading: true });
     
     try {
-      await adaptiveDatabaseService.projectsService.delete(id);
+      await projectsService.delete(id);
       dispatch({ type: 'DELETE_PROJECT', projectId: id });
     } catch (error: any) {
       dispatch({ type: 'SET_ERROR', error: error.message || 'Failed to delete project' });
