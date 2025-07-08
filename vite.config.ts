@@ -116,7 +116,7 @@ export default defineConfig(({ mode }) => {
               supabase: ['@supabase/supabase-js'],
               
               // AI services chunk (large dependencies)
-              ai: ['@google/generative-ai'],
+              ai: ['@google/genai'],
               
               // Analytics and charts (if used)
               analytics: ['recharts', 'date-fns'],
