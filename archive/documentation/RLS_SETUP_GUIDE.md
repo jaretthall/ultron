@@ -68,8 +68,6 @@ You should see these changes in your console logs:
 
 ## Security Note
 ⚠️ **SECURITY WARNING**: This solution allows anonymous access to all data. Use only for development/testing. Switch to Supabase Auth for production.
-⚠️ **SECURITY WARNING**: This solution allows anonymous access to all data. Use only for development/testing. Switch to Supabase Auth for production.
-
 ### Step 1: Run the RLS Setup SQL
 … (rest of the steps)
 

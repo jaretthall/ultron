@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { UserPreferences, AIProvider } from '../../../types';
-import { AVAILABLE_GEMINI_MODELS, AVAILABLE_CLAUDE_MODELS, AVAILABLE_OPENAI_MODELS } from '../../constants';
+import { AVAILABLE_GEMINI_MODELS, AVAILABLE_CLAUDE_MODELS, AVAILABLE_OPENAI_MODELS, APP_VERSION } from '../../constants';
 import { useAppState } from '../../contexts/AppStateContext';
 import TagManager from '../tags/TagManager';
 
