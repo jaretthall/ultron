@@ -21,6 +21,13 @@ try {
 $ContainerName = "ultron-standalone"
 $ImageName = "ultron-app"
 
+# Check if Dockerfile exists in current directory
+if (-not (Test-Path "Dockerfile")) {
+    Write-Host "❌ Dockerfile not found in current directory" -ForegroundColor Red
+    Write-Host "⚠️  Please run this script from the project root directory containing the Dockerfile" -ForegroundColor Yellow
+    exit 1
+}
+
 Write-Host "📦 Building Ultron Docker image..." -ForegroundColor Yellow
 try {
     docker build -t $ImageName .

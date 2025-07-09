@@ -24,8 +24,7 @@ This will:
 ### Step 2: Test Your App
 1. Clear your browser localStorage: `localStorage.clear()`
 2. Refresh the page
-3. Sign in with: `justclay63@gmail.com` / `t4mhozd25q`
-4. Check if the home page loads properly
+3. Sign in with your test account credentials4. Check if the home page loads properly
 
 ### Step 3: Verify RLS is Working
 Run this in your browser console to test database access:
@@ -68,10 +67,12 @@ You should see these changes in your console logs:
 ## Security Note
 
 The current approach allows the `anon` role to access all data, relying on your application to filter by user. For production, consider:
-1. Switching to Supabase Auth for stronger database-level security
-2. Or implementing the more secure user-based policies (commented in the SQL file)
+## Quick Fix (Recommended)
 
-## Troubleshooting
+⚠️ **SECURITY WARNING**: This solution allows anonymous access to all data. Use only for development/testing. Switch to Supabase Auth for production.
+
+### Step 1: Run the RLS Setup SQL
+… (rest of the steps)## Troubleshooting
 
 If you still have issues after applying the RLS policies:
 

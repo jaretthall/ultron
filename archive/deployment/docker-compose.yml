@@ -11,8 +11,9 @@ services:
       dockerfile: Dockerfile
       target: production
     container_name: ultron-production
-    ports:
-      - "80:80"
+    # Ports commented out to avoid host conflicts - use Traefik/reverse proxy instead
+    # ports:
+    #   - "80:80"
     environment:
       - NODE_ENV=production
     restart: unless-stopped
@@ -53,8 +54,9 @@ services:
   nginx-proxy:
     image: nginx:alpine
     container_name: ultron-nginx-proxy
-    ports:
-      - "443:443"
+    # Ports commented out to avoid host conflicts - use Traefik/reverse proxy instead
+    # ports:
+    #   - "443:443"
     volumes:
       - ./nginx/ssl:/etc/nginx/ssl:ro
       - ./nginx/proxy.conf:/etc/nginx/conf.d/default.conf:ro
@@ -73,7 +75,10 @@ services:
       - "6379:6379"
     volumes:
       - redis-data:/data
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-ultron-redis-pass}
+    environment:
+      # Redis password provided via environment variable for security
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-ultron-redis-pass}
+    command: redis-server --appendonly yes --requirepass $$REDIS_PASSWORD
     profiles:
       - production
       - cache

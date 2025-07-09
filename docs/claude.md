@@ -2,7 +2,7 @@
 
 This file tracks significant changes and version updates made by Claude during development of the Ultron Productivity Command Center.
 
-## Current Version: 3.1.0
+## Current Version: 3.1.1
 
 ## Version Management Protocol
 
@@ -92,6 +92,30 @@ Use semantic versioning: `3.x.y`
 6. **RESULT: Full database connectivity achieved!**
 
 **Deployment Status:** ✅ **FULLY FUNCTIONAL** - Database operations working, ready for production
+
+### Version 3.1.1 (2025-01-09)
+**Portable Script Enhancement - Cross-Platform Compatibility**
+- Enhanced serve-ultron.bat script with automatic project directory detection
+- Added smart detection using script location (most reliable method)
+- Implemented fallback search in common development paths
+- Added dynamic local IP address detection for mobile access
+- Replaced hardcoded paths and IP addresses with intelligent auto-detection
+- Improved portability for deployment across different machines and networks
+
+**Files Modified:**
+- `scripts/serve-ultron.bat` - Complete rewrite for cross-platform portability
+- `package.json` - Updated version to 3.1.1
+- `src/constants.ts` - Updated APP_VERSION to 3.1.1
+- `src/components/settings/SettingsPage.tsx` - Updated application version display
+
+**Script Enhancement Features:**
+- Auto-detects project directory using multiple methods with fallbacks
+- Dynamically detects local IP address for mobile device access
+- Works without modification on any Windows machine
+- Comprehensive error handling and user-friendly messages
+- Validates project directory by checking package.json content
+
+**Deployment Impact:** Scripts now work universally without manual configuration, enabling easier deployment and development setup across teams.
 
 ### Version 3.0.4 (2025-01-06)
 **Database Connectivity Fix - Supabase Client Exposure**

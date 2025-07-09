@@ -205,5 +205,5 @@ For issues or questions:
 ---
 
 **Version:** 2.5.20  
-**Last Updated:** January 2025  
+**Last Updated:** July 2025  
 **Docker Status:** ✅ Production Ready 

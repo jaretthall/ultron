@@ -36,7 +36,7 @@ docker run -d \
     --name $CONTAINER_NAME \
     -p $PORT:80 \
     --restart unless-stopped \
-    --health-cmd="curl -f http://localhost:80/ || exit 1" \
+    --health-cmd="exec 3<>/dev/tcp/localhost/80 && exec 3<&- || exit 1" \
     --health-interval=30s \
     --health-timeout=10s \
     --health-retries=3 \

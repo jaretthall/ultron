@@ -19,13 +19,12 @@ Ultron now uses serverless functions to handle AI API calls, resolving CORS issu
 Set these environment variables in your Vercel project:
 
 ```bash
-# AI Service API Keys
+# Server-side API Keys (NO VITE_ prefix - keeps them secure and server-side only)
 CLAUDE_API_KEY=your_claude_api_key_here
 GEMINI_API_KEY=your_gemini_api_key_here
 OPENAI_API_KEY=your_openai_api_key_here
-VITE_GEMINI_API_KEY=your_gemini_api_key_here
 
-# Supabase Configuration
+# Client-side Configuration (VITE_ prefix - these are safe to expose in browser)
 VITE_SUPABASE_URL=your_supabase_url_here
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key_here
 ```

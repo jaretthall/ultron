@@ -12,8 +12,12 @@ services:
       - "8080:80"
     environment:
       - NODE_ENV=production
-      - VITE_SUPABASE_URL=${SUPABASE_URL:-https://mldklirjxxxegcxyweug.supabase.co}
-      - VITE_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS...}
+      # Supabase credentials must be provided externally for security
+      # Use a .env file or secrets management system to set these values:
+      # SUPABASE_URL=your_supabase_project_url
+      # SUPABASE_ANON_KEY=your_supabase_anonymous_key
+      - VITE_SUPABASE_URL=${SUPABASE_URL}
+      - VITE_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:80/"]

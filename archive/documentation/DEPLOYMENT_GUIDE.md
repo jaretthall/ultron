@@ -27,20 +27,20 @@ This guide will help you set up automatic deployments from GitHub to Vercel for 
 
 ### Option B: GitHub CLI (If you have it installed)
 
-\`\`\`bash
+```bash
 gh repo create ultron --private --description "AI-Powered Productivity Command Center"
-\`\`\`
+```
 
 ## 🔗 Step 2: Connect Local Repository to GitHub
 
-\`\`\`bash
+```bash
 # Add GitHub as remote origin
 git remote add origin https://github.com/yourusername/ultron.git
 
 # Push to GitHub
 git branch -M main
 git push -u origin main
-\`\`\`
+```
 
 ## 🌐 Step 3: Connect GitHub to Vercel
 
@@ -56,11 +56,11 @@ git push -u origin main
 
 ### Option B: Vercel CLI (Alternative)
 
-\`\`\`bash
+```bash
 # Link existing Vercel project to GitHub
 vercel --prod
 # Follow prompts to connect to GitHub
-\`\`\`
+```
 
 ## ⚙️ Step 4: Configure Environment Variables
 
@@ -68,7 +68,7 @@ In your Vercel project dashboard:
 
 ### 4.1 Production Environment Variables
 
-\`\`\`bash
+```bash
 # Supabase Configuration (Required)
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
@@ -86,7 +86,7 @@ CLAUDE_API_KEY=your_claude_api_key
 # Application Configuration
 VITE_APP_VERSION=2.5.21
 NODE_ENV=production
-\`\`\`
+```
 
 ### 4.2 Add Variables in Vercel
 
@@ -110,22 +110,22 @@ NODE_ENV=production
 
 1. **Supabase Dashboard** → **Authentication** → **Settings**
 2. **Additional Redirect URLs**:
-   \`\`\`
+   ```
    https://your-app.vercel.app
    https://your-app.vercel.app/auth/callback
-   \`\`\`
+   ```
 
 ## 🚀 Step 6: Deploy and Test
 
 ### 6.1 Trigger Deployment
 
-\`\`\`bash
+```bash
 # Make a small change and push
 echo "# Deployment test" >> README.md
 git add .
 git commit -m "feat: trigger production deployment"
 git push origin main
-\`\`\`
+```
 
 ### 6.2 Monitor Deployment
 
@@ -153,7 +153,7 @@ Visit your production URL and test:
 
 ### 7.2 Development Workflow
 
-\`\`\`bash
+```bash
 # Development workflow
 git checkout -b feature/new-feature
 # Make changes
@@ -163,7 +163,7 @@ git push origin feature/new-feature
 
 # Create pull request in GitHub
 # After approval and merge, Vercel auto-deploys
-\`\`\`
+```
 
 ## 🛠️ Troubleshooting
 
@@ -173,11 +173,11 @@ git push origin feature/new-feature
 
 **Check**: Build logs in Vercel for specific errors
 **Solution**: 
-\`\`\`bash
+```bash
 # Test build locally
 npm run build:prod
 npm run preview
-\`\`\`
+```
 
 #### 2. Environment Variables Not Loading
 
@@ -198,7 +198,7 @@ npm run preview
 
 ### Debug Commands
 
-\`\`\`bash
+```bash
 # Check production build locally
 npm run build:prod && npm run preview
 
@@ -210,7 +210,7 @@ vercel ls
 
 # View function logs
 vercel logs
-\`\`\`
+```
 
 ## 📊 Production Checklist
 
