@@ -7,6 +7,11 @@ import {
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
 
+// Check if we're on Vercel or similar IPv4-only platform
+const isIPv4OnlyPlatform = () => {
+  return !!(process.env.VERCEL || process.env.RENDER || process.env.GITHUB_ACTIONS);
+};
+
 const SUPABASE_URL_PLACEHOLDER = 'YOUR_SUPABASE_URL_PLACEHOLDER';
 const SUPABASE_ANON_KEY_PLACEHOLDER = 'YOUR_SUPABASE_ANON_KEY_PLACEHOLDER';
 
@@ -43,6 +48,7 @@ const initializeSupabase = () => {
     NODE_ENV: process.env.NODE_ENV,
     VERCEL: process.env.VERCEL,
     VERCEL_ENV: process.env.VERCEL_ENV,
+    isIPv4OnlyPlatform: isIPv4OnlyPlatform(),
     keyType: supabaseAnonKey?.startsWith('eyJ') ? 'JWT (anon)' : supabaseAnonKey?.startsWith('sb_') ? 'Publishable' : 'Unknown',
     allEnvKeys: Object.keys(import.meta.env).filter(key => key.includes('SUPABASE'))
   });
@@ -80,6 +86,16 @@ const initializeSupabase = () => {
         },
         heartbeatIntervalMs: 30000,
         reconnectAfterMs: (tries: number) => Math.min(tries * 1000, 10000)
+      },
+      global: {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Prefer': 'return=representation'
+        }
+      },
+      db: {
+        schema: 'public'
       }
     });
 
@@ -103,7 +119,8 @@ export const testSupabaseConnection = async () => {
   console.log('🔗 Client config:', {
     url: supabaseUrl,
     keyLength: supabaseAnonKey?.length || 0,
-    clientReady: !!supabase
+    clientReady: !!supabase,
+    isIPv4Platform: isIPv4OnlyPlatform()
   });
   
   if (!supabase) {
@@ -144,6 +161,16 @@ export const testSupabaseConnection = async () => {
         details: projectsError.details,
         hint: projectsError.hint
       });
+      
+      // Check for specific IPv4 compatibility errors
+      if (projectsError.code === '406' || projectsError.code === '400' || 
+          projectsError.message?.includes('406') || projectsError.message?.includes('400')) {
+        console.error('🚨 IPv4 compatibility error detected!');
+        console.error('💡 This is likely due to Vercel being IPv4-only');
+        console.error('💡 Consider using Supabase Session Pooler for IPv4 compatibility');
+        console.error('💡 Or contact Supabase support about IPv4 support for your project');
+      }
+      
       return false;
     }
     
@@ -156,6 +183,15 @@ export const testSupabaseConnection = async () => {
       message: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined
     });
+    
+    // Check for network-level errors that might indicate IPv4 issues
+    if (error instanceof Error && (error.message.includes('Failed to fetch') || 
+        error.message.includes('Network request failed'))) {
+      console.error('🚨 Network connectivity issue detected!');
+      console.error('💡 This might be related to IPv4/IPv6 compatibility');
+      console.error('💡 Consider using Supabase Session Pooler for IPv4 compatibility');
+    }
+    
     return false;
   }
 };

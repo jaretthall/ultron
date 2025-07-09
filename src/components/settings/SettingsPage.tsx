@@ -1327,7 +1327,7 @@ const SettingsPage: React.FC = () => {
                 <div className="bg-slate-700 p-4 rounded-lg space-y-3">
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-slate-300">Application Version</span>
-                    <span className="text-slate-400">3.0.8</span>
+                    <span className="text-slate-400">3.1.0</span>
                   </div>
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-slate-300">Database Version</span>
