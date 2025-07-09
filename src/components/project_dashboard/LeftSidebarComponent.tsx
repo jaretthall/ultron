@@ -2,19 +2,23 @@ import React, { useState, useMemo } from 'react';
 import { Project, ProjectStatus } from '../../../types';
 import { calculateUrgencyScore } from '../../utils/projectUtils';
 import { useScreenSize } from '../ResponsiveLayout';
+import NewProjectModal from '../projects/NewProjectModal';
 
 interface LeftSidebarComponentProps {
   projects: Project[];
   selectedProjectId: string | null;
   onSelectProject: (projectId: string) => void;
+  onAddProject?: (projectData: Omit<Project, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => Promise<void>;
 }
 
 const LeftSidebarComponent: React.FC<LeftSidebarComponentProps> = ({
   projects,
   selectedProjectId,
   onSelectProject,
+  onAddProject,
 }) => {
   const [statusFilter, setStatusFilter] = useState<'all' | ProjectStatus>('all');
+  const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false);
 
   const { isMobile } = useScreenSize();
   
@@ -22,11 +26,32 @@ const LeftSidebarComponent: React.FC<LeftSidebarComponentProps> = ({
     if (statusFilter === 'all') return projects;
     return projects.filter(project => project.status === statusFilter);
   }, [projects, statusFilter]);
+
+  const handleAddProject = async (projectData: Omit<Project, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => {
+    if (onAddProject) {
+      await onAddProject(projectData);
+      setIsNewProjectModalOpen(false);
+    }
+  };
   
   return (
     <aside className={`${isMobile ? 'w-full' : 'w-80'} bg-slate-800 ${isMobile ? '' : 'border-r border-slate-700'} overflow-y-auto`}>
       <div className={`${isMobile ? 'p-3' : 'p-4'}`}>
-        <h2 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold text-slate-200 mb-4`}>Projects</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold text-slate-200`}>Projects</h2>
+          {onAddProject && (
+            <button
+              onClick={() => setIsNewProjectModalOpen(true)}
+              className={`bg-sky-600 hover:bg-sky-700 text-white ${isMobile ? 'p-1.5' : 'p-2'} rounded-lg transition-colors flex items-center space-x-1`}
+              title="Add new project"
+            >
+              <svg className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              {!isMobile && <span className="text-xs">New</span>}
+            </button>
+          )}
+        </div>
         
         {/* Status Filter */}
         <div className="mb-4">
@@ -34,6 +59,7 @@ const LeftSidebarComponent: React.FC<LeftSidebarComponentProps> = ({
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as 'all' | ProjectStatus)}
             className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2 text-sm focus:ring-sky-500 focus:border-sky-500"
+            title="Filter projects by status"
           >
             <option value="all">All Projects</option>
             <option value={ProjectStatus.ACTIVE}>Active</option>
@@ -74,7 +100,7 @@ const LeftSidebarComponent: React.FC<LeftSidebarComponentProps> = ({
                         {project.title}
                       </h3>
                       <p className={`text-xs mt-1 truncate ${isSelected ? 'text-sky-100' : 'text-slate-400'}`}>
-                        {project.title || 'No description'}
+                        {project.description || 'No description'}
                       </p>
                       
                       {/* Project Status and Context */}
@@ -87,11 +113,11 @@ const LeftSidebarComponent: React.FC<LeftSidebarComponentProps> = ({
                           {project.status.charAt(0).toUpperCase() + project.status.slice(1).replace('-', ' ')}
                         </span>
                         <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
-                          project.context === 'business' ? 'bg-purple-900 text-purple-300' :
-                          project.context === 'personal' ? 'bg-green-900 text-green-300' :
+                          project.project_context === 'business' ? 'bg-purple-900 text-purple-300' :
+                          project.project_context === 'personal' ? 'bg-green-900 text-green-300' :
                           'bg-orange-900 text-orange-300'
                         }`}>
-                          {project.context.charAt(0).toUpperCase() + project.context.slice(1)}
+                          {project.project_context.charAt(0).toUpperCase() + project.project_context.slice(1)}
                         </span>
                       </div>
                       
@@ -146,6 +172,15 @@ const LeftSidebarComponent: React.FC<LeftSidebarComponentProps> = ({
           )}
         </div>
       </div>
+      
+      {/* New Project Modal */}
+      {isNewProjectModalOpen && (
+        <NewProjectModal
+          isOpen={isNewProjectModalOpen}
+          onClose={() => setIsNewProjectModalOpen(false)}
+          onAddProject={handleAddProject}
+        />
+      )}
     </aside>
   );
 };

@@ -23,8 +23,9 @@ sessionStorage.clear();
 5. Compare with your current configuration
 
 ### 3. **Update Environment Variables**
-Check if your `.env.local` has the correct keys:## 🔄 **Step-by-Step Fix Process**
+Check if your `.env.local` has the correct keys:
 
+## 🔄 **Step-by-Step Fix Process**
 ### Step 1: Clean Authentication State
 ```bash
 # In browser console (F12)

@@ -129,16 +129,30 @@ const MainProjectContentComponent: React.FC<MainProjectContentComponentProps> = 
                 {project.status.charAt(0).toUpperCase() + project.status.slice(1).replace('-', ' ')}
               </span>
               <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                project.context === 'business' ? 'bg-purple-900 text-purple-300' :
-                project.context === 'personal' ? 'bg-green-900 text-green-300' :
+                project.project_context === 'business' ? 'bg-purple-900 text-purple-300' :
+                project.project_context === 'personal' ? 'bg-green-900 text-green-300' :
                 'bg-orange-900 text-orange-300'
               }`}>
-                {project.context.charAt(0).toUpperCase() + project.context.slice(1)}
+                {project.project_context.charAt(0).toUpperCase() + project.project_context.slice(1)}
               </span>
               {project.business_relevance && (
                 <span className="text-xs text-slate-400">
                   Priority: {project.business_relevance}/10
                 </span>
+              )}
+              {project.tags && project.tags.length > 0 && (
+                <div className="flex items-center space-x-1">
+                  {project.tags.slice(0, 3).map((tag, index) => (
+                    <span key={index} className="px-2 py-1 text-xs bg-slate-700 text-slate-300 rounded-full">
+                      {tag}
+                    </span>
+                  ))}
+                  {project.tags.length > 3 && (
+                    <span className="text-xs text-slate-400">
+                      +{project.tags.length - 3} more
+                    </span>
+                  )}
+                </div>
               )}
             </div>
           </div>
@@ -151,7 +165,9 @@ const MainProjectContentComponent: React.FC<MainProjectContentComponentProps> = 
             </ActionButton>
           </div>
         </div>
-        <p className="text-slate-400 mt-2 text-sm">{project.title}</p>
+        {project.description && (
+          <p className="text-slate-400 mt-2 text-sm">{project.description}</p>
+        )}
         
         {/* Project Metrics Bar */}
         <div className="mt-4 p-4 bg-slate-800 rounded-lg">
@@ -211,6 +227,14 @@ const MainProjectContentComponent: React.FC<MainProjectContentComponentProps> = 
           </div>
         </div>
       </div>
+
+      {/* Project Details Section */}
+      {project.description && (
+        <div className="mb-6 p-4 bg-slate-800 rounded-lg">
+          <h3 className="text-lg font-semibold text-slate-200 mb-2">Project Details</h3>
+          <p className="text-slate-300 text-sm leading-relaxed">{project.description}</p>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <StatCard title="Completed Tasks" value={projectTaskStats.completed} icon={<CompletedIcon />} color="text-green-400" />

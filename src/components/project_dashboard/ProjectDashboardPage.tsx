@@ -22,7 +22,7 @@ const ProjectDashboardPage: React.FC<ProjectDashboardPageProps> = ({
   projects,
   tasks,
   onAddTask,
-  // onAddProject, - unused
+  onAddProject,
   onEditProjectRequest,
   onDeleteProject,
   onEditTaskRequest,
@@ -33,7 +33,7 @@ const ProjectDashboardPage: React.FC<ProjectDashboardPageProps> = ({
 
   const filteredProjects = useMemo(() => {
     if (projectContextFilter === 'all') return projects;
-    return projects.filter(project => project.context === projectContextFilter);
+    return projects.filter(project => project.project_context === projectContextFilter);
   }, [projects, projectContextFilter]);
 
   useEffect(() => {
@@ -80,6 +80,7 @@ const ProjectDashboardPage: React.FC<ProjectDashboardPageProps> = ({
             projects={filteredProjects}
             selectedProjectId={selectedProjectId}
             onSelectProject={handleSelectProject}
+            onAddProject={onAddProject}
           />
         </div>
         
@@ -115,6 +116,7 @@ const ProjectDashboardPage: React.FC<ProjectDashboardPageProps> = ({
             projects={filteredProjects}
             selectedProjectId={selectedProjectId}
             onSelectProject={handleSelectProject}
+            onAddProject={onAddProject}
           />
         </div>
         <div className="flex-1">
@@ -141,6 +143,7 @@ const ProjectDashboardPage: React.FC<ProjectDashboardPageProps> = ({
         projects={filteredProjects}
         selectedProjectId={selectedProjectId}
         onSelectProject={handleSelectProject}
+        onAddProject={onAddProject}
       />
       <MainProjectContentComponent
         project={selectedProjectData}

@@ -2,7 +2,7 @@
 
 This file tracks significant changes and version updates made by Claude during development of the Ultron Productivity Command Center.
 
-## Current Version: 3.1.1
+## Current Version: 3.1.2
 
 ## Version Management Protocol
 
@@ -92,6 +92,23 @@ Use semantic versioning: `3.x.y`
 6. **RESULT: Full database connectivity achieved!**
 
 **Deployment Status:** ✅ **FULLY FUNCTIONAL** - Database operations working, ready for production
+
+### Version 3.1.2 (2025-01-09)
+**Project Details Enhancement & New Project Button**
+- Fixed data mapping bugs in project components (description vs context fields)
+- Created dedicated Project Details section in main content area
+- Updated header to show enhanced project metadata with tags
+- Added "+ New Project" button to Projects tab with mobile compatibility
+- Improved project context field handling throughout the application
+- Enhanced mobile responsiveness for new project creation workflow
+
+**Files Modified:**
+- `src/components/project_dashboard/LeftSidebarComponent.tsx` - Added New Project button with mobile-friendly design
+- `src/components/project_dashboard/MainProjectContentComponent.tsx` - Added Project Details section and improved metadata display
+- `src/components/project_dashboard/ProjectDashboardPage.tsx` - Connected onAddProject handler and fixed context filter
+- `src/components/projects/EditProjectModal.tsx` - Fixed description field data mapping
+- `package.json` - Updated version to 3.1.2
+- `src/constants.ts` - Updated APP_VERSION to 3.1.2
 
 ### Version 3.1.1 (2025-01-09)
 **Portable Script Enhancement - Cross-Platform Compatibility**

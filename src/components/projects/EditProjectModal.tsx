@@ -39,7 +39,7 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
   useEffect(() => {
     if (isOpen && project) {
       setTitle(project.title || '');
-      setProjectDescription(project.context || '');
+      setProjectDescription(project.description || '');
       setGoals(project.goals?.join('\n') || '');
       setDeadline(project.deadline ? project.deadline.split('T')[0] : '');
       setStatus(project.status);
@@ -77,7 +77,7 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
     const updatedProject: Project = {
       ...project,
       title: title.trim(),
-      context: projectDescription.trim(),
+      description: projectDescription.trim(),
       goals: goals.split('\n').map(goal => goal.trim()).filter(goal => goal),
       deadline: deadline || undefined,
       status,
