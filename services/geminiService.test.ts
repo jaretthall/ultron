@@ -2,7 +2,7 @@
 import { generateStrategicInsights, constructPrompt } from './geminiService';
 import { Project, Task, UserPreferences, AIProvider, ProjectStatus, ProjectContext, TaskPriority, TaskStatus, StrategicInsights } from '../types';
 import { GoogleGenAI, GenerateContentResponse } from '@google/genai'; // Import types for mocking
-import { AVAILABLE_GEMINI_MODELS } from '../constants';
+import { AVAILABLE_GEMINI_MODELS } from '../src/constants';
 
 
 // Mock the @google/genai library
