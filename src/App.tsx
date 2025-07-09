@@ -1,7 +1,7 @@
 import React from 'react';
 import { CustomAuthProvider, useCustomAuth } from './contexts/CustomAuthContext';
 import AuthForm from './components/auth/AuthForm';
-import AppWithAuth from '../AppWithAuth';
+import AppWithAuth from './AppWithAuth';
 import LoadingSpinner from './components/LoadingSpinner';
 
 const AuthenticatedApp: React.FC = () => {

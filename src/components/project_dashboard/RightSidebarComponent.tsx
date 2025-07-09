@@ -1,6 +1,9 @@
 import React from 'react';
+import { useScreenSize } from '../ResponsiveLayout';
 
 const RightSidebarComponent: React.FC = () => {
+  const { isMobile } = useScreenSize();
+  
   const handleViewAnalytics = () => {
     console.log('View Analytics clicked');
     // TODO: Implement analytics view
@@ -15,10 +18,11 @@ const RightSidebarComponent: React.FC = () => {
     console.log('Focus Mode clicked');
     // TODO: Implement focus mode
   };
+  
   return (
-    <aside className="w-64 bg-slate-800 border-l border-slate-700 overflow-y-auto">
-      <div className="p-4">
-        <h2 className="text-lg font-semibold text-slate-200 mb-4">Project Insights</h2>
+    <aside className={`${isMobile ? 'w-full' : 'w-64'} bg-slate-800 ${isMobile ? '' : 'border-l border-slate-700'} overflow-y-auto`}>
+      <div className={`${isMobile ? 'p-3' : 'p-4'}`}>
+        <h2 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold text-slate-200 mb-4`}>Project Insights</h2>
         
         {/* Quick Stats */}
         <div className="space-y-4">

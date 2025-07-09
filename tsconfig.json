@@ -23,5 +23,5 @@
     "types": ["node"]
   },
   "include": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
-  "exclude": ["node_modules", "dist", "build", "cypress", "**/*.test.ts", "**/*.test.tsx", "**/__tests__/**"]
+  "exclude": ["node_modules", "dist", "build", "cypress", "archive", "**/*.test.ts", "**/*.test.tsx", "**/__tests__/**"]
 }

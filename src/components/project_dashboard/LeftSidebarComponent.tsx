@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Project, ProjectStatus } from '../../../types';
 import { calculateUrgencyScore } from '../../utils/projectUtils';
+import { useScreenSize } from '../ResponsiveLayout';
 
 interface LeftSidebarComponentProps {
   projects: Project[];
@@ -15,14 +16,17 @@ const LeftSidebarComponent: React.FC<LeftSidebarComponentProps> = ({
 }) => {
   const [statusFilter, setStatusFilter] = useState<'all' | ProjectStatus>('all');
 
+  const { isMobile } = useScreenSize();
+  
   const filteredProjects = useMemo(() => {
     if (statusFilter === 'all') return projects;
     return projects.filter(project => project.status === statusFilter);
   }, [projects, statusFilter]);
+  
   return (
-    <aside className="w-80 bg-slate-800 border-r border-slate-700 overflow-y-auto">
-      <div className="p-4">
-        <h2 className="text-lg font-semibold text-slate-200 mb-4">Projects</h2>
+    <aside className={`${isMobile ? 'w-full' : 'w-80'} bg-slate-800 ${isMobile ? '' : 'border-r border-slate-700'} overflow-y-auto`}>
+      <div className={`${isMobile ? 'p-3' : 'p-4'}`}>
+        <h2 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold text-slate-200 mb-4`}>Projects</h2>
         
         {/* Status Filter */}
         <div className="mb-4">
@@ -58,7 +62,7 @@ const LeftSidebarComponent: React.FC<LeftSidebarComponentProps> = ({
                 <button
                   key={project.id}
                   onClick={() => onSelectProject(project.id)}
-                  className={`w-full text-left p-3 rounded-lg transition-colors ${
+                  className={`w-full text-left ${isMobile ? 'p-2' : 'p-3'} rounded-lg transition-colors ${
                     isSelected
                       ? 'bg-sky-600 text-white'
                       : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
