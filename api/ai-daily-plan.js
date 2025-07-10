@@ -23,6 +23,11 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Date, projects, tasks, and user preferences are required' });
     }
 
+    // Additional validation
+    if (!Array.isArray(projects) || !Array.isArray(tasks)) {
+      return res.status(400).json({ error: 'Projects and tasks must be arrays' });
+    }
+
     const provider = userPreferences.ai_provider || 'gemini';
     const targetDate = new Date(date);
 
@@ -68,9 +73,30 @@ export default async function handler(req, res) {
 
   } catch (error) {
     console.error('Error in ai-daily-plan API:', error);
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: error.message 
+    
+    // Check for specific error types
+    if (error.message.includes('API key not configured')) {
+      return res.status(503).json({ 
+        error: 'AI service unavailable',
+        message: 'AI provider is not properly configured. Please check your settings.'
+      });
+    }
+    
+    if (error.message.includes('API error')) {
+      return res.status(502).json({ 
+        error: 'AI service error',
+        message: 'AI provider returned an error. Please try again later.'
+      });
+    }
+    
+    // Return default plan for graceful degradation
+    console.log('Returning default plan due to error:', error.message);
+    res.status(200).json({
+      ...defaultPlan,
+      ai_recommendations: [
+        'AI planning service is temporarily unavailable. Using default schedule.',
+        'Please try refreshing the page in a few minutes.'
+      ]
     });
   }
 }
@@ -147,7 +173,8 @@ Generate a comprehensive daily plan with the following JSON structure:
         maxOutputTokens: 4096,
         responseMimeType: "application/json"
       }
-    })
+    }),
+    signal: AbortSignal.timeout(30000) // 30 second timeout
   });
 
   if (!response.ok) {
@@ -157,7 +184,16 @@ Generate a comprehensive daily plan with the following JSON structure:
   const data = await response.json();
   const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
   
-  return JSON.parse(content);
+  if (!content) {
+    throw new Error('No content received from Gemini API');
+  }
+  
+  try {
+    return JSON.parse(content);
+  } catch (parseError) {
+    console.error('Failed to parse Gemini response:', content);
+    throw new Error('Invalid JSON response from Gemini API');
+  }
 }
 
 // Claude Daily Plan Generation

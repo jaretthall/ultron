@@ -5,6 +5,7 @@ import { formatDateForInput, isSameDate } from '../../utils/dateUtils';
 import NewTaskModal from '../tasks/NewTaskModal';
 import NewEventModal from './NewEventModal';
 import EditEventModal from './EditEventModal';
+import CounselingSessionModal from './CounselingSessionModal';
 import TaskScheduler from './TaskScheduler';
 import WorkingHoursManager from './WorkingHoursManager';
 import FocusBlockManager from './FocusBlockManager';
@@ -26,9 +27,17 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ onTaskClick, onEditTask }) 
   const { tasks, projects, schedules } = state;
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
+  // Helper function to detect counseling sessions
+  const isCounselingSession = useCallback((event: Schedule) => {
+    return event.tags?.includes('counseling') || event.tags?.includes('therapy') || 
+           event.title.toLowerCase().includes('counseling') || 
+           event.title.toLowerCase().includes('therapy');
+  }, []);
   const [showNewTaskModal, setShowNewTaskModal] = useState(false);
   const [showNewEventModal, setShowNewEventModal] = useState(false);
   const [showEditEventModal, setShowEditEventModal] = useState(false);
+  const [showCounselingModal, setShowCounselingModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Schedule | null>(null);
   const [isTaskSchedulerOpen, setIsTaskSchedulerOpen] = useState(false);
   const [isWorkingHoursOpen, setIsWorkingHoursOpen] = useState(false);
@@ -84,7 +93,7 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ onTaskClick, onEditTask }) 
       cells.push(
         <div
           key={day}
-          className={`p-2 border border-slate-700 h-24 min-h-[6rem] cursor-pointer hover:bg-slate-700/70 transition-colors flex flex-col
+          className={`p-1 lg:p-2 border border-slate-700 h-16 lg:h-24 min-h-[4rem] lg:min-h-[6rem] cursor-pointer hover:bg-slate-700/70 transition-colors flex flex-col
             ${isSelected ? 'bg-sky-700 ring-2 ring-sky-500' : 'bg-slate-800'}
             ${isSameDate(new Date(), date) && !isSelected ? 'bg-slate-600/50' : ''}
           `}
@@ -95,15 +104,17 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ onTaskClick, onEditTask }) 
           tabIndex={0}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setSelectedDate(date);}}
         >
-          <span className={`text-sm font-medium ${isSelected ? 'text-white' : 'text-slate-300'}`}>{day}</span>
-          <div className="mt-1 space-y-0.5 overflow-y-auto max-h-16 text-xs">
+          <span className={`text-xs lg:text-sm font-medium ${isSelected ? 'text-white' : 'text-slate-300'}`}>{day}</span>
+          <div className="mt-0.5 lg:mt-1 space-y-0.5 overflow-y-auto max-h-12 lg:max-h-16 text-[10px] lg:text-xs">
             {tasksOnDate.slice(0, 1).map(task => (
                  <div key={task.id} className={`p-0.5 rounded-sm text-white truncate ${task.priority === 'urgent' ? 'bg-red-600' : task.priority === 'high' ? 'bg-orange-600' : 'bg-sky-800'}`}>
                     {task.title}
                  </div>
             ))}
             {eventsOnDate.slice(0, 1).map(event => (
-                 <div key={event.id} className="p-0.5 rounded-sm text-white truncate bg-green-600">
+                 <div key={event.id} className={`p-0.5 rounded-sm text-white truncate ${
+                   isCounselingSession(event) ? 'bg-blue-600' : 'bg-green-600'
+                 }`}>
                     {event.title}
                  </div>
             ))}
@@ -193,124 +204,96 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ onTaskClick, onEditTask }) 
     }
   };
 
-  const handleAddCounselingSession = async () => {
-    if (!selectedDate) {
-      alert('Please select a date first');
-      return;
-    }
-
+  const handleAddCounselingSession = async (
+    session: Omit<Schedule, 'id' | 'created_at' | 'updated_at'>,
+    progressNote: Omit<Task, 'id' | 'created_at' | 'updated_at'>
+  ) => {
     try {
-      // Create a default 1-hour counseling session
-      const startTime = '10:00'; // Default 10 AM start time
-      const endTime = '11:00';   // 1 hour session
-      
-      const counselingSession = {
-        title: 'Counseling Session',
-        context: 'Individual therapy session',
-        start_date: `${formatDateForInput(selectedDate)}T${startTime}`,
-        end_date: `${formatDateForInput(selectedDate)}T${endTime}`,
-        all_day: false,
-        event_type: 'appointment' as const,
-        location: 'Office',
-        blocks_work_time: true,
-        tags: ['therapy', 'counseling'],
-      };
-
       // Add the counseling session
-      const createdEvent = await addSchedule(counselingSession);
+      const createdEvent = await addSchedule(session);
       console.log('✅ Counseling session created:', createdEvent);
 
-      // Automatically create a progress note task
-      const progressNoteTask = {
-        title: `Progress Note - ${formatDateForInput(selectedDate)}`,
-        context: 'Write therapy progress note for counseling session conducted today. Include client progress, session goals, interventions used, and next steps.',
-        priority: TaskPriority.MEDIUM,
-        estimated_hours: 0.5,
-        status: TaskStatus.TODO,
-        due_date: formatDateForInput(selectedDate),
-        tags: ['progress-note', 'therapy', 'documentation'],
-        dependencies: [],
-        energy_level: 'low' as const,
-      };
-
-      await addTask(progressNoteTask);
+      // Add the progress note task
+      await addTask(progressNote);
       console.log('✅ Progress note task created automatically');
-
-      // Show success message
-      alert('✅ Counseling session and progress note task created successfully!');
       
     } catch (error) {
       console.error('❌ Error creating counseling session:', error);
-      alert('❌ Failed to create counseling session. Please try again.');
+      throw error; // Re-throw to let the modal handle the error display
     }
   };
 
   return (
-    <div className="flex-1 p-4 md:p-6 lg:p-8 overflow-hidden bg-slate-900 text-slate-100 flex">
-      <div className="flex-1 flex flex-col mr-6">
+    <div className="flex-1 p-4 md:p-6 lg:p-8 overflow-hidden bg-slate-900 text-slate-100 flex flex-col lg:flex-row">
+      <div className="flex-1 flex flex-col lg:mr-6">
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold">Calendar</h1>
             <p className="text-slate-400 mt-1">Visual calendar view of task due dates and intelligent scheduling.</p>
           </div>
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => setIsWorkingHoursOpen(true)}
-              className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg flex items-center text-sm"
-              title="Configure Working Hours"
-            >
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              Working Hours
-            </button>
-            <button
-              onClick={() => selectedDate && setIsTaskSchedulerOpen(true)}
-              disabled={!selectedDate}
-              className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-lg flex items-center text-sm"
-              title="Schedule Tasks for Selected Date"
-            >
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-              </svg>
-              Schedule Tasks
-            </button>
-            <button
-              onClick={() => setIsFocusBlockManagerOpen(true)}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg flex items-center text-sm"
-              title="Manage Focus Blocks"
-            >
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-              </svg>
-              Focus Blocks
-            </button>
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Primary actions - always visible */}
             <button
               onClick={() => setShowNewTaskModal(true)}
-              className="bg-sky-600 hover:bg-sky-700 text-white font-medium py-2 px-4 rounded-lg flex items-center text-sm"
+              className="bg-sky-600 hover:bg-sky-700 text-white font-medium py-2 px-3 lg:px-4 rounded-lg flex items-center text-sm"
               aria-label="Add New Task"
             >
-              <PlusIcon /> <span className="ml-2">Add Task</span>
+              <PlusIcon /> <span className="ml-1 lg:ml-2 hidden sm:inline">Add Task</span>
             </button>
             <button
               onClick={() => setShowNewEventModal(true)}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-4 rounded-lg flex items-center text-sm"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-3 lg:px-4 rounded-lg flex items-center text-sm"
               aria-label="Add New Event"
             >
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 lg:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              <span>Add Event</span>
+              <span className="hidden sm:inline">Event</span>
             </button>
             <button
-              onClick={() => handleAddCounselingSession()}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center text-sm"
+              onClick={() => setShowCounselingModal(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-3 lg:px-4 rounded-lg flex items-center text-sm"
               aria-label="Add Counseling Session"
-              title="Quick add 1-hour counseling session with automatic progress note task"
+              title="Schedule counseling session with date/time picker and automatic progress note task"
             >
               <PlusIcon />
-              <span className="ml-2">Counseling</span>
+              <span className="ml-1 lg:ml-2 hidden sm:inline">Counseling</span>
             </button>
+            
+            {/* Secondary actions - hidden on mobile, shown in overflow menu */}
+            <div className="hidden lg:flex items-center gap-2">
+              <button
+                onClick={() => setIsWorkingHoursOpen(true)}
+                className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg flex items-center text-sm"
+                title="Configure Working Hours"
+              >
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Working Hours
+              </button>
+              <button
+                onClick={() => selectedDate && setIsTaskSchedulerOpen(true)}
+                disabled={!selectedDate}
+                className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-lg flex items-center text-sm"
+                title="Schedule Tasks for Selected Date"
+              >
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                </svg>
+                Schedule Tasks
+              </button>
+              <button
+                onClick={() => setIsFocusBlockManagerOpen(true)}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg flex items-center text-sm"
+                title="Manage Focus Blocks"
+              >
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+                Focus Blocks
+              </button>
+            </div>
           </div>
         </div>
 
@@ -329,21 +312,54 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ onTaskClick, onEditTask }) 
         </div>
 
         <div className="grid grid-cols-7 text-center font-medium text-slate-400 bg-slate-800">
-          {daysOfWeek.map(day => <div key={day} className="py-2 border-b border-x border-slate-700">{day}</div>)}
+          {daysOfWeek.map(day => <div key={day} className="py-2 border-b border-x border-slate-700 text-xs lg:text-sm">{day}</div>)}
         </div>
         <div className="grid grid-cols-7 flex-1 overflow-y-auto bg-slate-800 rounded-b-lg">
           {calendarGrid}
         </div>
       </div>
 
-      <aside className="w-72 bg-slate-800 p-4 rounded-lg flex flex-col shrink-0">
-        <button
-          onClick={goToToday}
-          className="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium py-2 px-4 rounded-lg text-sm mb-4"
-        >
-          Today
-        </button>
-        <h3 className="text-lg font-semibold mb-1">
+      <aside className="w-full lg:w-72 bg-slate-800 p-4 rounded-lg flex flex-col shrink-0 mt-4 lg:mt-0">
+        <div className="flex lg:block gap-2 mb-4">
+          <button
+            onClick={goToToday}
+            className="flex-1 lg:w-full bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium py-2 px-4 rounded-lg text-sm"
+          >
+            Today
+          </button>
+          {/* Mobile-only secondary actions */}
+          <div className="flex lg:hidden gap-2">
+            <button
+              onClick={() => setIsWorkingHoursOpen(true)}
+              className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-3 rounded-lg text-sm"
+              title="Working Hours"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </button>
+            <button
+              onClick={() => selectedDate && setIsTaskSchedulerOpen(true)}
+              disabled={!selectedDate}
+              className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white font-medium py-2 px-3 rounded-lg text-sm"
+              title="Schedule Tasks"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setIsFocusBlockManagerOpen(true)}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-3 rounded-lg text-sm"
+              title="Focus Blocks"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <h3 className="text-base lg:text-lg font-semibold mb-1">
           {selectedDate ? selectedDate.toLocaleDateString('default', { weekday: 'long', month: 'long', day: 'numeric' }) : 'No date selected'}
         </h3>
         <div className="flex-1 overflow-y-auto pt-2" aria-live="polite">
@@ -406,7 +422,11 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ onTaskClick, onEditTask }) 
                 {eventsForSelectedDate.map(event => (
                   <li 
                     key={event.id} 
-                    className="p-3 bg-green-700 hover:bg-green-600 rounded-md cursor-pointer transition-all hover:scale-[1.02] hover:shadow-lg group"
+                    className={`p-3 rounded-md cursor-pointer transition-all hover:scale-[1.02] hover:shadow-lg group ${
+                      isCounselingSession(event) 
+                        ? 'bg-blue-700 hover:bg-blue-600' 
+                        : 'bg-green-700 hover:bg-green-600'
+                    }`}
                     onClick={() => handleEditEvent(event)}
                     role="button"
                     tabIndex={0}
@@ -419,11 +439,19 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ onTaskClick, onEditTask }) 
                     aria-label={`Edit event: ${event.title}`}
                   >
                     <div className="flex justify-between items-start mb-2">
-                      <p className="font-medium text-slate-100 group-hover:text-green-200 transition-colors">{event.title}</p>
+                      <p className={`font-medium text-slate-100 transition-colors ${
+                        isCounselingSession(event) 
+                          ? 'group-hover:text-blue-200' 
+                          : 'group-hover:text-green-200'
+                      }`}>{event.title}</p>
                       <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button 
                           onClick={(e) => { e.stopPropagation(); handleEditEvent(event); }}
-                          className="p-1 rounded text-slate-200 hover:text-green-200 hover:bg-green-600"
+                          className={`p-1 rounded text-slate-200 ${
+                            isCounselingSession(event)
+                              ? 'hover:text-blue-200 hover:bg-blue-600'
+                              : 'hover:text-green-200 hover:bg-green-600'
+                          }`}
                           aria-label={`Edit ${event.title}`}
                           title="Edit event"
                         >
@@ -528,6 +556,15 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ onTaskClick, onEditTask }) 
       {isFocusBlockManagerOpen && (
         <FocusBlockManager
           onClose={() => setIsFocusBlockManagerOpen(false)}
+        />
+      )}
+      
+      {showCounselingModal && (
+        <CounselingSessionModal
+          isOpen={showCounselingModal}
+          onClose={() => setShowCounselingModal(false)}
+          onAddCounselingSession={handleAddCounselingSession}
+          defaultDate={selectedDate}
         />
       )}
     </div>

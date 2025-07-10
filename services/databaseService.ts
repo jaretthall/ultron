@@ -861,20 +861,53 @@ export const schedulesService = {
   async getAll(): Promise<Schedule[]> {
     if (!supabase) throw new Error('Supabase client not initialized');
     
-    const { data, error } = await supabase
-      .from('schedules')
-      .select('*')
-      .order('start_date', { ascending: true });
-    
-    if (error) handleError('fetching schedules', error);
-    
-    // Convert JSONB fields back to strings for the interface
-    return (data || []).map(schedule => ({
-      ...schedule,
-      recurring: schedule.recurring ? JSON.stringify(schedule.recurring) : null,
-      reminders: schedule.reminders ? JSON.stringify(schedule.reminders) : null,
-      // tags is already an array, no conversion needed
-    }));
+    try {
+      // Get current user first
+      const user = getCustomAuthUser();
+      if (!user) {
+        console.warn('No authenticated user found for schedules.getAll()');
+        return [];
+      }
+
+      const { data, error } = await supabase
+        .from('schedules')
+        .select(`
+          id,
+          user_id,
+          title,
+          context,
+          start_date,
+          end_date,
+          all_day,
+          event_type,
+          location,
+          recurring,
+          reminders,
+          blocks_work_time,
+          tags,
+          created_at,
+          updated_at
+        `)
+        .eq('user_id', user.id)
+        .order('start_date', { ascending: true });
+      
+      if (error) {
+        console.error('Supabase error fetching schedules:', error);
+        handleError('fetching schedules', error);
+      }
+
+      // Convert JSONB fields back to strings for the interface
+      return (data || []).map(schedule => ({
+        ...schedule,
+        recurring: schedule.recurring ? JSON.stringify(schedule.recurring) : null,
+        reminders: schedule.reminders ? JSON.stringify(schedule.reminders) : null,
+        // tags is already an array, no conversion needed
+      }));
+    } catch (err) {
+      console.error('Error in schedulesService.getAll():', err);
+      // Return empty array instead of throwing to prevent UI crashes
+      return [];
+    }
   },
 
   async getById(id: string): Promise<Schedule | null> {
@@ -909,23 +942,55 @@ export const schedulesService = {
     if (!user) {
       throw new Error('User not authenticated');
     }
+
+    // Validate required fields
+    if (!schedule.title || !schedule.start_date || !schedule.end_date) {
+      throw new Error('Title, start_date, and end_date are required');
+    }
+
+    // Validate date format
+    try {
+      new Date(schedule.start_date).toISOString();
+      new Date(schedule.end_date).toISOString();
+    } catch (dateError) {
+      throw new Error('Invalid date format provided');
+    }
     
     // Clean the schedule data
     const cleanSchedule: any = {
       id: IdGenerator.generateScheduleId(),
       user_id: user.id,
-      title: schedule.title,
-      context: schedule.context || '',
+      title: schedule.title.trim(),
+      context: schedule.context ? schedule.context.trim() : '',
       start_date: schedule.start_date,
       end_date: schedule.end_date,
       all_day: schedule.all_day || false,
       event_type: schedule.event_type || 'other',
-      location: schedule.location || null,
-      recurring: schedule.recurring ? (typeof schedule.recurring === 'string' ? JSON.parse(schedule.recurring) : schedule.recurring) : null,
-      reminders: schedule.reminders ? (typeof schedule.reminders === 'string' ? JSON.parse(schedule.reminders) : schedule.reminders) : null,
+      location: schedule.location ? schedule.location.trim() : null,
+      recurring: null, // Simplified for now to avoid JSON parsing issues
+      reminders: null, // Simplified for now to avoid JSON parsing issues
       blocks_work_time: schedule.blocks_work_time || false,
-      tags: schedule.tags || [],
+      tags: Array.isArray(schedule.tags) ? schedule.tags : [],
     };
+
+    // Handle JSON fields more safely
+    if (schedule.recurring) {
+      try {
+        cleanSchedule.recurring = typeof schedule.recurring === 'string' ? JSON.parse(schedule.recurring) : schedule.recurring;
+      } catch (jsonError) {
+        console.warn('Invalid recurring JSON, setting to null:', schedule.recurring);
+        cleanSchedule.recurring = null;
+      }
+    }
+
+    if (schedule.reminders) {
+      try {
+        cleanSchedule.reminders = typeof schedule.reminders === 'string' ? JSON.parse(schedule.reminders) : schedule.reminders;
+      } catch (jsonError) {
+        console.warn('Invalid reminders JSON, setting to null:', schedule.reminders);
+        cleanSchedule.reminders = null;
+      }
+    }
     
     // Note: schedules table doesn't have project_id column based on actual schema
     // Removed project_id assignment since column doesn't exist
