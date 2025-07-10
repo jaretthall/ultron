@@ -52,28 +52,7 @@ const HomePage: React.FC<HomePageProps> = () => {
     setEditingTask(task);
   };
 
-  const handleEditTask = async (taskId: string, updates: Partial<Task>) => {
-    try {
-      await updateTask(taskId, updates);
-      setEditingTask(null);
-      console.log('✅ Task updated successfully');
-    } catch (error) {
-      console.error('❌ Failed to update task:', error);
-    }
-  };
 
-  const handleCompleteTask = async (taskId: string) => {
-    try {
-      const task = tasks.find(t => t.id === taskId);
-      if (task) {
-        const newStatus = task.status === TaskStatus.COMPLETED ? TaskStatus.TODO : TaskStatus.COMPLETED;
-        await updateTask(taskId, { status: newStatus });
-        console.log('✅ Task status updated successfully');
-      }
-    } catch (error) {
-      console.error('❌ Failed to update task status:', error);
-    }
-  };
 
   const recentProjects = projects.filter((p: Project) => p.context === ProjectContext.BUSINESS).slice(0, 3);
   // const urgentTasks = tasks.filter((t: Task) => t.priority === TaskPriority.HIGH && t.status === TaskStatus.TODO).slice(0, 5);

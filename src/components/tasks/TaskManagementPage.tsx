@@ -203,6 +203,7 @@ const TaskManagementPage: React.FC<TaskManagementPageProps> = ({
                   projectTitle={getProjectTitle(task.project_id)}
                   onEditTaskRequest={onEditTaskRequest}
                   onDeleteTask={onDeleteTask}
+                  onCompleteTask={onCompleteTask}
                 /> 
               ))}
             </div>

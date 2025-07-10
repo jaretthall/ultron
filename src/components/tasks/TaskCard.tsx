@@ -68,17 +68,17 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, projectTitle, onEditTaskReque
         </div>
         <div className="flex space-x-1 mb-2">
           {onCompleteTask && (
-            <button 
-              onClick={(e) => { e.stopPropagation(); onCompleteTask(task.id); }}
-              className={`p-1 rounded focus:outline-none ${
-                task.status === 'completed' 
-                  ? 'text-green-500 hover:text-yellow-400 hover:bg-slate-700' 
-                  : 'text-slate-500 hover:text-green-400 hover:bg-slate-700'
-              }`}
-              aria-label={task.status === 'completed' ? `Mark task ${task.title} as incomplete` : `Mark task ${task.title} as complete`}
-              title={task.status === 'completed' ? 'Mark as incomplete' : 'Mark as complete'}
-            >
-              {task.status === 'completed' ? <UndoIconSmall /> : <CheckIconSmall />}
+                      <button 
+            onClick={(e) => { e.stopPropagation(); onCompleteTask(task.id); }}
+            className={`p-1 rounded focus:outline-none ${
+              task.status === TaskStatus.COMPLETED 
+                ? 'text-green-500 hover:text-yellow-400 hover:bg-slate-700' 
+                : 'text-slate-500 hover:text-green-400 hover:bg-slate-700'
+            }`}
+            aria-label={task.status === TaskStatus.COMPLETED ? `Mark task ${task.title} as incomplete` : `Mark task ${task.title} as complete`}
+            title={task.status === TaskStatus.COMPLETED ? 'Mark as incomplete' : 'Mark as complete'}
+          >
+            {task.status === TaskStatus.COMPLETED ? <UndoIconSmall /> : <CheckIconSmall />}
             </button>
           )}
           <button 
