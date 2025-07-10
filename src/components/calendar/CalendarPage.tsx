@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { Task, Schedule, TaskPriority, TaskStatus } from '../../../types';
+import { Task, Schedule } from '../../../types';
 import { useAppState } from '../../contexts/AppStateContext';
 import { formatDateForInput, isSameDate } from '../../utils/dateUtils';
 import NewTaskModal from '../tasks/NewTaskModal';
@@ -564,7 +564,7 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ onTaskClick, onEditTask }) 
           isOpen={showCounselingModal}
           onClose={() => setShowCounselingModal(false)}
           onAddCounselingSession={handleAddCounselingSession}
-          defaultDate={selectedDate}
+          defaultDate={selectedDate || undefined}
         />
       )}
     </div>

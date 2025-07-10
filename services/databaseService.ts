@@ -899,8 +899,8 @@ export const schedulesService = {
       // Convert JSONB fields back to strings for the interface
       return (data || []).map(schedule => ({
         ...schedule,
-        recurring: schedule.recurring ? JSON.stringify(schedule.recurring) : null,
-        reminders: schedule.reminders ? JSON.stringify(schedule.reminders) : null,
+        recurring: schedule.recurring ? JSON.stringify(schedule.recurring) : undefined,
+        reminders: schedule.reminders ? JSON.stringify(schedule.reminders) : undefined,
         // tags is already an array, no conversion needed
       }));
     } catch (err) {
