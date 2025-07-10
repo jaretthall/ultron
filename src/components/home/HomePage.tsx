@@ -52,10 +52,10 @@ const HomePage: React.FC<HomePageProps> = () => {
   const activeProjects = projects.filter((project: Project) => project.status === ProjectStatus.ACTIVE);
 
   return (
-    <div className="p-3 sm:p-4 lg:p-6 bg-slate-900 min-h-screen">
+    <div className="p-3 sm:p-4 lg:p-6 bg-slate-900 min-h-screen" data-testid="dashboard-content">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 space-y-4 sm:space-y-0">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white">Command Center</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">Dashboard</h1>
           <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
             <button 
               onClick={() => setIsTaskModalOpen(true)}

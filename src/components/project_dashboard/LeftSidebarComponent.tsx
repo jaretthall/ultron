@@ -68,7 +68,7 @@ const LeftSidebarComponent: React.FC<LeftSidebarComponentProps> = ({
           </select>
         </div>
         
-        <div className="space-y-2">
+        <div className="space-y-2" data-testid="project-list">
           {filteredProjects.length === 0 ? (
             <div className="text-center py-8">
               <svg className="mx-auto h-8 w-8 text-slate-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">

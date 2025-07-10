@@ -27,7 +27,9 @@
       "mcp__github__create_or_update_file",
       "Bash(rm:*)",
       "Bash(npm install:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(npm run test:e2e:ci:*)",
+      "Bash(npx cypress:*)"
     ],
     "deny": []
   },

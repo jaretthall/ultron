@@ -129,7 +129,7 @@ export const CustomAuthProvider: React.FC<{ children: ReactNode }> = ({ children
         // Log unauthorized login attempt
         securityMonitor.logUnauthorizedLogin(email);
         setAuthState(prev => ({ ...prev, loading: false }));
-        return { success: false, error: 'Invalid email or password' };
+        return { success: false, error: 'Invalid credentials' };
       }
 
       // Create user object
@@ -232,7 +232,7 @@ export const CustomAuthProvider: React.FC<{ children: ReactNode }> = ({ children
       // For bypass mode, we'll allow any new email but require a minimum password length
       if (password.length < 8) {
         setAuthState(prev => ({ ...prev, loading: false }));
-        return { success: false, error: 'Password must be at least 8 characters long' };
+        return { success: false, error: 'Password must be at least 8 characters' };
       }
 
       // Check if email is already "registered" (in our bypass list)

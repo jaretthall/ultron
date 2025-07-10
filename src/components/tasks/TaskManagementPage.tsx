@@ -193,7 +193,7 @@ const TaskManagementPage: React.FC<TaskManagementPageProps> = ({
           </div>
         ) : (
           viewMode === 'list' ? (
-            <div className="space-y-3">
+            <div className="space-y-3" data-testid="task-list">
               {filteredTasks.map(task => (
                 <TaskItem 
                   key={task.id} 
@@ -205,7 +205,7 @@ const TaskManagementPage: React.FC<TaskManagementPageProps> = ({
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" data-testid="task-list">
               {filteredTasks.map(task => (
                 <TaskCard 
                   key={task.id} 

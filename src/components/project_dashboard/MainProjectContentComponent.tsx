@@ -256,7 +256,7 @@ const MainProjectContentComponent: React.FC<MainProjectContentComponentProps> = 
       <div>
         <h3 className="text-xl font-semibold text-slate-100 mb-4">Tasks ({tasks.length})</h3>
         {tasks.length > 0 ? (
-          <div className="space-y-3">
+          <div className="space-y-3" data-testid="task-list">
             {tasks.map(task => (
               <TaskItem 
                 key={task.id} 
