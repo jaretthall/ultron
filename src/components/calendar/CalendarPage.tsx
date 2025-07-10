@@ -201,7 +201,6 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ onTaskClick, onEditTask }) 
 
     try {
       // Create a default 1-hour counseling session
-      const now = new Date();
       const startTime = '10:00'; // Default 10 AM start time
       const endTime = '11:00';   // 1 hour session
       
