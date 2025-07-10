@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { Task, Schedule, /*TaskStatus*/ } from '../../../types';
+import { Task, Schedule, TaskPriority, TaskStatus } from '../../../types';
 import { useAppState } from '../../contexts/AppStateContext';
 import { formatDateForInput, isSameDate } from '../../utils/dateUtils';
 import NewTaskModal from '../tasks/NewTaskModal';
@@ -90,7 +90,7 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ onTaskClick, onEditTask }) 
           `}
           onClick={() => setSelectedDate(date)}
           role="button"
-          aria-pressed={isSelected ?? false}
+          aria-pressed={isSelected ? "true" : "false"}
           aria-label={`Select ${date.toLocaleDateString()}, ${tasksOnDate.length} tasks, ${eventsOnDate.length} events`}
           tabIndex={0}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setSelectedDate(date);}}
@@ -193,6 +193,59 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ onTaskClick, onEditTask }) 
     }
   };
 
+  const handleAddCounselingSession = async () => {
+    if (!selectedDate) {
+      alert('Please select a date first');
+      return;
+    }
+
+    try {
+      // Create a default 1-hour counseling session
+      const now = new Date();
+      const startTime = '10:00'; // Default 10 AM start time
+      const endTime = '11:00';   // 1 hour session
+      
+      const counselingSession = {
+        title: 'Counseling Session',
+        context: 'Individual therapy session',
+        start_date: `${formatDateForInput(selectedDate)}T${startTime}`,
+        end_date: `${formatDateForInput(selectedDate)}T${endTime}`,
+        all_day: false,
+        event_type: 'appointment' as const,
+        location: 'Office',
+        blocks_work_time: true,
+        tags: ['therapy', 'counseling'],
+      };
+
+      // Add the counseling session
+      const createdEvent = await addSchedule(counselingSession);
+      console.log('✅ Counseling session created:', createdEvent);
+
+      // Automatically create a progress note task
+      const progressNoteTask = {
+        title: `Progress Note - ${formatDateForInput(selectedDate)}`,
+        context: 'Write therapy progress note for counseling session conducted today. Include client progress, session goals, interventions used, and next steps.',
+        priority: TaskPriority.MEDIUM,
+        estimated_hours: 0.5,
+        status: TaskStatus.TODO,
+        due_date: formatDateForInput(selectedDate),
+        tags: ['progress-note', 'therapy', 'documentation'],
+        dependencies: [],
+        energy_level: 'low' as const,
+      };
+
+      await addTask(progressNoteTask);
+      console.log('✅ Progress note task created automatically');
+
+      // Show success message
+      alert('✅ Counseling session and progress note task created successfully!');
+      
+    } catch (error) {
+      console.error('❌ Error creating counseling session:', error);
+      alert('❌ Failed to create counseling session. Please try again.');
+    }
+  };
+
   return (
     <div className="flex-1 p-4 md:p-6 lg:p-8 overflow-hidden bg-slate-900 text-slate-100 flex">
       <div className="flex-1 flex flex-col mr-6">
@@ -249,6 +302,15 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ onTaskClick, onEditTask }) 
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
               <span>Add Event</span>
+            </button>
+            <button
+              onClick={() => handleAddCounselingSession()}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center text-sm"
+              aria-label="Add Counseling Session"
+              title="Quick add 1-hour counseling session with automatic progress note task"
+            >
+              <PlusIcon />
+              <span className="ml-2">Counseling</span>
             </button>
           </div>
         </div>
