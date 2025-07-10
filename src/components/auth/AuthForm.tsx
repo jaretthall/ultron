@@ -23,13 +23,14 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
     setIsSubmitting(true);
 
     // Validation
-    if (!email) {
+    // Client-side validation - show errors immediately
+    if (!email.trim()) {
       setError('Email is required');
       setIsSubmitting(false);
       return;
     }
     
-    if (!password) {
+    if (!password.trim()) {
       setError('Password is required');
       setIsSubmitting(false);
       return;
@@ -41,7 +42,8 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
       return;
     }
 
-    if (password.length < 8) {
+    // Password length validation only for signup
+    if (!isLogin && password.length < 8) {
       setError('Password must be at least 8 characters');
       setIsSubmitting(false);
       return;

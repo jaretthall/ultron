@@ -192,7 +192,7 @@ async function generateWorkloadAnalysis(provider, projects, tasks, userPreferenc
 
 // Provider-specific implementation functions
 async function callGeminiInsights(projects, tasks, userPreferences) {
-  const response = await fetch(`${process.env.VERCEL_URL || 'http://localhost:3000'}/api/gemini-insights`, {
+  const response = await fetch(`${process.env.VERCEL_URL || 'http://localhost:5173'}/api/gemini-insights`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ projects, tasks, userPreferences })
@@ -206,7 +206,7 @@ async function callGeminiInsights(projects, tasks, userPreferences) {
 }
 
 async function callClaudeInsights(projects, tasks, userPreferences) {
-  const response = await fetch(`${process.env.VERCEL_URL || 'http://localhost:3000'}/api/claude-insights`, {
+  const response = await fetch(`${process.env.VERCEL_URL || 'http://localhost:5173'}/api/claude-insights`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ projects, tasks })
@@ -220,7 +220,7 @@ async function callClaudeInsights(projects, tasks, userPreferences) {
 }
 
 async function callOpenAIInsights(projects, tasks, userPreferences) {
-  const response = await fetch(`${process.env.VERCEL_URL || 'http://localhost:3000'}/api/openai-insights`, {
+  const response = await fetch(`${process.env.VERCEL_URL || 'http://localhost:5173'}/api/openai-insights`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ projects, tasks, userPreferences })
@@ -258,7 +258,7 @@ async function callGeminiDailyPlan(date, projects, tasks, userPreferences, focus
 }
 
 async function callClaudeDailyPlan(date, projects, tasks, userPreferences, focusBlockData) {
-  const response = await fetch(`${process.env.VERCEL_URL || 'http://localhost:3000'}/api/ai-daily-plan`, {
+  const response = await fetch(`${process.env.VERCEL_URL || 'http://localhost:5173'}/api/ai-daily-plan`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ 
@@ -278,7 +278,7 @@ async function callClaudeDailyPlan(date, projects, tasks, userPreferences, focus
 }
 
 async function callOpenAIDailyPlan(date, projects, tasks, userPreferences, focusBlockData) {
-  const response = await fetch(`${process.env.VERCEL_URL || 'http://localhost:3000'}/api/ai-daily-plan`, {
+  const response = await fetch(`${process.env.VERCEL_URL || 'http://localhost:5173'}/api/ai-daily-plan`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ 

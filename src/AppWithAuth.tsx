@@ -321,18 +321,9 @@ const AppWithAuthContent: React.FC = () => {
         }>
           <Routes>
           <Route path="/" element={
-            state.userPreferences ? (
-              <HomePage 
-                onNavigate={() => {}}
-              />
-            ) : (
-              <div className="flex items-center justify-center h-96">
-                <div className="text-center">
-                  <LoadingSpinner />
-                  <p className="mt-4 text-slate-400">Loading user preferences...</p>
-                </div>
-              </div>
-            )
+            <HomePage 
+              onNavigate={() => {}}
+            />
           } />
           <Route path="/projects" element={
             <ProjectDashboardPage 

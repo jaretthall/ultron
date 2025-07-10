@@ -149,14 +149,17 @@ Cypress.Commands.add('visitWithAuth', (url = '/') => {
         configurable: true
       });
 
-      // Set localStorage auth state
-      win.localStorage.setItem('supabase.auth.token', JSON.stringify({
-        access_token: 'mock-access-token',
-        user: {
-          id: 'test-user-id',
-          email: 'test@example.com'
-        }
-      }));
+      // Set localStorage auth state for CustomAuth
+      const mockUser = {
+        id: 'test-user-id',
+        email: 'test@example.com',
+        created_at: new Date().toISOString()
+      };
+      
+      const sessionExpiry = Date.now() + (24 * 60 * 60 * 1000); // 24 hours
+      
+      win.localStorage.setItem('ultron_custom_user', JSON.stringify(mockUser));
+      win.localStorage.setItem('ultron_session_expiry', sessionExpiry.toString());
     }
   });
 });

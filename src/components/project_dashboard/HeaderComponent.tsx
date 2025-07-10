@@ -160,6 +160,7 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
               <button
                 type="button"
                 className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-slate-300 hover:text-white hover:bg-slate-700 flex items-center space-x-2"
+                data-testid="sign-out-button"
                 onClick={async () => {
                   try {
                     await signOut();
