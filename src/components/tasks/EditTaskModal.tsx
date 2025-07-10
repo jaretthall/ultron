@@ -61,11 +61,11 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-slate-800 rounded-lg p-6 w-full max-w-md">
-        <h2 className="text-xl font-bold text-white mb-4">Edit Task</h2>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 overflow-y-auto">
+      <div className="bg-slate-800 rounded-lg p-4 sm:p-6 w-full max-w-md sm:max-w-lg mx-4 my-4 sm:my-8 min-h-fit max-h-screen overflow-y-auto">
+        <h2 className="text-lg sm:text-xl font-bold text-white mb-4">Edit Task</h2>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
           <div>
             <label className="block text-slate-300 text-sm font-medium mb-1">
               Title
@@ -209,17 +209,17 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
             </div>
           </div>
 
-          <div className="flex space-x-3 pt-4">
+          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 pt-4">
             <button
               type="submit"
-              className="flex-1 bg-sky-600 hover:bg-sky-700 text-white py-2 px-4 rounded font-medium"
+              className="w-full sm:flex-1 bg-sky-600 hover:bg-sky-700 text-white py-3 sm:py-2 px-4 rounded font-medium"
             >
               Update Task
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 bg-slate-600 hover:bg-slate-700 text-white py-2 px-4 rounded font-medium"
+              className="w-full sm:flex-1 bg-slate-600 hover:bg-slate-700 text-white py-3 sm:py-2 px-4 rounded font-medium"
             >
               Cancel
             </button>
