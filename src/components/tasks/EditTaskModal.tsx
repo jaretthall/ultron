@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Task, Project } from '../../../types';
+import { Task, Project, TaskStatus } from '../../../types';
 
 interface EditTaskModalProps {
   task: Task;
@@ -63,7 +63,24 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 overflow-y-auto">
       <div className="bg-slate-800 rounded-lg p-4 sm:p-6 w-full max-w-md sm:max-w-lg mx-4 my-4 sm:my-8 min-h-fit max-h-screen overflow-y-auto">
-        <h2 className="text-lg sm:text-xl font-bold text-white mb-4">Edit Task</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg sm:text-xl font-bold text-white">Edit Task</h2>
+          <button
+            type="button"
+            onClick={() => setStatus(status === TaskStatus.COMPLETED ? TaskStatus.TODO : TaskStatus.COMPLETED)}
+            className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              status === 'completed'
+                ? 'bg-green-600 hover:bg-green-700 text-white'
+                : 'bg-slate-600 hover:bg-green-600 text-slate-200'
+            }`}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                d={status === 'completed' ? "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" : "M5 13l4 4L19 7"} />
+            </svg>
+            <span>{status === 'completed' ? 'Completed' : 'Mark Complete'}</span>
+          </button>
+        </div>
         
         <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
           <div>

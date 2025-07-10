@@ -14,6 +14,7 @@ interface TaskManagementPageProps {
   onAddTask: (taskData: Omit<Task, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => Promise<void>;
   onEditTaskRequest: (task: Task) => void;
   onDeleteTask: (taskId: string) => Promise<void>;
+  onCompleteTask?: (taskId: string) => Promise<void>;
 }
 
 // --- Icons ---
@@ -49,7 +50,8 @@ const TaskManagementPage: React.FC<TaskManagementPageProps> = ({
   projects,
   onAddTask,
   onEditTaskRequest,
-  onDeleteTask
+  onDeleteTask,
+  onCompleteTask
 }) => {
   const tasks = initialTasks;
 
@@ -213,6 +215,7 @@ const TaskManagementPage: React.FC<TaskManagementPageProps> = ({
                   projectTitle={getProjectTitle(task.project_id)}
                   onEditTaskRequest={onEditTaskRequest}
                   onDeleteTask={onDeleteTask}
+                  onCompleteTask={onCompleteTask}
                 />
               ))}
             </div>

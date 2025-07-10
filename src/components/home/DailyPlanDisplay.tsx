@@ -6,10 +6,11 @@ import { useAppState } from '../../contexts/AppStateContext';
 interface DailyPlanDisplayProps {
   tasks: Task[];
   projects: Project[];
+  onEditTaskRequest?: (task: Task) => void;
 }
 
 
-const DailyPlanDisplay: React.FC<DailyPlanDisplayProps> = ({ tasks, projects }) => {
+const DailyPlanDisplay: React.FC<DailyPlanDisplayProps> = ({ tasks, projects, onEditTaskRequest }) => {
   const { state } = useAppState();
   const { userPreferences } = state;
   const [dailyPlan, setDailyPlan] = useState<DailyPlan | null>(null);
@@ -178,8 +179,21 @@ const DailyPlanDisplay: React.FC<DailyPlanDisplayProps> = ({ tasks, projects }) 
 
       {/* Schedule */}
       <div className="space-y-3 mb-6 max-h-96 overflow-y-auto">
-        {dailyPlan.recommended_schedule.map((item, index) => (
-          <div key={index} className="bg-slate-700 rounded-lg p-4">
+        {dailyPlan.recommended_schedule.map((item, index) => {
+          const relatedTask = tasks.find(t => t.title === item.task_title);
+          return (
+          <div 
+            key={index} 
+            className={`bg-slate-700 rounded-lg p-4 transition-all ${
+              onEditTaskRequest && relatedTask ? 'hover:bg-slate-600 cursor-pointer hover:scale-[1.02]' : ''
+            }`}
+            onClick={() => {
+              if (onEditTaskRequest && relatedTask) {
+                onEditTaskRequest(relatedTask);
+              }
+            }}
+            title={onEditTaskRequest && relatedTask ? 'Click to edit task' : undefined}
+          >
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center space-x-3">
                 <div className="text-lg font-medium text-sky-400">
@@ -199,7 +213,8 @@ const DailyPlanDisplay: React.FC<DailyPlanDisplayProps> = ({ tasks, projects }) 
             <h4 className="text-slate-200 font-medium mb-1">{item.task_title}</h4>
             <p className="text-xs text-slate-400">{item.reasoning}</p>
           </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Focus Blocks */}

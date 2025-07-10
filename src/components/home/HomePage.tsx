@@ -3,6 +3,7 @@ import { Project, Task, ProjectContext, ProjectStatus, TaskStatus } from '../../
 import { useAppState } from '../../contexts/AppStateContext';
 import NewTaskModal from '../tasks/NewTaskModal';
 import NewProjectModal from '../projects/NewProjectModal';
+import EditTaskModal from '../tasks/EditTaskModal';
 import OverallProgressIndicator from './OverallProgressIndicator';
 import CriticalAlertsPanel from './CriticalAlertsPanel';
 import DailyPlanDisplay from './DailyPlanDisplay';
@@ -14,7 +15,7 @@ interface HomePageProps {
 }
 
 const HomePage: React.FC<HomePageProps> = () => {
-  const { state, addTask, addProject } = useAppState();
+  const { state, addTask, addProject, updateTask } = useAppState();
   const {
     projects,
     tasks,
@@ -26,6 +27,7 @@ const HomePage: React.FC<HomePageProps> = () => {
 
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
 
   // Handlers for adding tasks and projects
   const handleAddTask = async (task: Omit<Task, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => {
@@ -43,6 +45,33 @@ const HomePage: React.FC<HomePageProps> = () => {
       console.log('✅ Project added successfully');
     } catch (error) {
       console.error('❌ Failed to add project:', error);
+    }
+  };
+
+  const handleEditTaskRequest = (task: Task) => {
+    setEditingTask(task);
+  };
+
+  const handleEditTask = async (taskId: string, updates: Partial<Task>) => {
+    try {
+      await updateTask(taskId, updates);
+      setEditingTask(null);
+      console.log('✅ Task updated successfully');
+    } catch (error) {
+      console.error('❌ Failed to update task:', error);
+    }
+  };
+
+  const handleCompleteTask = async (taskId: string) => {
+    try {
+      const task = tasks.find(t => t.id === taskId);
+      if (task) {
+        const newStatus = task.status === TaskStatus.COMPLETED ? TaskStatus.TODO : TaskStatus.COMPLETED;
+        await updateTask(taskId, { status: newStatus });
+        console.log('✅ Task status updated successfully');
+      }
+    } catch (error) {
+      console.error('❌ Failed to update task status:', error);
     }
   };
 
@@ -87,7 +116,7 @@ const HomePage: React.FC<HomePageProps> = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 mb-6">
           {/* Left Column - Daily Plan (Takes 2 columns on lg+ screens) */}
           <div className="lg:col-span-2">
-            <DailyPlanDisplay tasks={tasks} projects={projects} />
+            <DailyPlanDisplay tasks={tasks} projects={projects} onEditTaskRequest={handleEditTaskRequest} />
           </div>
           
           {/* Right Column - Critical Alerts */}
@@ -157,6 +186,19 @@ const HomePage: React.FC<HomePageProps> = () => {
           isOpen={isProjectModalOpen}
           onClose={() => setIsProjectModalOpen(false)}
           onAddProject={handleAddProject}
+        />
+      )}
+
+      {editingTask && (
+        <EditTaskModal
+          isOpen={!!editingTask}
+          onClose={() => setEditingTask(null)}
+          onUpdateTask={async (updatedTask) => {
+            await updateTask(updatedTask.id, updatedTask);
+            setEditingTask(null);
+          }}
+          task={editingTask}
+          projects={projects}
         />
       )}
     </div>

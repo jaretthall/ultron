@@ -7,6 +7,7 @@ interface TaskCardProps {
   projectTitle: string;
   onEditTaskRequest: (task: Task) => void;
   onDeleteTask: (taskId: string) => void;
+  onCompleteTask?: (taskId: string) => void;
 }
 
 const getPriorityDotClass = (priority: TaskPriority): string => {
@@ -40,7 +41,19 @@ const DeleteIconSmall: React.FC = () => (
   </svg>
 );
 
-const TaskCard: React.FC<TaskCardProps> = ({ task, projectTitle, onEditTaskRequest, onDeleteTask }) => {
+const CheckIconSmall: React.FC = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-3.5 h-3.5">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
+
+const UndoIconSmall: React.FC = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-3.5 h-3.5">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
+  </svg>
+);
+
+const TaskCard: React.FC<TaskCardProps> = ({ task, projectTitle, onEditTaskRequest, onDeleteTask, onCompleteTask }) => {
   return (
     <div 
       className={`bg-slate-800 p-4 rounded-lg shadow-md hover:shadow-sky-500/30 transition-all border-l-4 ${getStatusBorderClass(task.status)} flex flex-col justify-between min-h-[200px] hover:scale-[1.02] hover:bg-slate-750 group`}
@@ -54,6 +67,20 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, projectTitle, onEditTaskReque
           <span className={`w-3 h-3 rounded-full flex-shrink-0 mt-1 ${getPriorityDotClass(task.priority)}`} title={`Priority: ${task.priority}`}></span>
         </div>
         <div className="flex space-x-1 mb-2">
+          {onCompleteTask && (
+            <button 
+              onClick={(e) => { e.stopPropagation(); onCompleteTask(task.id); }}
+              className={`p-1 rounded focus:outline-none ${
+                task.status === 'completed' 
+                  ? 'text-green-500 hover:text-yellow-400 hover:bg-slate-700' 
+                  : 'text-slate-500 hover:text-green-400 hover:bg-slate-700'
+              }`}
+              aria-label={task.status === 'completed' ? `Mark task ${task.title} as incomplete` : `Mark task ${task.title} as complete`}
+              title={task.status === 'completed' ? 'Mark as incomplete' : 'Mark as complete'}
+            >
+              {task.status === 'completed' ? <UndoIconSmall /> : <CheckIconSmall />}
+            </button>
+          )}
           <button 
             onClick={(e) => { e.stopPropagation(); onEditTaskRequest(task); }}
             className="p-1 rounded text-slate-500 hover:text-sky-400 hover:bg-slate-700 focus:outline-none"
