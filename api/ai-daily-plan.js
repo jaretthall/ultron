@@ -91,13 +91,15 @@ export default async function handler(req, res) {
     
     // Return default plan for graceful degradation
     console.log('Returning default plan due to error:', error.message);
-    res.status(200).json({
+    const defaultResponse = {
       ...defaultPlan,
       ai_recommendations: [
         'AI planning service is temporarily unavailable. Using default schedule.',
-        'Please try refreshing the page in a few minutes.'
+        'Please check your AI provider settings or try again later.'
       ]
-    });
+    };
+    
+    res.status(200).json(defaultResponse);
   }
 }
 

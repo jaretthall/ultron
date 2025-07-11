@@ -959,8 +959,8 @@ export const schedulesService = {
     }
     
     // Clean the schedule data to match database schema
+    // Let the database generate the ID automatically
     const cleanSchedule: any = {
-      id: IdGenerator.generateScheduleId(),
       user_id: user.id,
       title: schedule.title.trim(),
       description: schedule.context ? schedule.context.trim() : '',
