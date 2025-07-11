@@ -1,8 +1,12 @@
 // Unified AI Service Layer with Provider Selection and Failover
 import { Project, Task, UserPreferences } from '../../types';
-import { generateDailyPlan as generateGeminiDailyPlan, generateWorkloadAnalysis as generateGeminiWorkloadAnalysis, DailyPlan, WorkloadAnalysis } from './geminiService';
-import { generateClaudeDailyPlan, generateClaudeWorkloadAnalysis } from './claudeService';
-import { generateOpenAIDailyPlan, generateOpenAIWorkloadAnalysis } from './openaiService';
+// TEMPORARILY COMMENTED OUT DURING AI DISABLING:
+// import { generateDailyPlan as generateGeminiDailyPlan, generateWorkloadAnalysis as generateGeminiWorkloadAnalysis, DailyPlan, WorkloadAnalysis } from './geminiService';
+// import { generateClaudeDailyPlan, generateClaudeWorkloadAnalysis } from './claudeService';
+// import { generateOpenAIDailyPlan, generateOpenAIWorkloadAnalysis } from './openaiService';
+
+// Import types only for now:
+import type { DailyPlan, WorkloadAnalysis } from './geminiService';
 
 export interface AIInsights {
   blocked_tasks: any[];
@@ -405,6 +409,7 @@ export const generateAIWorkloadAnalysis = async (
 
 // Note: Provider-specific function calls moved to unified API approach
 
+/* TEMPORARILY COMMENTED OUT DURING AI DISABLING
 const callDailyPlanProvider = async (
   provider: string,
   date: Date,
@@ -440,7 +445,9 @@ const callDailyPlanProvider = async (
     throw error;
   }
 };
+*/ // END COMMENTED OUT callDailyPlanProvider
 
+/* TEMPORARILY COMMENTED OUT DURING AI DISABLING
 const callWorkloadAnalysisProvider = async (
   provider: string,
   projects: Project[],
@@ -459,7 +466,9 @@ const callWorkloadAnalysisProvider = async (
       throw new Error(`Unsupported AI provider: ${provider}`);
   }
 };
+*/ // END COMMENTED OUT callWorkloadAnalysisProvider
 
+/* TEMPORARILY COMMENTED OUT DURING AI DISABLING
 // Default data generators for error cases
 const generateDefaultDailyPlan = (date: Date, provider: string, error: string, fallbackUsed: boolean = false): AIServiceResult<DailyPlan> => {
   return {
@@ -489,8 +498,9 @@ const generateDefaultDailyPlan = (date: Date, provider: string, error: string, f
     fallback_used: fallbackUsed
   };
 };
+*/ // END COMMENTED OUT generateDefaultDailyPlan
 
-const generateDefaultWorkloadAnalysis = (reason: string): WorkloadAnalysis => {
+const generateDefaultWorkloadAnalysis = (_reason: string): WorkloadAnalysis => {
   return {
     capacity_analysis: {
       current_workload_hours: 0,
