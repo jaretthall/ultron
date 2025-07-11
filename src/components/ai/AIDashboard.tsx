@@ -46,6 +46,12 @@ const TrendingUpIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5
   </svg>
 );
 
+const DownloadIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+  </svg>
+);
+
 const CheckCircleIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5" }) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -67,7 +73,7 @@ const AIDashboard: React.FC = () => {
   const [providerHealth, setProviderHealth] = useState<any>(null);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'insights' | 'planning' | 'workload' | 'health'>('insights');
+  const [activeTab, setActiveTab] = useState<'insights' | 'planning' | 'workload' | 'export' | 'health'>('export');
 
   // Load AI data on component mount and when dependencies change
   useEffect(() => {
@@ -457,6 +463,204 @@ const AIDashboard: React.FC = () => {
     </div>
   );
 
+  const DataExportPanel: React.FC = () => {
+    const generateAIPrompt = (type: 'business' | 'personal' | 'all') => {
+      const now = new Date();
+      const today = now.toISOString().split('T')[0];
+      const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      
+      // Get end of business week (Friday)
+      const friday = new Date(now);
+      const daysUntilFriday = (5 + 7 - now.getDay()) % 7;
+      friday.setDate(now.getDate() + daysUntilFriday);
+      const businessWeekEnd = friday.toISOString().split('T')[0];
+
+      const typeFilter = type === 'business' ? 'business and work-related' : 
+                        type === 'personal' ? 'personal' : 'all';
+      
+      const timeConstraints = type === 'business' ? 
+        'Schedule business tasks between 8:00 AM and 5:00 PM on weekdays only.' :
+        type === 'personal' ?
+        'Schedule personal tasks after 6:00 PM on weekdays and anytime on weekends.' :
+        'Schedule business tasks (8 AM-5 PM weekdays) and personal tasks (6 PM+ weekdays, anytime weekends).';
+
+      return `Please analyze this project and task data and create optimized schedules:
+
+**SCHEDULING REQUEST:**
+Create three schedules focusing on ${typeFilter} items:
+1. **Today (${today})** - Detailed hourly schedule
+2. **Tomorrow (${tomorrow})** - Detailed hourly schedule  
+3. **This Business Week (through ${businessWeekEnd})** - Daily overview
+
+**CONSTRAINTS:**
+${timeConstraints}
+
+**OUTPUT FORMAT:**
+Please format the response as Markdown that I can copy-paste into my schedule text box:
+
+\`\`\`markdown
+# Today's Schedule (${today})
+
+## Morning (8:00 AM - 12:00 PM)
+- [ ] 9:00 AM - [Task Name] - [Project] (Priority: High)
+- [ ] 10:30 AM - [Task Name] - [Project] 
+
+## Afternoon (1:00 PM - 5:00 PM)
+- [ ] 1:00 PM - [Task Name] - [Project]
+- [ ] 3:00 PM - [Task Name] - [Project]
+
+## Evening (6:00 PM+) [Personal time]
+- [ ] 7:00 PM - [Personal Task]
+
+# Tomorrow's Schedule (${tomorrow})
+[Similar format...]
+
+# This Week Overview
+## ${today} - Focus: [Key Theme]
+## ${tomorrow} - Focus: [Key Theme]
+[Continue for business week...]
+\`\`\`
+
+**DATA TO ANALYZE:**`;
+    };
+
+    const exportData = (type: 'business' | 'personal' | 'all') => {
+      const filteredProjects = type === 'all' ? projects : 
+        projects.filter(p => 
+          type === 'business' ? 
+          ['BUSINESS', 'WORK'].includes(p.context?.toUpperCase() || '') :
+          !['BUSINESS', 'WORK'].includes(p.context?.toUpperCase() || '')
+        );
+
+      const filteredTasks = type === 'all' ? tasks :
+        tasks.filter(t => {
+          const project = projects.find(p => p.id === t.project_id);
+          if (type === 'business') {
+            return ['BUSINESS', 'WORK'].includes(project?.context?.toUpperCase() || '');
+          } else {
+            return !['BUSINESS', 'WORK'].includes(project?.context?.toUpperCase() || '');
+          }
+        });
+
+      const exportData = {
+        exportInfo: {
+          type: type,
+          exportDate: new Date().toISOString(),
+          projectCount: filteredProjects.length,
+          taskCount: filteredTasks.length
+        },
+        projects: filteredProjects.map(p => ({
+          id: p.id,
+          title: p.title,
+          description: p.description,
+          status: p.status,
+          context: p.context,
+          project_context: p.project_context,
+          deadline: p.deadline,
+          goals: p.goals,
+          tags: p.tags,
+          business_relevance: p.business_relevance
+        })),
+        tasks: filteredTasks.map(t => ({
+          id: t.id,
+          title: t.title,
+          description: t.description,
+          status: t.status,
+          priority: t.priority,
+          due_date: t.due_date,
+          project_id: t.project_id,
+          project_name: projects.find(p => p.id === t.project_id)?.title || 'Unknown',
+          tags: t.tags,
+          progress: t.progress
+        }))
+      };
+
+      const promptText = generateAIPrompt(type);
+      const jsonData = JSON.stringify(exportData, null, 2);
+      const fullExport = `${promptText}\n\n\`\`\`json\n${jsonData}\n\`\`\``;
+
+      // Create and download file
+      const blob = new Blob([fullExport], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ultron-${type}-data-${new Date().toISOString().split('T')[0]}.md`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    };
+
+    return (
+      <div className="space-y-6">
+        <div className="bg-white border border-gray-200 rounded-lg p-4">
+          <h3 className="text-lg font-semibold text-gray-900 mb-3">AI Data Export</h3>
+          <p className="text-sm text-gray-600 mb-4">
+            Export your project and task data with AI prompts to generate schedules externally, then paste the results back into your homepage schedule.
+          </p>
+          
+          <div className="space-y-3">
+            <button
+              onClick={() => exportData('business')}
+              className="w-full p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center justify-center space-x-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0H8m8 0v2a2 2 0 002 2M8 6H6a2 2 0 00-2 2v8a2 2 0 002 2h2m8 0h2a2 2 0 002-2V8a2 2 0 00-2-2h-2" />
+              </svg>
+              <span>Export Business Data (8 AM - 5 PM)</span>
+            </button>
+            
+            <button
+              onClick={() => exportData('personal')}
+              className="w-full p-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center justify-center space-x-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+              <span>Export Personal Data (6 PM+ & Weekends)</span>
+            </button>
+            
+            <button
+              onClick={() => exportData('all')}
+              className="w-full p-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors flex items-center justify-center space-x-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <span>Export All Data (Complete Overview)</span>
+            </button>
+          </div>
+          
+          <div className="mt-4 p-3 bg-gray-50 rounded border">
+            <h4 className="font-medium text-gray-900 mb-2">How to Use:</h4>
+            <ol className="text-sm text-gray-700 space-y-1 list-decimal list-inside">
+              <li>Click one of the export buttons above</li>
+              <li>A markdown file will download with your data and AI prompt</li>
+              <li>Copy the entire content and paste it into ChatGPT, Claude, or your preferred AI</li>
+              <li>The AI will return a formatted schedule in Markdown</li>
+              <li>Copy the AI's response and paste it into your homepage schedule text box</li>
+            </ol>
+          </div>
+        </div>
+        
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <h4 className="font-medium text-yellow-800 mb-2">Export Details:</h4>
+          <ul className="text-sm text-yellow-700 space-y-1">
+            <li><strong>Business Export:</strong> {projects.filter(p => ['BUSINESS', 'WORK'].includes(p.context?.toUpperCase() || '')).length} projects, {tasks.filter(t => {
+              const project = projects.find(p => p.id === t.project_id);
+              return ['BUSINESS', 'WORK'].includes(project?.context?.toUpperCase() || '');
+            }).length} tasks</li>
+            <li><strong>Personal Export:</strong> {projects.filter(p => !['BUSINESS', 'WORK'].includes(p.context?.toUpperCase() || '')).length} projects, {tasks.filter(t => {
+              const project = projects.find(p => p.id === t.project_id);
+              return !['BUSINESS', 'WORK'].includes(project?.context?.toUpperCase() || '');
+            }).length} tasks</li>
+            <li><strong>Total:</strong> {projects.length} projects, {tasks.length} tasks</li>
+          </ul>
+        </div>
+      </div>
+    );
+  };
+
   const HealthPanel: React.FC = () => (
     <div className="space-y-6">
       {providerHealth ? (
@@ -574,6 +778,7 @@ const AIDashboard: React.FC = () => {
       <div className="border-b border-gray-200 mb-6">
         <nav className="flex space-x-8">
           {[
+            { id: 'export', label: 'Data Export', icon: DownloadIcon },
             { id: 'insights', label: 'Strategic Insights', icon: BrainIcon },
             { id: 'planning', label: 'Daily Planning', icon: CalendarIcon },
             { id: 'workload', label: 'Workload Analysis', icon: BarChart3Icon },
@@ -597,6 +802,7 @@ const AIDashboard: React.FC = () => {
 
       {/* Tab Content */}
       <div>
+        {activeTab === 'export' && <DataExportPanel />}
         {activeTab === 'insights' && <InsightsPanel />}
         {activeTab === 'planning' && <DailyPlanPanel />}
         {activeTab === 'workload' && <WorkloadPanel />}

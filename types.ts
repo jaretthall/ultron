@@ -192,6 +192,15 @@ export interface Plan extends UniversalSyncFields {
   user_id?: string;
 }
 
+export interface DailySchedule extends UniversalSyncFields {
+  id: string; // UUID
+  user_id: string;
+  schedule_date: string; // Date string (YYYY-MM-DD)
+  schedule_text: string; // Markdown formatted schedule
+  schedule_type: 'business' | 'personal' | 'mixed';
+  created_at?: string; // DateTime
+  updated_at?: string; // DateTime
+}
 
 // Workspace Snapshot Components
 export interface EnrichedProject extends Project {

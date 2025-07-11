@@ -7,7 +7,7 @@ import EditTaskModal from '../tasks/EditTaskModal';
 import OverallProgressIndicator from './OverallProgressIndicator';
 import CriticalAlertsPanel from './CriticalAlertsPanel';
 import ClinicalNotesAlert from './ClinicalNotesAlert';
-import DailyPlanDisplay from './DailyPlanDisplay';
+import ManualScheduleDisplay from './ManualScheduleDisplay';
 import HealthScoreWidget from './HealthScoreWidget';
 import EnhancedHomeStats from './EnhancedHomeStats';
 
@@ -99,9 +99,9 @@ const HomePage: React.FC<HomePageProps> = () => {
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 mb-6">
-          {/* Left Column - Daily Plan (Takes 2 columns on lg+ screens) */}
+          {/* Left Column - Manual Schedule (Takes 2 columns on lg+ screens) */}
           <div className="lg:col-span-2">
-            <DailyPlanDisplay tasks={tasks} projects={projects} onEditTaskRequest={handleEditTaskRequest} />
+            <ManualScheduleDisplay onEditTaskRequest={handleEditTaskRequest} />
           </div>
           
           {/* Right Column - Critical Alerts */}

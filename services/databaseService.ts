@@ -5,7 +5,7 @@ import { enhanceError } from '../src/utils/errorHandling';
 import { RetryableOperations } from '../src/utils/retryLogic';
 import { CACHE_KEYS, CACHE_TTL, cacheInvalidation, withCache } from '../src/utils/dataCache';
 import {
-  Project, Task, UserPreferences, Tag, TagCategory, Schedule,
+  Project, Task, UserPreferences, Tag, TagCategory, Schedule, DailySchedule,
   ProjectStatus, ProjectContext, TaskPriority, TaskStatus
 } from '../types';
 
@@ -1996,6 +1996,94 @@ export const subscriptions = {
    */
   getStats() {
     return realtimeManager.getStats();
+  }
+};
+
+// Daily Schedule Service
+export const dailyScheduleService = {
+  async getDailySchedule(date: string): Promise<DailySchedule | null> {
+    if (!supabase) throw new Error('Supabase client not initialized');
+    
+    const user = getCustomAuthUser();
+    if (!user?.id) throw new Error('User not authenticated');
+
+    const { data, error } = await supabase
+      .from('daily_schedules')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('schedule_date', date)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        // No schedule found for this date
+        return null;
+      }
+      handleError('fetching daily schedule', error);
+    }
+
+    return data;
+  },
+
+  async saveDailySchedule(date: string, scheduleText: string, scheduleType: 'business' | 'personal' | 'mixed' = 'mixed'): Promise<DailySchedule> {
+    if (!supabase) throw new Error('Supabase client not initialized');
+    
+    const user = getCustomAuthUser();
+    if (!user?.id) throw new Error('User not authenticated');
+
+    const scheduleData = {
+      user_id: user.id,
+      schedule_date: date,
+      schedule_text: scheduleText,
+      schedule_type: scheduleType,
+      updated_at: new Date().toISOString()
+    };
+
+    // Use upsert to insert or update
+    const { data, error } = await supabase
+      .from('daily_schedules')
+      .upsert(scheduleData, {
+        onConflict: 'user_id,schedule_date'
+      })
+      .select()
+      .single();
+
+    if (error) handleError('saving daily schedule', error);
+    
+    return data;
+  },
+
+  async deleteDailySchedule(date: string): Promise<void> {
+    if (!supabase) throw new Error('Supabase client not initialized');
+    
+    const user = getCustomAuthUser();
+    if (!user?.id) throw new Error('User not authenticated');
+
+    const { error } = await supabase
+      .from('daily_schedules')
+      .delete()
+      .eq('user_id', user.id)
+      .eq('schedule_date', date);
+
+    if (error) handleError('deleting daily schedule', error);
+  },
+
+  async getRecentSchedules(limit: number = 7): Promise<DailySchedule[]> {
+    if (!supabase) throw new Error('Supabase client not initialized');
+    
+    const user = getCustomAuthUser();
+    if (!user?.id) throw new Error('User not authenticated');
+
+    const { data, error } = await supabase
+      .from('daily_schedules')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('schedule_date', { ascending: false })
+      .limit(limit);
+
+    if (error) handleError('fetching recent schedules', error);
+    
+    return data || [];
   }
 };
 
