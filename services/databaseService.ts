@@ -869,25 +869,10 @@ export const schedulesService = {
         return [];
       }
 
+      // First, check what columns actually exist by using a simple select
       const { data, error } = await supabase
         .from('schedules')
-        .select(`
-          id,
-          user_id,
-          title,
-          context,
-          start_date,
-          end_date,
-          all_day,
-          event_type,
-          location,
-          recurring,
-          reminders,
-          blocks_work_time,
-          tags,
-          created_at,
-          updated_at
-        `)
+        .select('*')
         .eq('user_id', user.id)
         .order('start_date', { ascending: true });
       
@@ -896,12 +881,29 @@ export const schedulesService = {
         handleError('fetching schedules', error);
       }
 
-      // Convert JSONB fields back to strings for the interface
+      // Convert to expected interface format
       return (data || []).map(schedule => ({
-        ...schedule,
-        recurring: schedule.recurring ? JSON.stringify(schedule.recurring) : undefined,
-        reminders: schedule.reminders ? JSON.stringify(schedule.reminders) : undefined,
-        // tags is already an array, no conversion needed
+        id: schedule.id,
+        user_id: schedule.user_id,
+        title: schedule.title,
+        context: schedule.context || schedule.description || '',
+        start_date: schedule.start_date,
+        end_date: schedule.end_date,
+        all_day: schedule.all_day || false,
+        event_type: schedule.event_type || 'other',
+        location: schedule.location || '',
+        recurring: schedule.recurring || undefined,
+        reminders: schedule.reminders || undefined,
+        blocks_work_time: schedule.blocks_work_time || schedule.is_focus_block || false,
+        tags: schedule.tags || [],
+        created_at: schedule.created_at,
+        updated_at: schedule.updated_at,
+        task_id: schedule.task_id,
+        project_id: schedule.project_id,
+        created_by: schedule.created_by,
+        last_modified_by: schedule.last_modified_by,
+        version: schedule.version,
+        sync_status: schedule.sync_status
       }));
     } catch (err) {
       console.error('Error in schedulesService.getAll():', err);
@@ -956,40 +958,37 @@ export const schedulesService = {
       throw new Error('Invalid date format provided');
     }
     
-    // Clean the schedule data
+    // Clean the schedule data to match database schema
     const cleanSchedule: any = {
       id: IdGenerator.generateScheduleId(),
       user_id: user.id,
       title: schedule.title.trim(),
+      description: schedule.context ? schedule.context.trim() : '',
       context: schedule.context ? schedule.context.trim() : '',
       start_date: schedule.start_date,
       end_date: schedule.end_date,
       all_day: schedule.all_day || false,
       event_type: schedule.event_type || 'other',
-      location: schedule.location ? schedule.location.trim() : null,
-      recurring: null, // Simplified for now to avoid JSON parsing issues
-      reminders: null, // Simplified for now to avoid JSON parsing issues
+      location: schedule.location ? schedule.location.trim() : '',
+      recurring: '', // Use empty string to match database schema
+      reminders: '', // Use empty string to match database schema
       blocks_work_time: schedule.blocks_work_time || false,
+      is_focus_block: schedule.blocks_work_time || false,
       tags: Array.isArray(schedule.tags) ? schedule.tags : [],
+      task_id: schedule.task_id || null,
     };
 
-    // Handle JSON fields more safely
+    // Handle recurring and reminders as strings (matching database schema)
     if (schedule.recurring) {
-      try {
-        cleanSchedule.recurring = typeof schedule.recurring === 'string' ? JSON.parse(schedule.recurring) : schedule.recurring;
-      } catch (jsonError) {
-        console.warn('Invalid recurring JSON, setting to null:', schedule.recurring);
-        cleanSchedule.recurring = null;
-      }
+      cleanSchedule.recurring = typeof schedule.recurring === 'string' 
+        ? schedule.recurring 
+        : JSON.stringify(schedule.recurring);
     }
 
     if (schedule.reminders) {
-      try {
-        cleanSchedule.reminders = typeof schedule.reminders === 'string' ? JSON.parse(schedule.reminders) : schedule.reminders;
-      } catch (jsonError) {
-        console.warn('Invalid reminders JSON, setting to null:', schedule.reminders);
-        cleanSchedule.reminders = null;
-      }
+      cleanSchedule.reminders = typeof schedule.reminders === 'string' 
+        ? schedule.reminders 
+        : JSON.stringify(schedule.reminders);
     }
     
     // Note: schedules table doesn't have project_id column based on actual schema
@@ -1003,11 +1002,32 @@ export const schedulesService = {
     
     if (error) handleError('creating schedule', error);
     
-    // Convert JSONB fields back to strings for the interface
+    // Convert to expected interface format
     if (data) {
-      data.recurring = data.recurring ? JSON.stringify(data.recurring) : null;
-      data.reminders = data.reminders ? JSON.stringify(data.reminders) : null;
-      // tags is already an array, no conversion needed
+      const mappedData = {
+        id: data.id,
+        user_id: data.user_id,
+        title: data.title,
+        context: data.context || data.description || '',
+        start_date: data.start_date,
+        end_date: data.end_date,
+        all_day: data.all_day || false,
+        event_type: data.event_type || 'other',
+        location: data.location || '',
+        recurring: data.recurring || undefined,
+        reminders: data.reminders || undefined,
+        blocks_work_time: data.blocks_work_time || data.is_focus_block || false,
+        tags: data.tags || [],
+        created_at: data.created_at,
+        updated_at: data.updated_at,
+        task_id: data.task_id,
+        project_id: data.project_id,
+        created_by: data.created_by,
+        last_modified_by: data.last_modified_by,
+        version: data.version,
+        sync_status: data.sync_status
+      };
+      return mappedData;
     }
     
     return data;
