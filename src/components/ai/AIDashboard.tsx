@@ -558,13 +558,17 @@ Please format the response as Markdown that I can copy-paste into my schedule te
           
           if (type === 'business') {
             return contexts.some(ctx => 
-              ['BUSINESS', 'WORK', 'PROFESSIONAL', 'OFFICE'].includes(ctx) ||
-              ctx.includes('BUSINESS') || ctx.includes('WORK')
+              ctx && (
+                ['BUSINESS', 'WORK', 'PROFESSIONAL', 'OFFICE'].includes(ctx) ||
+                ctx.includes('BUSINESS') || ctx.includes('WORK')
+              )
             );
           } else {
             return contexts.some(ctx => 
-              ['PERSONAL', 'HOME', 'FAMILY'].includes(ctx) ||
-              ctx.includes('PERSONAL') || ctx.includes('HOME')
+              ctx && (
+                ['PERSONAL', 'HOME', 'FAMILY'].includes(ctx) ||
+                ctx.includes('PERSONAL') || ctx.includes('HOME')
+              )
             ) || contexts.length === 0; // Include uncategorized as personal
           }
         });
@@ -585,13 +589,17 @@ Please format the response as Markdown that I can copy-paste into my schedule te
           
           if (type === 'business') {
             return taskContexts.some(ctx => 
-              ['BUSINESS', 'WORK', 'PROFESSIONAL', 'OFFICE'].includes(ctx) ||
-              ctx.includes('BUSINESS') || ctx.includes('WORK')
+              ctx && (
+                ['BUSINESS', 'WORK', 'PROFESSIONAL', 'OFFICE'].includes(ctx) ||
+                ctx.includes('BUSINESS') || ctx.includes('WORK')
+              )
             );
           } else {
             return taskContexts.some(ctx => 
-              ['PERSONAL', 'HOME', 'FAMILY'].includes(ctx) ||
-              ctx.includes('PERSONAL') || ctx.includes('HOME')
+              ctx && (
+                ['PERSONAL', 'HOME', 'FAMILY'].includes(ctx) ||
+                ctx.includes('PERSONAL') || ctx.includes('HOME')
+              )
             ) || taskContexts.length === 0; // Include uncategorized as personal
           }
         });

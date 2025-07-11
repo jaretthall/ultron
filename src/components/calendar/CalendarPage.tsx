@@ -572,6 +572,7 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ onTaskClick, onEditTask }) 
           isOpen={showCounselingModal}
           onClose={() => setShowCounselingModal(false)}
           onAddCounselingSession={handleAddCounselingSession}
+          projects={projects}
           defaultDate={selectedDate || undefined}
         />
       )}

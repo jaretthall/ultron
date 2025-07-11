@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Schedule, Task, TaskPriority, TaskStatus } from '../../../types';
+import { Schedule, Task, Project, TaskPriority, TaskStatus } from '../../../types';
 import { formatDateForInput } from '../../utils/dateUtils';
 import LoadingSpinner from '../LoadingSpinner';
 
@@ -10,6 +10,7 @@ interface CounselingSessionModalProps {
     session: Omit<Schedule, 'id' | 'created_at' | 'updated_at'>,
     progressNote: Omit<Task, 'id' | 'created_at' | 'updated_at'>
   ) => void;
+  projects: Project[];
   defaultDate?: Date;
 }
 
@@ -17,6 +18,7 @@ const CounselingSessionModal: React.FC<CounselingSessionModalProps> = ({
   isOpen,
   onClose,
   onAddCounselingSession,
+  projects,
   defaultDate
 }) => {
   const [title, setTitle] = useState('Counseling Session');
@@ -80,6 +82,18 @@ const CounselingSessionModal: React.FC<CounselingSessionModalProps> = ({
         tags: ['therapy', 'counseling'],
       };
 
+      // Find the "Therapy Notes" project to assign the progress note to
+      const therapyNotesProject = projects.find(p => 
+        p.title.toLowerCase().includes('therapy') && p.title.toLowerCase().includes('notes')
+      );
+      
+      if (therapyNotesProject) {
+        console.log(`📋 Assigning progress note to project: ${therapyNotesProject.title}`);
+      } else {
+        console.log('⚠️ Therapy Notes project not found. Progress note will not be assigned to a project.');
+        console.log('Available projects:', projects.map(p => p.title));
+      }
+
       const progressNoteTask: Omit<Task, 'id' | 'created_at' | 'updated_at'> = {
         title: `Progress Note - ${date}`,
         context: `Write therapy progress note for counseling session conducted on ${date}. Include client progress, session goals, interventions used, and next steps.`,
@@ -87,6 +101,7 @@ const CounselingSessionModal: React.FC<CounselingSessionModalProps> = ({
         estimated_hours: 0.5,
         status: TaskStatus.TODO,
         due_date: date,
+        project_id: therapyNotesProject?.id, // Assign to Therapy Notes project if found
         tags: ['progress-note', 'therapy', 'documentation'],
         dependencies: [],
         energy_level: 'low',
