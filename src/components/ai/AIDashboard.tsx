@@ -525,22 +525,79 @@ Please format the response as Markdown that I can copy-paste into my schedule te
     };
 
     const exportData = (type: 'business' | 'personal' | 'all') => {
+      // Debug: Log all projects and tasks to understand the data structure
+      console.log('=== EXPORT DEBUG ===');
+      console.log('Export type:', type);
+      console.log('Total projects:', projects.length);
+      console.log('Total tasks:', tasks.length);
+      
+      if (projects.length > 0) {
+        console.log('Sample project structure:', projects[0]);
+        console.log('All project contexts:', projects.map(p => ({ title: p.title, context: p.context, project_context: p.project_context })));
+      }
+      
+      if (tasks.length > 0) {
+        console.log('Sample task structure:', tasks[0]);
+        tasks.forEach(t => {
+          const project = projects.find(p => p.id === t.project_id);
+          console.log(`Task "${t.title}" -> Project context: ${project?.context || 'none'}, Project project_context: ${project?.project_context || 'none'}`);
+        });
+      }
+
+      // Try multiple filtering approaches to catch the data
       const filteredProjects = type === 'all' ? projects : 
-        projects.filter(p => 
-          type === 'business' ? 
-          ['BUSINESS', 'WORK'].includes(p.context?.toUpperCase() || '') :
-          !['BUSINESS', 'WORK'].includes(p.context?.toUpperCase() || '')
-        );
+        projects.filter(p => {
+          const contexts = [
+            p.context?.toUpperCase(),
+            p.project_context?.toUpperCase(),
+            p.context,
+            p.project_context
+          ].filter(Boolean);
+          
+          console.log(`Project "${p.title}" contexts:`, contexts);
+          
+          if (type === 'business') {
+            return contexts.some(ctx => 
+              ['BUSINESS', 'WORK', 'PROFESSIONAL', 'OFFICE'].includes(ctx) ||
+              ctx.includes('BUSINESS') || ctx.includes('WORK')
+            );
+          } else {
+            return contexts.some(ctx => 
+              ['PERSONAL', 'HOME', 'FAMILY'].includes(ctx) ||
+              ctx.includes('PERSONAL') || ctx.includes('HOME')
+            ) || contexts.length === 0; // Include uncategorized as personal
+          }
+        });
 
       const filteredTasks = type === 'all' ? tasks :
         tasks.filter(t => {
           const project = projects.find(p => p.id === t.project_id);
+          
+          // Also check task-level context if it exists
+          const taskContexts = [
+            t.context?.toUpperCase(),
+            t.task_context?.toUpperCase(),
+            project?.context?.toUpperCase(),
+            project?.project_context?.toUpperCase()
+          ].filter(Boolean);
+          
+          console.log(`Task "${t.title}" contexts:`, taskContexts);
+          
           if (type === 'business') {
-            return ['BUSINESS', 'WORK'].includes(project?.context?.toUpperCase() || '');
+            return taskContexts.some(ctx => 
+              ['BUSINESS', 'WORK', 'PROFESSIONAL', 'OFFICE'].includes(ctx) ||
+              ctx.includes('BUSINESS') || ctx.includes('WORK')
+            );
           } else {
-            return !['BUSINESS', 'WORK'].includes(project?.context?.toUpperCase() || '');
+            return taskContexts.some(ctx => 
+              ['PERSONAL', 'HOME', 'FAMILY'].includes(ctx) ||
+              ctx.includes('PERSONAL') || ctx.includes('HOME')
+            ) || taskContexts.length === 0; // Include uncategorized as personal
           }
         });
+      
+      console.log(`Filtered results: ${filteredProjects.length} projects, ${filteredTasks.length} tasks`);
+      console.log('=== END DEBUG ===');
 
       const exportData = {
         exportInfo: {
@@ -629,6 +686,16 @@ Please format the response as Markdown that I can copy-paste into my schedule te
               </svg>
               <span>Export All Data (Complete Overview)</span>
             </button>
+            
+            <button
+              onClick={() => {
+                console.log('Raw data check:', { projects, tasks });
+                alert(`Found ${projects.length} projects and ${tasks.length} tasks. Check console for details.`);
+              }}
+              className="w-full p-2 bg-gray-500 hover:bg-gray-600 text-white rounded transition-colors text-sm"
+            >
+              🔍 Debug: Check Raw Data
+            </button>
           </div>
           
           <div className="mt-4 p-3 bg-gray-50 rounded border">
@@ -646,15 +713,11 @@ Please format the response as Markdown that I can copy-paste into my schedule te
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
           <h4 className="font-medium text-yellow-800 mb-2">Export Details:</h4>
           <ul className="text-sm text-yellow-700 space-y-1">
-            <li><strong>Business Export:</strong> {projects.filter(p => ['BUSINESS', 'WORK'].includes(p.context?.toUpperCase() || '')).length} projects, {tasks.filter(t => {
-              const project = projects.find(p => p.id === t.project_id);
-              return ['BUSINESS', 'WORK'].includes(project?.context?.toUpperCase() || '');
-            }).length} tasks</li>
-            <li><strong>Personal Export:</strong> {projects.filter(p => !['BUSINESS', 'WORK'].includes(p.context?.toUpperCase() || '')).length} projects, {tasks.filter(t => {
-              const project = projects.find(p => p.id === t.project_id);
-              return !['BUSINESS', 'WORK'].includes(project?.context?.toUpperCase() || '');
-            }).length} tasks</li>
-            <li><strong>Total:</strong> {projects.length} projects, {tasks.length} tasks</li>
+            <li><strong>Total Available:</strong> {projects.length} projects, {tasks.length} tasks</li>
+            <li><strong>Note:</strong> Export filters by business/personal context - check console for filtering debug info</li>
+            {projects.length === 0 && tasks.length === 0 && (
+              <li><strong>⚠️ No data found:</strong> Make sure you have created some projects and tasks first</li>
+            )}
           </ul>
         </div>
       </div>
