@@ -53,17 +53,78 @@ const UndoIconSmall: React.FC = () => (
   </svg>
 );
 
+const ClinicalNoteIcon: React.FC = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-4 h-4">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+  </svg>
+);
+
 const TaskCard: React.FC<TaskCardProps> = ({ task, projectTitle, onEditTaskRequest, onDeleteTask, onCompleteTask }) => {
+  // Helper function to identify clinical/progress note tasks
+  const isClinicalNote = (task: Task): boolean => {
+    return task.tags?.includes('progress-note') ||
+           task.tags?.includes('therapy') ||
+           task.tags?.includes('documentation') ||
+           task.title.toLowerCase().includes('progress note') ||
+           task.title.toLowerCase().includes('clinical') ||
+           task.title.toLowerCase().includes('therapy note');
+  };
+
+  // Helper function to check if task is overdue
+  const isOverdue = (task: Task): boolean => {
+    if (!task.due_date) return false;
+    const dueDate = new Date(task.due_date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return dueDate < today;
+  };
+
+  const isClinical = isClinicalNote(task);
+  const taskOverdue = isOverdue(task);
+  
+  // Special styling for clinical notes
+  const getCardClasses = () => {
+    let baseClasses = `p-4 rounded-lg shadow-md transition-all border-l-4 flex flex-col justify-between min-h-[200px] hover:scale-[1.02] group`;
+    
+    if (isClinical) {
+      if (taskOverdue && task.status !== TaskStatus.COMPLETED) {
+        return `${baseClasses} bg-red-900/30 border-red-400 hover:shadow-red-400/50 shadow-red-500/20 animate-pulse ring-2 ring-red-500/30`;
+      } else if (task.status !== TaskStatus.COMPLETED) {
+        return `${baseClasses} bg-blue-900/30 border-blue-400 hover:shadow-blue-400/50 shadow-blue-500/20 ring-1 ring-blue-500/20`;
+      }
+    }
+    
+    return `${baseClasses} bg-slate-800 hover:shadow-sky-500/30 hover:bg-slate-750 ${getStatusBorderClass(task.status)}`;
+  };
+
   return (
     <div 
-      className={`bg-slate-800 p-4 rounded-lg shadow-md hover:shadow-sky-500/30 transition-all border-l-4 ${getStatusBorderClass(task.status)} flex flex-col justify-between min-h-[200px] hover:scale-[1.02] hover:bg-slate-750 group`}
+      className={getCardClasses()}
       aria-label={`Task: ${task.title}`}
     >
       <div>
         <div className="flex justify-between items-start mb-1">
-          <h4 className={`text-md font-semibold text-slate-100 group-hover:text-sky-400 ${task.status === TaskStatus.COMPLETED ? 'line-through text-slate-500' : ''}`}>
-            {task.title}
-          </h4>
+          <div className="flex items-start space-x-2 flex-1 min-w-0">
+            {isClinical && (
+              <div className={`flex-shrink-0 mt-0.5 ${taskOverdue && task.status !== TaskStatus.COMPLETED ? 'text-red-300' : 'text-blue-300'}`}>
+                <ClinicalNoteIcon />
+              </div>
+            )}
+            <h4 className={`text-md font-semibold flex-1 ${
+              isClinical 
+                ? taskOverdue && task.status !== TaskStatus.COMPLETED 
+                  ? 'text-red-100 group-hover:text-red-200' 
+                  : 'text-blue-100 group-hover:text-blue-200'
+                : 'text-slate-100 group-hover:text-sky-400'
+            } ${task.status === TaskStatus.COMPLETED ? 'line-through text-slate-500' : ''}`}>
+              {task.title}
+              {isClinical && taskOverdue && task.status !== TaskStatus.COMPLETED && (
+                <span className="ml-2 text-xs bg-red-600 text-white px-2 py-0.5 rounded-full animate-pulse">
+                  OVERDUE
+                </span>
+              )}
+            </h4>
+          </div>
           <span className={`w-3 h-3 rounded-full flex-shrink-0 mt-1 ${getPriorityDotClass(task.priority)}`} title={`Priority: ${task.priority}`}></span>
         </div>
         <div className="flex space-x-1 mb-2">
@@ -120,15 +181,41 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, projectTitle, onEditTaskReque
       <div className="mt-auto">
         {task.tags && task.tags.length > 0 && (
             <div className="mb-2 flex flex-wrap gap-1">
-            {task.tags.slice(0, 3).map(tag => ( // Show max 3 tags
-                <span key={tag} className="px-1.5 py-0.5 text-[10px] bg-slate-700 text-slate-300 rounded-full">{tag}</span>
-            ))}
+            {task.tags.slice(0, 3).map(tag => {
+              const isClinicalTag = ['progress-note', 'therapy', 'documentation', 'clinical'].includes(tag.toLowerCase());
+              return (
+                <span 
+                  key={tag} 
+                  className={`px-1.5 py-0.5 text-[10px] rounded-full ${
+                    isClinicalTag 
+                      ? 'bg-blue-600/80 text-blue-100 border border-blue-400/50' 
+                      : 'bg-slate-700 text-slate-300'
+                  }`}
+                >
+                  {tag}
+                </span>
+              );
+            })}
             </div>
         )}
-        <div className="text-xs text-slate-500 border-t border-slate-700 pt-2">
+        <div className={`text-xs border-t pt-2 ${isClinical ? 'border-blue-600/30' : 'border-slate-700'} text-slate-500`}>
           <p>Project: <span className="font-medium text-slate-400">{projectTitle}</span></p>
-          <p>Due: <span className="font-medium text-slate-400">{task.due_date ? new Date(task.due_date).toLocaleDateString() : 'N/A'}</span></p>
-          <p>Status: <span className="font-medium text-slate-400">{task.status.replace('-', ' ')}</span></p>
+          <p>Due: <span className={`font-medium ${
+            isClinical && taskOverdue && task.status !== TaskStatus.COMPLETED 
+              ? 'text-red-300 animate-pulse' 
+              : isClinical 
+                ? 'text-blue-300' 
+                : 'text-slate-400'
+          }`}>
+            {task.due_date ? new Date(task.due_date).toLocaleDateString() : 'N/A'}
+            {isClinical && taskOverdue && task.status !== TaskStatus.COMPLETED && (
+              <span className="ml-1 text-red-400">⚠️</span>
+            )}
+          </span></p>
+          <p>Status: <span className={`font-medium ${isClinical ? 'text-blue-300' : 'text-slate-400'}`}>{task.status.replace('-', ' ')}</span></p>
+          {isClinical && (
+            <p className="text-[10px] text-blue-400 mt-1 font-medium">📋 Clinical Documentation</p>
+          )}
           <p className="text-[10px] text-slate-600 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Click to edit</p>
         </div>
       </div>

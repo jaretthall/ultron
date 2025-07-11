@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Task, Project } from '../../../types';
 import { generateAIDailyPlan, AIServiceResult, DailyPlan } from '../../services/aiService';
 import { useAppState } from '../../contexts/AppStateContext';
@@ -66,11 +66,12 @@ const DailyPlanDisplay: React.FC<DailyPlanDisplayProps> = ({ tasks, projects, on
     }
   };
 
-  useEffect(() => {
-    if (tasks.length > 0) {
-      generateDailyPlan(selectedDate);
-    }
-  }, [selectedDate, tasks.length]);
+  // Temporarily disable auto-generation to prevent 502 errors
+  // useEffect(() => {
+  //   if (tasks.length > 0 && !dailyPlan) {
+  //     generateDailyPlan(selectedDate);
+  //   }
+  // }, [selectedDate]);
 
   const formatTime = (timeString: string) => {
     const [hours, minutes] = timeString.split(':');

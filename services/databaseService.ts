@@ -1003,20 +1003,29 @@ export const schedulesService = {
       .single();
     
     if (error) {
-      console.error('Supabase insert error:', error);
+      console.error('Supabase insert error details:', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      });
       
       // Handle specific error types
       if (error.code === '23505') {
-        throw new Error('A schedule with this information already exists');
+        throw new Error('A schedule with this information already exists. Please modify the title or time.');
       }
       if (error.code === '42501') {
         throw new Error('Permission denied. Please check your authentication.');
       }
-      if (error.message.includes('RLS')) {
-        throw new Error('Row level security policy violation. Please check your permissions.');
+      if (error.message?.includes('RLS') || error.message?.includes('policy')) {
+        throw new Error('Database permission error. Please contact support.');
+      }
+      if (error.message?.includes('duplicate')) {
+        throw new Error('This schedule conflicts with an existing entry. Please check your calendar.');
       }
       
-      handleError('creating schedule', error);
+      // Generic error handling with more details
+      throw new Error(`Database error: ${error.message || 'Unable to create schedule. Please try again.'}`);
     }
     
     // Convert to expected interface format

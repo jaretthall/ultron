@@ -6,6 +6,7 @@ import NewProjectModal from '../projects/NewProjectModal';
 import EditTaskModal from '../tasks/EditTaskModal';
 import OverallProgressIndicator from './OverallProgressIndicator';
 import CriticalAlertsPanel from './CriticalAlertsPanel';
+import ClinicalNotesAlert from './ClinicalNotesAlert';
 import DailyPlanDisplay from './DailyPlanDisplay';
 import HealthScoreWidget from './HealthScoreWidget';
 import EnhancedHomeStats from './EnhancedHomeStats';
@@ -89,6 +90,11 @@ const HomePage: React.FC<HomePageProps> = () => {
         {/* Top Row - Progress Overview */}
         <div className="mb-6">
           <OverallProgressIndicator projects={projects} tasks={tasks} />
+        </div>
+
+        {/* Clinical Notes Alert - High Priority */}
+        <div className="mb-6">
+          <ClinicalNotesAlert tasks={tasks} onTaskClick={handleEditTaskRequest} />
         </div>
 
         {/* Main Content Grid */}

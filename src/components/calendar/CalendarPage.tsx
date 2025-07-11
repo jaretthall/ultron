@@ -6,6 +6,7 @@ import NewTaskModal from '../tasks/NewTaskModal';
 import NewEventModal from './NewEventModal';
 import EditEventModal from './EditEventModal';
 import CounselingSessionModal from './CounselingSessionModal';
+import TestScheduleCreation from './TestScheduleCreation';
 import TaskScheduler from './TaskScheduler';
 import WorkingHoursManager from './WorkingHoursManager';
 import FocusBlockManager from './FocusBlockManager';
@@ -231,6 +232,13 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ onTaskClick, onEditTask }) 
             <h1 className="text-3xl font-bold">Calendar</h1>
             <p className="text-slate-400 mt-1">Visual calendar view of task due dates and intelligent scheduling.</p>
           </div>
+        </div>
+        
+        {/* Temporary test component */}
+        <TestScheduleCreation />
+        
+        <div className="flex justify-between items-center mb-4">
+          <div></div>
           <div className="flex items-center gap-2 flex-wrap">
             {/* Primary actions - always visible */}
             <button
