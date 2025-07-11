@@ -1,12 +1,8 @@
 // Unified AI Service Layer with Provider Selection and Failover
 import { Project, Task, UserPreferences } from '../../types';
-// TEMPORARILY COMMENTED OUT DURING AI DISABLING:
-// import { generateDailyPlan as generateGeminiDailyPlan, generateWorkloadAnalysis as generateGeminiWorkloadAnalysis, DailyPlan, WorkloadAnalysis } from './geminiService';
-// import { generateClaudeDailyPlan, generateClaudeWorkloadAnalysis } from './claudeService';
-// import { generateOpenAIDailyPlan, generateOpenAIWorkloadAnalysis } from './openaiService';
-
-// Import types only for now:
-import type { DailyPlan, WorkloadAnalysis } from './geminiService';
+import { generateDailyPlan as generateGeminiDailyPlan, generateWorkloadAnalysis as generateGeminiWorkloadAnalysis, DailyPlan, WorkloadAnalysis } from './geminiService';
+import { generateClaudeDailyPlan, generateClaudeWorkloadAnalysis } from './claudeService';
+import { generateOpenAIDailyPlan, generateOpenAIWorkloadAnalysis } from './openaiService';
 
 export interface AIInsights {
   blocked_tasks: any[];
@@ -65,23 +61,7 @@ export const generateAIInsights = async (
   userPreferences: UserPreferences,
   allowFallback: boolean = true
 ): Promise<AIServiceResult<AIInsights>> => {
-  // TEMPORARY: Disable AI calls to prevent 502 errors during development
-  console.warn('AI Insights generation temporarily disabled to prevent 502 errors');
-  console.log('Received params:', { projects: projects.length, tasks: tasks.length, userPreferences: !!userPreferences, allowFallback });
-  return {
-    data: {
-      blocked_tasks: [],
-      projects_needing_attention: [],
-      recommendations: ['AI insights temporarily disabled for development', 'Click "Refresh" button to manually request AI analysis when needed'],
-      focus_recommendations: ['Configure AI providers in settings for intelligent insights'],
-      priority_balance_score: 75
-    },
-    provider_used: 'disabled',
-    success: true,
-    error: undefined
-  };
-
-  /* COMMENTED OUT TO PREVENT 502 ERRORS
+  /* AI SERVICE ENABLED */
   const primaryProvider = userPreferences.ai_provider || 'gemini';
   let currentProvider: string | null = primaryProvider;
   let result: AIServiceResult<AIInsights> | null = null;
@@ -186,7 +166,7 @@ export const generateAIInsights = async (
     success: false,
     error: 'No providers available'
   };
-  */ // END COMMENTED OUT SECTION
+  /* END AI SERVICE */
 };
 
 // Unified daily plan generation with fallback
@@ -227,7 +207,6 @@ export const generateAIDailyPlan = async (
     error: undefined
   };
   
-  /* COMMENTED OUT TO PREVENT 502 ERRORS
   const primaryProvider = userPreferences.ai_provider || 'gemini';
   
   // Check if primary provider is available
@@ -309,7 +288,7 @@ export const generateAIDailyPlan = async (
     // All providers failed
     return generateDefaultDailyPlan(date, primaryProvider, error instanceof Error ? error.message : 'Unknown error');
   }
-  */ // END COMMENTED OUT SECTION
+  /* END AI SERVICE */
 };
 
 // Unified workload analysis with fallback
@@ -330,7 +309,6 @@ export const generateAIWorkloadAnalysis = async (
     error: undefined
   };
 
-  /* COMMENTED OUT TO PREVENT 502 ERRORS
   const primaryProvider = userPreferences.ai_provider || 'gemini';
   
   // Check if primary provider is available
@@ -404,12 +382,11 @@ export const generateAIWorkloadAnalysis = async (
       error: error instanceof Error ? error.message : 'Unknown error'
     };
   }
-  */ // END COMMENTED OUT SECTION
+  /* END AI SERVICE */
 };
 
 // Note: Provider-specific function calls moved to unified API approach
 
-/* TEMPORARILY COMMENTED OUT DURING AI DISABLING
 const callDailyPlanProvider = async (
   provider: string,
   date: Date,
@@ -445,9 +422,7 @@ const callDailyPlanProvider = async (
     throw error;
   }
 };
-*/ // END COMMENTED OUT callDailyPlanProvider
 
-/* TEMPORARILY COMMENTED OUT DURING AI DISABLING
 const callWorkloadAnalysisProvider = async (
   provider: string,
   projects: Project[],
@@ -466,9 +441,7 @@ const callWorkloadAnalysisProvider = async (
       throw new Error(`Unsupported AI provider: ${provider}`);
   }
 };
-*/ // END COMMENTED OUT callWorkloadAnalysisProvider
 
-/* TEMPORARILY COMMENTED OUT DURING AI DISABLING
 // Default data generators for error cases
 const generateDefaultDailyPlan = (date: Date, provider: string, error: string, fallbackUsed: boolean = false): AIServiceResult<DailyPlan> => {
   return {
@@ -498,7 +471,6 @@ const generateDefaultDailyPlan = (date: Date, provider: string, error: string, f
     fallback_used: fallbackUsed
   };
 };
-*/ // END COMMENTED OUT generateDefaultDailyPlan
 
 const generateDefaultWorkloadAnalysis = (_reason: string): WorkloadAnalysis => {
   return {

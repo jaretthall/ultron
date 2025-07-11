@@ -488,12 +488,28 @@ const AIDashboard: React.FC = () => {
 
 **SCHEDULING REQUEST:**
 Create three schedules focusing on ${typeFilter} items:
-1. **Today (${today})** - Detailed hourly schedule
-2. **Tomorrow (${tomorrow})** - Detailed hourly schedule  
-3. **This Business Week (through ${businessWeekEnd})** - Daily overview
+1. **Today (${today})** - Detailed hourly schedule with time blocks
+2. **Tomorrow (${tomorrow})** - Detailed hourly schedule with time blocks
+3. **This Business Week (through ${businessWeekEnd})** - Daily overview with focus themes
 
-**CONSTRAINTS:**
+**OPTIMIZATION PRINCIPLES:**
+- **Time Estimation**: Assign realistic durations based on task complexity (15min-4hrs)
+- **Priority Weighting**: High priority tasks get prime time slots (9-11 AM, 1-3 PM)
+- **Energy Management**: Match cognitively demanding tasks to high-energy periods
+- **Context Switching**: Group similar tasks together to minimize mental overhead
+- **Buffer Time**: Include 15-minute buffers between different task types
+- **Progress Awareness**: Factor in existing task progress (e.g., 56% complete = shorter time)
+- **Deadline Pressure**: Prioritize overdue tasks and those due within 3 days
+
+**TIME CONSTRAINTS:**
 ${timeConstraints}
+
+**TASK DURATION GUIDELINES:**
+- Progress notes, documentation: 30-45 minutes
+- Administrative tasks (credentialing, office): 1-2 hours
+- Creative work (brochures, media): 2-3 hours
+- Facility/construction tasks: 1-4 hours depending on complexity
+- High-progress tasks (>50% complete): Reduce estimated time by 40%
 
 **OUTPUT FORMAT:**
 Please format the response as Markdown that I can copy-paste into my schedule text box:
@@ -501,25 +517,35 @@ Please format the response as Markdown that I can copy-paste into my schedule te
 \`\`\`markdown
 # Today's Schedule (${today})
 
-## Morning (8:00 AM - 12:00 PM)
-- [ ] 9:00 AM - [Task Name] - [Project] (Priority: High)
-- [ ] 10:30 AM - [Task Name] - [Project] 
+## Morning High-Energy Block (8:00 AM - 12:00 PM)
+- [ ] 9:00 AM - 10:15 AM (1h 15m) - [Task Name] - [Project] (Priority: High, Due: Date)
+- [ ] 10:30 AM - 11:45 AM (1h 15m) - [Task Name] - [Project] (Progress: X%)
 
-## Afternoon (1:00 PM - 5:00 PM)
-- [ ] 1:00 PM - [Task Name] - [Project]
-- [ ] 3:00 PM - [Task Name] - [Project]
+## Afternoon Focus Block (1:00 PM - 5:00 PM)
+- [ ] 1:00 PM - 2:00 PM (1h) - [Task Name] - [Project] (Context: Admin)
+- [ ] 2:15 PM - 3:30 PM (1h 15m) - [Task Name] - [Project]
+- [ ] 3:45 PM - 4:30 PM (45m) - [Quick Task] - [Project]
 
-## Evening (6:00 PM+) [Personal time]
-- [ ] 7:00 PM - [Personal Task]
+## Evening Personal Time (6:00 PM+)
+- [ ] 7:00 PM - 8:00 PM (1h) - [Personal Task]
+
+**Today's Focus**: [Primary theme based on urgent deadlines and high-priority projects]
 
 # Tomorrow's Schedule (${tomorrow})
-[Similar format...]
+[Same detailed format with time blocks and durations...]
 
 # This Week Overview
-## ${today} - Focus: [Key Theme]
-## ${tomorrow} - Focus: [Key Theme]
-[Continue for business week...]
+## ${today} - Focus: [Key Theme] | Priority: [Top 2-3 tasks]
+## ${tomorrow} - Focus: [Key Theme] | Priority: [Top 2-3 tasks]
+[Continue for business week with daily themes and top priorities...]
 \`\`\`
+
+**ANALYSIS INSTRUCTIONS:**
+1. **Prioritize by**: Due dates (overdue first), business_relevance score (10=highest), task progress
+2. **Time Allocation**: Reserve 25% of schedule for urgent/unexpected items
+3. **Grouping Logic**: Batch similar contexts (therapy notes together, admin tasks together)
+4. **Energy Matching**: Complex creative work in morning, routine tasks in afternoon
+5. **Realistic Scheduling**: Account for meetings, breaks, and transition time
 
 **DATA TO ANALYZE:**`;
     };

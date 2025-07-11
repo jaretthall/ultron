@@ -1,13 +1,13 @@
 Please analyze this project and task data and create optimized schedules:
 
 **SCHEDULING REQUEST:**
-Create three schedules focusing on business and work-related items:
+Create three schedules focusing on all items:
 1. **Today (2025-07-11)** - Detailed hourly schedule
 2. **Tomorrow (2025-07-12)** - Detailed hourly schedule  
 3. **This Business Week (through 2025-07-11)** - Daily overview
 
 **CONSTRAINTS:**
-Schedule business tasks between 8:00 AM and 5:00 PM on weekdays only.
+Schedule business tasks (8 AM-5 PM weekdays) and personal tasks (6 PM+ weekdays, anytime weekends).
 
 **OUTPUT FORMAT:**
 Please format the response as Markdown that I can copy-paste into my schedule text box:
@@ -40,8 +40,8 @@ Please format the response as Markdown that I can copy-paste into my schedule te
 ```json
 {
   "exportInfo": {
-    "type": "business",
-    "exportDate": "2025-07-11T22:53:53.531Z",
+    "type": "all",
+    "exportDate": "2025-07-11T22:34:11.003Z",
     "projectCount": 6,
     "taskCount": 12
   },
@@ -49,10 +49,10 @@ Please format the response as Markdown that I can copy-paste into my schedule te
     {
       "id": "ae3e4b8a-74ed-4e83-86c3-871c0610b0c1",
       "title": "Facilities",
-      "description": "",
+      "description": null,
       "status": "active",
       "context": "",
-      "project_context": "business",
+      "project_context": "personal",
       "deadline": null,
       "goals": [],
       "tags": [],
@@ -61,10 +61,10 @@ Please format the response as Markdown that I can copy-paste into my schedule te
     {
       "id": "feba9f77-41e5-40af-aced-580b4995c569",
       "title": "Clinica Medicos",
-      "description": "",
+      "description": null,
       "status": "active",
       "context": "",
-      "project_context": "business",
+      "project_context": "personal",
       "deadline": null,
       "goals": [],
       "tags": [],
@@ -73,10 +73,10 @@ Please format the response as Markdown that I can copy-paste into my schedule te
     {
       "id": "b85638a2-1dd9-4d28-a365-1ca759110ba2",
       "title": "Therapy Notes",
-      "description": "",
+      "description": null,
       "status": "active",
       "context": "",
-      "project_context": "business",
+      "project_context": "personal",
       "deadline": null,
       "goals": [
         "Try to finish the notes the same day as the counseling event session, but if not the next day."
@@ -87,10 +87,10 @@ Please format the response as Markdown that I can copy-paste into my schedule te
     {
       "id": "dd97ea12-f3b5-49b5-949f-43a748a8fe1b",
       "title": "Tech",
-      "description": "",
+      "description": null,
       "status": "active",
       "context": "",
-      "project_context": "business",
+      "project_context": "personal",
       "deadline": null,
       "goals": [],
       "tags": [],
@@ -99,10 +99,10 @@ Please format the response as Markdown that I can copy-paste into my schedule te
     {
       "id": "855b35c6-88c1-4b15-8cbe-f8a9af2623c3",
       "title": "1148",
-      "description": "",
+      "description": null,
       "status": "active",
       "context": "This contains everything that needs to be done inside of phase 2 and 3 of the new Clinic build out.",
-      "project_context": "business",
+      "project_context": "personal",
       "deadline": null,
       "goals": [],
       "tags": [
@@ -115,10 +115,10 @@ Please format the response as Markdown that I can copy-paste into my schedule te
     {
       "id": "0e92f643-e577-4591-a6d6-63cddddcdaec",
       "title": "Renuevo",
-      "description": "",
+      "description": null,
       "status": "active",
       "context": "This contains all the tasks that have to do with the Behavioral Health Team and Initiative.",
-      "project_context": "business",
+      "project_context": "personal",
       "deadline": null,
       "goals": [],
       "tags": [],
