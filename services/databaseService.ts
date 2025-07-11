@@ -994,13 +994,30 @@ export const schedulesService = {
     // Note: schedules table doesn't have project_id column based on actual schema
     // Removed project_id assignment since column doesn't exist
     
+    console.log('Attempting to insert schedule:', cleanSchedule);
+    
     const { data, error } = await supabase
       .from('schedules')
       .insert([cleanSchedule])
       .select()
       .single();
     
-    if (error) handleError('creating schedule', error);
+    if (error) {
+      console.error('Supabase insert error:', error);
+      
+      // Handle specific error types
+      if (error.code === '23505') {
+        throw new Error('A schedule with this information already exists');
+      }
+      if (error.code === '42501') {
+        throw new Error('Permission denied. Please check your authentication.');
+      }
+      if (error.message.includes('RLS')) {
+        throw new Error('Row level security policy violation. Please check your permissions.');
+      }
+      
+      handleError('creating schedule', error);
+    }
     
     // Convert to expected interface format
     if (data) {

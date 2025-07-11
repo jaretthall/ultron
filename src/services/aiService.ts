@@ -352,15 +352,31 @@ const callDailyPlanProvider = async (
   userPreferences: UserPreferences,
   focusBlockData?: any[]
 ): Promise<DailyPlan> => {
-  switch (provider) {
-    case 'gemini':
-      return await generateGeminiDailyPlan(date, projects, tasks, userPreferences, focusBlockData);
-    case 'claude':
-      return await generateClaudeDailyPlan(date, projects, tasks, userPreferences, focusBlockData);
-    case 'openai':
-      return await generateOpenAIDailyPlan(date, projects, tasks, userPreferences, focusBlockData);
-    default:
-      throw new Error(`Unsupported AI provider: ${provider}`);
+  try {
+    switch (provider) {
+      case 'gemini':
+        return await generateGeminiDailyPlan(date, projects, tasks, userPreferences, focusBlockData);
+      case 'claude':
+        return await generateClaudeDailyPlan(date, projects, tasks, userPreferences, focusBlockData);
+      case 'openai':
+        return await generateOpenAIDailyPlan(date, projects, tasks, userPreferences, focusBlockData);
+      default:
+        throw new Error(`Unsupported AI provider: ${provider}`);
+    }
+  } catch (error: any) {
+    // Enhanced error handling for specific HTTP status codes
+    if (error.message?.includes('502') || error.status === 502) {
+      throw new Error('AI service is temporarily unavailable (502 Bad Gateway). Please try again later.');
+    }
+    if (error.message?.includes('503') || error.status === 503) {
+      throw new Error('AI service is currently unavailable (503 Service Unavailable). Please check your configuration.');
+    }
+    if (error.message?.includes('timeout')) {
+      throw new Error('Request timed out. The AI service may be experiencing delays.');
+    }
+    
+    // Re-throw original error if not a known HTTP status
+    throw error;
   }
 };
 

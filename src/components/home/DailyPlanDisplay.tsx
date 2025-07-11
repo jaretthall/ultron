@@ -44,7 +44,23 @@ const DailyPlanDisplay: React.FC<DailyPlanDisplayProps> = ({ tasks, projects, on
       }
     } catch (err: any) {
       console.error('Error generating daily plan:', err);
-      setError(err.message || 'Failed to generate daily plan');
+      
+      // Handle specific error types
+      let errorMessage = 'Failed to generate daily plan';
+      
+      if (err.message?.includes('502') || err.message?.includes('Bad Gateway')) {
+        errorMessage = 'AI planning service is temporarily unavailable. Please try again in a few minutes.';
+      } else if (err.message?.includes('503') || err.message?.includes('Service Unavailable')) {
+        errorMessage = 'AI service is not configured properly. Please check your settings.';
+      } else if (err.message?.includes('timeout')) {
+        errorMessage = 'Request timed out. The AI service may be slow. Please try again.';
+      } else if (err.message?.includes('network') || err.message?.includes('fetch')) {
+        errorMessage = 'Network error. Please check your connection and try again.';
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
