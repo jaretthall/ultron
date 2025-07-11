@@ -726,7 +726,51 @@ Please format the response as Markdown that I can copy-paste into my schedule te
             {projects.length === 0 && tasks.length === 0 && (
               <li><strong>⚠️ No data found:</strong> Make sure you have created some projects and tasks first</li>
             )}
+            {projects.length > 0 && (
+              <li><strong>Projects found:</strong> {projects.map(p => `"${p.title}"`).join(', ')}</li>
+            )}
+            {tasks.length > 0 && (
+              <li><strong>Tasks found:</strong> {tasks.slice(0, 3).map(t => `"${t.title}"`).join(', ')}{tasks.length > 3 ? ` +${tasks.length - 3} more` : ''}</li>
+            )}
           </ul>
+        </div>
+        
+        {/* Live Data Debug Panel */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h4 className="font-medium text-blue-800 mb-2">🔍 Live Data Debug:</h4>
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <strong>Projects ({projects.length}):</strong>
+              <div className="mt-1 max-h-32 overflow-y-auto text-xs">
+                {projects.length === 0 ? (
+                  <p className="text-gray-600 italic">No projects loaded</p>
+                ) : (
+                  projects.map(p => (
+                    <div key={p.id} className="mb-1 p-1 bg-white rounded">
+                      <div><strong>"{p.title}"</strong></div>
+                      <div>Context: {p.context || 'none'}</div>
+                      <div>Project Context: {p.project_context || 'none'}</div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+            <div>
+              <strong>Tasks ({tasks.length}):</strong>
+              <div className="mt-1 max-h-32 overflow-y-auto text-xs">
+                {tasks.length === 0 ? (
+                  <p className="text-gray-600 italic">No tasks loaded</p>
+                ) : (
+                  tasks.slice(0, 5).map(t => (
+                    <div key={t.id} className="mb-1 p-1 bg-white rounded">
+                      <div><strong>"{t.title}"</strong></div>
+                      <div>Project: {projects.find(p => p.id === t.project_id)?.title || 'none'}</div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
