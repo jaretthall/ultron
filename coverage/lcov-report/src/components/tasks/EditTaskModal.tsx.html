@@ -25,28 +25,28 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/42</span>
+                <span class='fraction'>0/44</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/27</span>
+                <span class='fraction'>0/35</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/15</span>
+                <span class='fraction'>0/16</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/40</span>
+                <span class='fraction'>0/42</span>
             </div>
         
             
@@ -295,8 +295,25 @@
 <a name='L230'></a><a href='#L230'>230</a>
 <a name='L231'></a><a href='#L231'>231</a>
 <a name='L232'></a><a href='#L232'>232</a>
-<a name='L233'></a><a href='#L233'>233</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L233'></a><a href='#L233'>233</a>
+<a name='L234'></a><a href='#L234'>234</a>
+<a name='L235'></a><a href='#L235'>235</a>
+<a name='L236'></a><a href='#L236'>236</a>
+<a name='L237'></a><a href='#L237'>237</a>
+<a name='L238'></a><a href='#L238'>238</a>
+<a name='L239'></a><a href='#L239'>239</a>
+<a name='L240'></a><a href='#L240'>240</a>
+<a name='L241'></a><a href='#L241'>241</a>
+<a name='L242'></a><a href='#L242'>242</a>
+<a name='L243'></a><a href='#L243'>243</a>
+<a name='L244'></a><a href='#L244'>244</a>
+<a name='L245'></a><a href='#L245'>245</a>
+<a name='L246'></a><a href='#L246'>246</a>
+<a name='L247'></a><a href='#L247'>247</a>
+<a name='L248'></a><a href='#L248'>248</a>
+<a name='L249'></a><a href='#L249'>249</a>
+<a name='L250'></a><a href='#L250'>250</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -358,6 +375,23 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -528,7 +562,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" >import React, { useState, useEffect } from 'react';</span>
-import { Task, Project } from '../../../types';
+<span class="cstat-no" title="statement not covered" >import { Task, Project, TaskStatus } from '../../../types';</span>
 &nbsp;
 interface EditTaskModalProps {
   task: Task;
@@ -590,11 +624,28 @@ const EditTaskModal: React.FC&lt;EditTaskModalProps&gt; = <span class="cstat-no"
 <span class="cstat-no" title="statement not covered" >  <span class="missing-if-branch" title="if path not taken" >I</span>if (!isOpen) <span class="cstat-no" title="statement not covered" >return null;</span></span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >  return (</span>
-    &lt;div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"&gt;
-      &lt;div className="bg-slate-800 rounded-lg p-6 w-full max-w-md"&gt;
-        &lt;h2 className="text-xl font-bold text-white mb-4"&gt;Edit Task&lt;/h2&gt;
+    &lt;div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 overflow-y-auto"&gt;
+      &lt;div className="bg-slate-800 rounded-lg p-4 sm:p-6 w-full max-w-md sm:max-w-lg mx-4 my-4 sm:my-8 min-h-fit max-h-screen overflow-y-auto"&gt;
+        &lt;div className="flex items-center justify-between mb-4"&gt;
+          &lt;h2 className="text-lg sm:text-xl font-bold text-white"&gt;Edit Task&lt;/h2&gt;
+          &lt;button
+            type="button"
+            onClick={<span class="fstat-no" title="function not covered" >() =</span>&gt; <span class="cstat-no" title="statement not covered" >setStatus(status === TaskStatus.COMPLETED ? TaskStatus.TODO : TaskStatus.COMPLETED)}</span>
+            className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              status === 'completed'
+                ? 'bg-green-600 hover:bg-green-700 text-white'
+                : 'bg-slate-600 hover:bg-green-600 text-slate-200'
+            }`}
+          &gt;
+            &lt;svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"&gt;
+              &lt;path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                d={status === 'completed' ? "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" : "M5 13l4 4L19 7"} /&gt;
+            &lt;/svg&gt;
+            &lt;span&gt;{status === 'completed' ? 'Completed' : 'Mark Complete'}&lt;/span&gt;
+          &lt;/button&gt;
+        &lt;/div&gt;
         
-        &lt;form onSubmit={handleSubmit} className="space-y-4"&gt;
+        &lt;form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4"&gt;
           &lt;div&gt;
             &lt;label className="block text-slate-300 text-sm font-medium mb-1"&gt;
               Title
@@ -738,17 +789,17 @@ const EditTaskModal: React.FC&lt;EditTaskModalProps&gt; = <span class="cstat-no"
             &lt;/div&gt;
           &lt;/div&gt;
 &nbsp;
-          &lt;div className="flex space-x-3 pt-4"&gt;
+          &lt;div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 pt-4"&gt;
             &lt;button
               type="submit"
-              className="flex-1 bg-sky-600 hover:bg-sky-700 text-white py-2 px-4 rounded font-medium"
+              className="w-full sm:flex-1 bg-sky-600 hover:bg-sky-700 text-white py-3 sm:py-2 px-4 rounded font-medium"
             &gt;
               Update Task
             &lt;/button&gt;
             &lt;button
               type="button"
               onClick={onClose}
-              className="flex-1 bg-slate-600 hover:bg-slate-700 text-white py-2 px-4 rounded font-medium"
+              className="w-full sm:flex-1 bg-slate-600 hover:bg-slate-700 text-white py-3 sm:py-2 px-4 rounded font-medium"
             &gt;
               Cancel
             &lt;/button&gt;
@@ -766,7 +817,7 @@ const EditTaskModal: React.FC&lt;EditTaskModalProps&gt; = <span class="cstat-no"
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-07-08T22:52:26.500Z
+                at 2025-07-12T01:03:09.543Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>
