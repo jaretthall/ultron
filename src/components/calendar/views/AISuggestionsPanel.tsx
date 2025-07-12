@@ -33,9 +33,9 @@ const AISuggestionsPanel: React.FC<AISuggestionsPanelProps> = ({
     return suggestions.filter(s => s.status === 'approved');
   }, [suggestions]);
 
-  const deniedSuggestions = useMemo(() => {
-    return suggestions.filter(s => s.status === 'denied');
-  }, [suggestions]);
+  // const deniedSuggestions = useMemo(() => {
+  //   return suggestions.filter(s => s.status === 'denied');
+  // }, [suggestions]);
 
   // Toggle expanded state for suggestion details
   const toggleExpanded = (suggestionId: string) => {

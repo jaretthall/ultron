@@ -12,19 +12,19 @@ const DayView: React.FC<DayViewProps> = ({
   events,
   onEventClick
 }) => {
-  const [isMobile, setIsMobile] = useState(false);
+  // const [isMobile, setIsMobile] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
 
   // Detect mobile screen size
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+  // useEffect(() => {
+  //   const checkMobile = () => {
+  //     setIsMobile(window.innerWidth < 768);
+  //   };
+  //   
+  //   checkMobile();
+  //   window.addEventListener('resize', checkMobile);
+  //   return () => window.removeEventListener('resize', checkMobile);
+  // }, []);
 
   // Update current time every minute to show the current time indicator
   useEffect(() => {
@@ -228,7 +228,7 @@ const DayView: React.FC<DayViewProps> = ({
         <div className="flex">
           {/* Time Labels */}
           <div className="w-20 flex-shrink-0 border-r border-gray-200 bg-gray-50">
-            {timeSlots.map((slot, index) => (
+            {timeSlots.map((slot) => (
               <div
                 key={`${slot.time}-${slot.minutes}`}
                 className={`h-10 border-b border-gray-100 flex items-center px-2 text-xs text-gray-500 ${
@@ -247,7 +247,7 @@ const DayView: React.FC<DayViewProps> = ({
           {/* Events Area */}
           <div className="flex-1 relative">
             {/* Time grid background */}
-            {timeSlots.map((slot, index) => (
+            {timeSlots.map((slot) => (
               <div
                 key={`${slot.time}-${slot.minutes}-bg`}
                 className={`h-10 border-b hover:bg-blue-50 cursor-pointer transition-colors ${
@@ -278,7 +278,7 @@ const DayView: React.FC<DayViewProps> = ({
             )}
 
             {/* Events */}
-            {eventLayout.map(({ event, style }, index) => {
+            {eventLayout.map(({ event, style }) => {
               const colorClass = getEventColor(event);
               const icon = getEventIcon(event);
 

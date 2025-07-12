@@ -177,8 +177,8 @@ const MonthView: React.FC<MonthViewProps> = ({
       {/* Month Grid */}
       <div className="flex-1 overflow-auto">
         <div className="grid grid-cols-7 min-h-full">
-          {monthGrid.map((dayData, index) => {
-            const { date, isCurrentMonth, isPrevMonth, isNextMonth } = dayData;
+          {monthGrid.map((dayData) => {
+            const { date, isCurrentMonth } = dayData;
             const dayEvents = getEventsForDate(date);
             const isDateToday = isToday(date);
             const isDateSelected = isSelected(date);

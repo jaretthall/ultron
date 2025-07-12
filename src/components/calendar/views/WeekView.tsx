@@ -204,7 +204,7 @@ const WeekView: React.FC<WeekViewProps> = ({
 
                 {/* Events overlay */}
                 <div className="absolute inset-0 pointer-events-none">
-                  {dayEvents.map((event, index) => {
+                  {dayEvents.map((event) => {
                     const style = getEventStyle(event);
                     const colorClass = getEventColor(event);
                     const icon = getEventIcon(event);

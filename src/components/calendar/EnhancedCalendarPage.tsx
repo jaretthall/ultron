@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Task, Schedule } from '../../../types';
 import { useAppState } from '../../contexts/AppStateContext';
 import { calendarIntegrationService, CalendarEvent, AIScheduleSuggestion } from '../../services/calendarIntegrationService';
-import { formatDateForInput, isSameDate } from '../../utils/dateUtils';
+import { formatDateForInput } from '../../utils/dateUtils';
 
 // Import existing modals
 import NewTaskModal from '../tasks/NewTaskModal';
@@ -66,7 +66,7 @@ interface EnhancedCalendarPageProps {
   onEditTask?: (task: Task) => void;
 }
 
-const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick, onEditTask }) => {
+const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick }) => {
   const { state, addTask, addSchedule, updateSchedule, deleteSchedule } = useAppState();
   const { tasks, projects, schedules } = state;
 
@@ -462,9 +462,9 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
         <NewTaskModal
           isOpen={showNewTaskModal}
           onClose={() => setShowNewTaskModal(false)}
-          onSubmit={addTask}
+          onAddTask={addTask}
           projects={projects}
-          initialDueDate={formatDateForInput(selectedDate)}
+          defaultDueDate={formatDateForInput(selectedDate)}
         />
       )}
 
@@ -472,8 +472,9 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
         <NewEventModal
           isOpen={showNewEventModal}
           onClose={() => setShowNewEventModal(false)}
-          onSubmit={addSchedule}
-          initialDate={selectedDate}
+          onAddEvent={addSchedule}
+          projects={projects}
+          defaultDate={formatDateForInput(selectedDate)}
         />
       )}
 
@@ -484,9 +485,10 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
             setShowEditEventModal(false);
             setSelectedEvent(null);
           }}
-          onSubmit={updateSchedule}
-          onDelete={deleteSchedule}
+          onUpdateEvent={updateSchedule}
+          onDeleteEvent={deleteSchedule}
           event={selectedEvent}
+          projects={projects}
         />
       )}
 
@@ -494,8 +496,12 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
         <CounselingSessionModal
           isOpen={showCounselingModal}
           onClose={() => setShowCounselingModal(false)}
-          onSubmit={addSchedule}
-          initialDate={selectedDate}
+          onAddCounselingSession={async (session, progressNote) => {
+            await addSchedule(session);
+            await addTask(progressNote);
+          }}
+          projects={projects}
+          defaultDate={selectedDate}
         />
       )}
     </div>
