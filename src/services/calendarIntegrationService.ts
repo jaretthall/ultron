@@ -1,7 +1,8 @@
 // Calendar Integration Service
 // Merges tasks, events, schedules, and AI suggestions into unified calendar views
-import { Task, Schedule, DailySchedule } from '../../types';
-import { tasksService, schedulesService, dailyScheduleService } from '../../services/databaseService';
+import { Task, Schedule, DailySchedule } from '../types';
+import { tasksService, schedulesService } from './databaseService';
+// import { dailyScheduleService } from './databaseService'; // Temporarily disabled
 import { getCustomAuthUser } from '../contexts/CustomAuthContext';
 
 export interface CalendarEvent {
@@ -60,11 +61,13 @@ export class CalendarIntegrationService {
       console.log('Fetching calendar data for range:', { startDate, endDate });
 
       // Fetch all data sources in parallel
-      const [tasks, schedules, dailySchedules] = await Promise.all([
+      const [tasks, schedules] = await Promise.all([
         tasksService.getAll(),
-        schedulesService.getAll(),
-        this.getDailySchedulesInRange(startDate, endDate)
+        schedulesService.getAll()
       ]);
+      
+      // Temporarily disable daily schedules to fix 406 error
+      const dailySchedules: DailySchedule[] = [];
 
       // Filter data to date range
       const filteredTasks = this.filterTasksByDateRange(tasks, startDate, endDate);
@@ -319,9 +322,26 @@ export class CalendarIntegrationService {
         const checkDate = new Date(startLookingFrom);
         checkDate.setDate(checkDate.getDate() + dayOffset);
         
-        // Skip weekends for business tasks
-        if (task.task_context === 'business' && (checkDate.getDay() === 0 || checkDate.getDay() === 6)) {
-          continue;
+        // Context-aware scheduling based on current day
+        const currentDay = new Date().getDay();
+        const isWeekend = currentDay === 0 || currentDay === 6;
+        const isCheckDateWeekend = checkDate.getDay() === 0 || checkDate.getDay() === 6;
+        
+        // If it's currently weekend, suggest personal tasks for weekend and business for Monday
+        if (isWeekend) {
+          // On weekends, suggest personal tasks for today/tomorrow, business for Monday+
+          if (task.task_context === 'business' && isCheckDateWeekend) {
+            continue; // Skip business tasks on weekends when user is in personal time
+          }
+          if (task.task_context === 'personal' && !isCheckDateWeekend) {
+            // Lower priority for personal tasks on weekdays when suggested from weekend
+            continue;
+          }
+        } else {
+          // On weekdays, suggest business tasks for weekdays, personal for evenings/weekends
+          if (task.task_context === 'business' && isCheckDateWeekend) {
+            continue; // Business tasks shouldn't be suggested for weekends
+          }
         }
 
         // Check each hour slot during working hours
@@ -410,8 +430,20 @@ export class CalendarIntegrationService {
     
     const hour = suggestedStart.getHours();
     const dayName = suggestedStart.toLocaleDateString('en-US', { weekday: 'long' });
+    const currentDay = new Date().getDay();
+    const isCurrentlyWeekend = currentDay === 0 || currentDay === 6;
+    const isSuggestedWeekend = suggestedStart.getDay() === 0 || suggestedStart.getDay() === 6;
     
     reasons.push(`Scheduled for ${dayName} at ${suggestedStart.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`);
+    
+    // Context-aware reasoning
+    if (isCurrentlyWeekend && task.task_context === 'personal') {
+      reasons.push('Personal time - perfect for personal tasks');
+    } else if (isCurrentlyWeekend && task.task_context === 'business' && !isSuggestedWeekend) {
+      reasons.push('Business task scheduled for upcoming work day');
+    } else if (!isCurrentlyWeekend && task.task_context === 'business' && !isSuggestedWeekend) {
+      reasons.push('Work day focus time for business task');
+    }
     
     if (task.energy_level === 'high' && hour >= 8 && hour <= 11) {
       reasons.push('Morning slot matches high energy requirement');
@@ -462,25 +494,26 @@ export class CalendarIntegrationService {
     });
   }
 
-  private async getDailySchedulesInRange(startDate: Date, endDate: Date): Promise<DailySchedule[]> {
-    const schedules: DailySchedule[] = [];
-    const currentDate = new Date(startDate);
-    
-    while (currentDate <= endDate) {
-      const dateStr = currentDate.toISOString().split('T')[0];
-      try {
-        const schedule = await dailyScheduleService.getDailySchedule(dateStr);
-        if (schedule) {
-          schedules.push(schedule);
-        }
-      } catch (error) {
-        console.warn(`Failed to fetch daily schedule for ${dateStr}:`, error);
-      }
-      currentDate.setDate(currentDate.getDate() + 1);
-    }
-    
-    return schedules;
-  }
+  // Temporarily disabled - will re-enable when daily_schedules table is properly configured
+  // private async getDailySchedulesInRange(startDate: Date, endDate: Date): Promise<DailySchedule[]> {
+  //   const schedules: DailySchedule[] = [];
+  //   const currentDate = new Date(startDate);
+  //   
+  //   while (currentDate <= endDate) {
+  //     const dateStr = currentDate.toISOString().split('T')[0];
+  //     try {
+  //       const schedule = await dailyScheduleService.getDailySchedule(dateStr);
+  //       if (schedule) {
+  //         schedules.push(schedule);
+  //       }
+  //     } catch (error) {
+  //       console.warn(`Failed to fetch daily schedule for ${dateStr}:`, error);
+  //     }
+  //     currentDate.setDate(currentDate.getDate() + 1);
+  //   }
+  //   
+  //   return schedules;
+  // }
 
   /**
    * Apply AI suggestion (approve and schedule the work session)

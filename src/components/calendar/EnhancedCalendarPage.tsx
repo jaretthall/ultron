@@ -305,14 +305,14 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
   }, [aiSuggestions]);
 
   return (
-    <div className="h-full flex flex-col bg-gray-50">
+    <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-4 py-4">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-4">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           {/* Title and Date Range */}
           <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-bold text-gray-900">Calendar</h1>
-            <div className="text-lg font-medium text-gray-700">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Calendar</h1>
+            <div className="text-lg font-medium text-gray-700 dark:text-gray-300">
               {formatDateRange}
             </div>
           </div>
@@ -323,7 +323,7 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
             <div className="flex items-center gap-2">
               <button
                 onClick={navigatePrevious}
-                className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+                className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 aria-label="Previous"
               >
                 <ChevronLeftIcon className="w-4 h-4" />
@@ -331,14 +331,14 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
               
               <button
                 onClick={navigateToday}
-                className="px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors text-sm font-medium"
+                className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm font-medium text-gray-900 dark:text-gray-100"
               >
                 Today
               </button>
               
               <button
                 onClick={navigateNext}
-                className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+                className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 aria-label="Next"
               >
                 <ChevronRightIcon className="w-4 h-4" />
@@ -346,7 +346,7 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
             </div>
 
             {/* View Type Selector */}
-            <div className="flex rounded-lg border border-gray-300 overflow-hidden">
+            <div className="flex rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden">
               {(['month', 'week', 'day'] as CalendarViewType[]).map((view) => (
                 <button
                   key={view}
@@ -354,7 +354,7 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
                   className={`px-3 py-2 text-sm font-medium transition-colors flex items-center gap-2 ${
                     viewType === view
                       ? 'bg-blue-600 text-white'
-                      : 'bg-white text-gray-700 hover:bg-gray-50'
+                      : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                   }`}
                 >
                   {view === 'month' && <CalendarIcon className="w-4 h-4" />}

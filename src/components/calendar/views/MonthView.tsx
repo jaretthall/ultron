@@ -160,13 +160,13 @@ const MonthView: React.FC<MonthViewProps> = ({
   };
 
   return (
-    <div className="h-full flex flex-col bg-white">
+    <div className="h-full flex flex-col bg-white dark:bg-gray-900">
       {/* Month Header */}
-      <div className="bg-gray-50 border-b border-gray-200">
+      <div className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="grid grid-cols-7">
           {daysOfWeek.map((day) => (
-            <div key={day} className="p-3 text-center border-r border-gray-200 last:border-r-0">
-              <div className="text-sm font-medium text-gray-700">
+            <div key={day} className="p-3 text-center border-r border-gray-200 dark:border-gray-700 last:border-r-0">
+              <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 {isMobile ? day.charAt(0) : day}
               </div>
             </div>
@@ -186,14 +186,14 @@ const MonthView: React.FC<MonthViewProps> = ({
             return (
               <div
                 key={`${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`}
-                className={`border-b border-r border-gray-200 last:border-r-0 cursor-pointer transition-colors min-h-[120px] lg:min-h-[140px] flex flex-col ${
+                className={`border-b border-r border-gray-200 dark:border-gray-700 last:border-r-0 cursor-pointer transition-colors min-h-[120px] lg:min-h-[140px] flex flex-col ${
                   isDateSelected 
-                    ? 'bg-blue-50 ring-2 ring-blue-500 ring-inset' 
+                    ? 'bg-blue-50 dark:bg-blue-900/30 ring-2 ring-blue-500 ring-inset' 
                     : isDateToday 
-                    ? 'bg-blue-25' 
-                    : 'hover:bg-gray-50'
+                    ? 'bg-blue-25 dark:bg-blue-900/20' 
+                    : 'hover:bg-gray-50 dark:hover:bg-gray-800'
                 } ${
-                  !isCurrentMonth ? 'bg-gray-50' : ''
+                  !isCurrentMonth ? 'bg-gray-50 dark:bg-gray-800' : ''
                 }`}
                 onClick={() => handleCellClick(date)}
               >
@@ -203,8 +203,8 @@ const MonthView: React.FC<MonthViewProps> = ({
                     isDateToday 
                       ? 'bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center' 
                       : isCurrentMonth 
-                      ? 'text-gray-900' 
-                      : 'text-gray-400'
+                      ? 'text-gray-900 dark:text-gray-100' 
+                      : 'text-gray-400 dark:text-gray-600'
                   }`}>
                     {date.getDate()}
                   </span>

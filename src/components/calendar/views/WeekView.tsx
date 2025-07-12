@@ -146,27 +146,27 @@ const WeekView: React.FC<WeekViewProps> = ({
   };
 
   return (
-    <div className="h-full flex flex-col bg-white">
+    <div className="h-full flex flex-col bg-white dark:bg-gray-900">
       {/* Week Header */}
-      <div className="grid grid-cols-8 border-b border-gray-200 bg-gray-50">
+      <div className="grid grid-cols-8 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
         {/* Time column header */}
-        <div className="p-3 border-r border-gray-200">
-          <div className="text-xs text-gray-500 uppercase tracking-wider">Time</div>
+        <div className="p-3 border-r border-gray-200 dark:border-gray-700">
+          <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">Time</div>
         </div>
         
         {/* Day headers */}
         {weekDays.map((day) => (
-          <div key={day.toISOString()} className="p-3 border-r border-gray-200 last:border-r-0">
+          <div key={day.toISOString()} className="p-3 border-r border-gray-200 dark:border-gray-700 last:border-r-0">
             <button
               onClick={() => onDateSelect(day)}
-              className={`w-full text-left transition-colors rounded-md p-2 hover:bg-blue-50 ${
-                isSelected(day) ? 'bg-blue-100 text-blue-900' : ''
-              } ${isToday(day) ? 'font-bold text-blue-600' : ''}`}
+              className={`w-full text-left transition-colors rounded-md p-2 hover:bg-blue-50 dark:hover:bg-gray-700 ${
+                isSelected(day) ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-900 dark:text-blue-200' : ''
+              } ${isToday(day) ? 'font-bold text-blue-600' : 'text-gray-900 dark:text-gray-100'}`}
             >
-              <div className="text-xs text-gray-500 uppercase tracking-wider">
+              <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 {day.toLocaleDateString('en-US', { weekday: isMobile ? 'short' : 'long' })}
               </div>
-              <div className={`text-lg font-medium mt-1 ${isToday(day) ? 'text-blue-600' : 'text-gray-900'}`}>
+              <div className={`text-lg font-medium mt-1 ${isToday(day) ? 'text-blue-600' : 'text-gray-900 dark:text-gray-100'}`}>
                 {day.getDate()}
               </div>
             </button>
@@ -174,13 +174,47 @@ const WeekView: React.FC<WeekViewProps> = ({
         ))}
       </div>
 
+      {/* Tasks/All-day events section at the top */}
+      <div className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 max-h-32 overflow-auto">
+        <div className="grid grid-cols-8">
+          <div className="p-2 border-r border-gray-200 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400 font-medium">
+            Tasks
+          </div>
+          {weekDays.map((day) => {
+            const dayKey = day.toISOString().split('T')[0];
+            const dayTasksAndEvents = (eventsByDay[dayKey] || []).filter(event => {
+              // Show deadlines and all-day events at the top
+              return event.type === 'deadline' || 
+                     event.end.getTime() - event.start.getTime() >= 24 * 60 * 60 * 1000 || // 24+ hours
+                     (event.start.getHours() === 0 && event.end.getHours() === 23); // All day
+            });
+
+            return (
+              <div key={dayKey} className="p-1 border-r border-gray-200 dark:border-gray-700 last:border-r-0 min-h-[3rem]">
+                {dayTasksAndEvents.map((event) => (
+                  <div
+                    key={event.id}
+                    className={`text-xs rounded px-2 py-1 mb-1 cursor-pointer ${getEventColor(event)} hover:shadow-sm transition-shadow`}
+                    onClick={() => onEventClick(event)}
+                    title={event.title}
+                  >
+                    <span className="mr-1">{getEventIcon(event)}</span>
+                    <span className="truncate">{event.title}</span>
+                  </div>
+                ))}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Week Grid */}
       <div className="flex-1 overflow-auto">
         <div className="grid grid-cols-8 min-h-full">
           {/* Time column */}
-          <div className="border-r border-gray-200 bg-gray-50">
+          <div className="border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
             {timeSlots.map((slot) => (
-              <div key={slot.time} className="h-15 border-b border-gray-100 p-2 text-xs text-gray-500">
+              <div key={slot.time} className="h-15 border-b border-gray-100 dark:border-gray-700 p-2 text-xs text-gray-500 dark:text-gray-400">
                 {slot.label}
               </div>
             ))}
@@ -189,15 +223,20 @@ const WeekView: React.FC<WeekViewProps> = ({
           {/* Day columns */}
           {weekDays.map((day) => {
             const dayKey = day.toISOString().split('T')[0];
-            const dayEvents = eventsByDay[dayKey] || [];
+            const dayEvents = (eventsByDay[dayKey] || []).filter(event => {
+              // Only show timed events here (not deadlines or all-day events)
+              return event.type !== 'deadline' && 
+                     event.end.getTime() - event.start.getTime() < 24 * 60 * 60 * 1000 && // Less than 24 hours
+                     !(event.start.getHours() === 0 && event.end.getHours() === 23); // Not all day
+            });
 
             return (
-              <div key={dayKey} className="border-r border-gray-200 last:border-r-0 relative">
+              <div key={dayKey} className="border-r border-gray-200 dark:border-gray-700 last:border-r-0 relative">
                 {/* Time grid background */}
                 {timeSlots.map((slot) => (
                   <div
                     key={slot.time}
-                    className="h-15 border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
+                    className="h-15 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
                     onClick={() => onDateSelect(day)}
                   />
                 ))}
@@ -247,39 +286,6 @@ const WeekView: React.FC<WeekViewProps> = ({
         </div>
       </div>
 
-      {/* All-day events section (for events without specific times) */}
-      <div className="border-t border-gray-200 bg-gray-50 max-h-32 overflow-auto">
-        <div className="grid grid-cols-8">
-          <div className="p-2 border-r border-gray-200 text-xs text-gray-500 font-medium">
-            All Day
-          </div>
-          {weekDays.map((day) => {
-            const dayKey = day.toISOString().split('T')[0];
-            const allDayEvents = (eventsByDay[dayKey] || []).filter(event => {
-              // Consider events that span the entire day or don't have specific times
-              const duration = event.end.getTime() - event.start.getTime();
-              return duration >= 24 * 60 * 60 * 1000 || // 24 hours or more
-                     (event.start.getHours() === 0 && event.end.getHours() === 23); // Spans full day
-            });
-
-            return (
-              <div key={dayKey} className="p-1 border-r border-gray-200 last:border-r-0 min-h-[3rem]">
-                {allDayEvents.map((event) => (
-                  <div
-                    key={event.id}
-                    className={`text-xs rounded px-2 py-1 mb-1 cursor-pointer ${getEventColor(event)} hover:shadow-sm transition-shadow`}
-                    onClick={() => onEventClick(event)}
-                    title={event.title}
-                  >
-                    <span className="mr-1">{getEventIcon(event)}</span>
-                    <span className="truncate">{event.title}</span>
-                  </div>
-                ))}
-              </div>
-            );
-          })}
-        </div>
-      </div>
     </div>
   );
 };

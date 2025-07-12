@@ -145,6 +145,11 @@ const DayView: React.FC<DayViewProps> = ({
     }
   };
 
+  // Check if two dates are the same day
+  const isSameDay = (date1: Date, date2: Date) => {
+    return date1.toDateString() === date2.toDateString();
+  };
+
   // Calculate current time indicator position
   const getCurrentTimePosition = () => {
     if (!isSameDay(currentTime, currentDate)) return null;
@@ -159,11 +164,6 @@ const DayView: React.FC<DayViewProps> = ({
   };
 
   const currentTimePosition = getCurrentTimePosition();
-
-  // Check if two dates are the same day
-  const isSameDay = (date1: Date, date2: Date) => {
-    return date1.toDateString() === date2.toDateString();
-  };
 
   // Format day header
   const dayHeader = useMemo(() => {
@@ -196,15 +196,15 @@ const DayView: React.FC<DayViewProps> = ({
   };
 
   return (
-    <div className="h-full flex flex-col bg-white">
+    <div className="h-full flex flex-col bg-white dark:bg-gray-900">
       {/* Day Header */}
-      <div className="border-b border-gray-200 bg-gray-50 p-4">
+      <div className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className={`text-xl font-semibold ${dayHeader.isToday ? 'text-blue-600' : 'text-gray-900'}`}>
+            <h2 className={`text-xl font-semibold ${dayHeader.isToday ? 'text-blue-600' : 'text-gray-900 dark:text-gray-100'}`}>
               {dayHeader.weekday}
             </h2>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
               {dayHeader.date}
               {dayHeader.isToday && <span className="ml-2 text-blue-600 font-medium">Today</span>}
             </p>
@@ -212,10 +212,10 @@ const DayView: React.FC<DayViewProps> = ({
           
           {/* Event summary */}
           <div className="text-right">
-            <div className="text-lg font-semibold text-gray-900">
+            <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
               {dayEvents.length} {dayEvents.length === 1 ? 'Event' : 'Events'}
             </div>
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-gray-600 dark:text-gray-400">
               {dayEvents.filter(e => e.type === 'work_session').length} Work Sessions, {' '}
               {dayEvents.filter(e => e.type === 'deadline').length} Deadlines
             </div>
@@ -223,16 +223,39 @@ const DayView: React.FC<DayViewProps> = ({
         </div>
       </div>
 
+      {/* Tasks Section */}
+      {dayEvents.filter(e => e.type === 'deadline').length > 0 && (
+        <div className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-3">
+          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tasks & Deadlines</h3>
+          <div className="flex flex-wrap gap-2">
+            {dayEvents.filter(e => e.type === 'deadline').map((event) => (
+              <div
+                key={event.id}
+                className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs cursor-pointer ${getEventColor(event)} hover:shadow-sm transition-shadow`}
+                onClick={() => onEventClick(event)}
+                title={event.title}
+              >
+                <span>{getEventIcon(event)}</span>
+                <span className="truncate max-w-[200px]">{event.title}</span>
+                {event.priority && (
+                  <span className="ml-1 opacity-75">({event.priority})</span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Time Grid */}
       <div className="flex-1 overflow-auto">
         <div className="flex">
           {/* Time Labels */}
-          <div className="w-20 flex-shrink-0 border-r border-gray-200 bg-gray-50">
+          <div className="w-20 flex-shrink-0 border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
             {timeSlots.map((slot) => (
               <div
                 key={`${slot.time}-${slot.minutes}`}
-                className={`h-10 border-b border-gray-100 flex items-center px-2 text-xs text-gray-500 ${
-                  slot.isHour ? 'font-medium' : 'text-gray-400'
+                className={`h-10 border-b border-gray-100 dark:border-gray-800 flex items-center px-2 text-xs ${
+                  slot.isHour ? 'font-medium text-gray-500 dark:text-gray-400' : 'text-gray-400 dark:text-gray-600'
                 }`}
               >
                 {slot.isHour && (
@@ -250,8 +273,8 @@ const DayView: React.FC<DayViewProps> = ({
             {timeSlots.map((slot) => (
               <div
                 key={`${slot.time}-${slot.minutes}-bg`}
-                className={`h-10 border-b hover:bg-blue-50 cursor-pointer transition-colors ${
-                  slot.isHour ? 'border-gray-200' : 'border-gray-100'
+                className={`h-10 border-b hover:bg-blue-50 dark:hover:bg-gray-800 cursor-pointer transition-colors ${
+                  slot.isHour ? 'border-gray-200 dark:border-gray-700' : 'border-gray-100/50 dark:border-gray-800/50'
                 }`}
                 title={`${slot.label} - Click to add event`}
               />
@@ -357,10 +380,10 @@ const DayView: React.FC<DayViewProps> = ({
             {/* Empty state */}
             {dayEvents.length === 0 && (
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center text-gray-500">
+                <div className="text-center text-gray-500 dark:text-gray-400">
                   <div className="text-4xl mb-2">📅</div>
-                  <p className="text-lg font-medium">No events scheduled</p>
-                  <p className="text-sm">Click on a time slot to add an event</p>
+                  <p className="text-lg font-medium text-gray-900 dark:text-gray-100">No events scheduled</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Click on a time slot to add an event</p>
                 </div>
               </div>
             )}
@@ -370,42 +393,42 @@ const DayView: React.FC<DayViewProps> = ({
 
       {/* Day Summary Footer */}
       {dayEvents.length > 0 && (
-        <div className="border-t border-gray-200 bg-gray-50 p-4">
+        <div className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="text-center">
               <div className="text-lg font-semibold text-blue-600">
                 {dayEvents.filter(e => e.type === 'work_session').length}
               </div>
-              <div className="text-xs text-gray-600">Work Sessions</div>
+              <div className="text-xs text-gray-600 dark:text-gray-400">Work Sessions</div>
             </div>
             
             <div className="text-center">
               <div className="text-lg font-semibold text-red-600">
                 {dayEvents.filter(e => e.type === 'deadline').length}
               </div>
-              <div className="text-xs text-gray-600">Deadlines</div>
+              <div className="text-xs text-gray-600 dark:text-gray-400">Deadlines</div>
             </div>
             
             <div className="text-center">
               <div className="text-lg font-semibold text-green-600">
                 {dayEvents.filter(e => e.type === 'event').length}
               </div>
-              <div className="text-xs text-gray-600">Events</div>
+              <div className="text-xs text-gray-600 dark:text-gray-400">Events</div>
             </div>
             
             <div className="text-center">
               <div className="text-lg font-semibold text-purple-600">
                 {dayEvents.filter(e => e.metadata?.aiSuggested).length}
               </div>
-              <div className="text-xs text-gray-600">AI Suggested</div>
+              <div className="text-xs text-gray-600 dark:text-gray-400">AI Suggested</div>
             </div>
           </div>
           
           {/* Total time breakdown */}
-          <div className="mt-3 pt-3 border-t border-gray-200">
+          <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Total scheduled time:</span>
-              <span className="font-medium">
+              <span className="text-gray-600 dark:text-gray-400">Total scheduled time:</span>
+              <span className="font-medium text-gray-900 dark:text-gray-100">
                 {Math.round(
                   dayEvents
                     .filter(e => e.type === 'work_session')
