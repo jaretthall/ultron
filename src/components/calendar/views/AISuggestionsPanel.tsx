@@ -4,6 +4,9 @@ import { AIScheduleSuggestion } from '../../../services/calendarIntegrationServi
 interface AISuggestionsPanelProps {
   suggestions: AIScheduleSuggestion[];
   onApprove: (suggestion: AIScheduleSuggestion) => void;
+  onApproveAll: (suggestions: AIScheduleSuggestion[]) => void;
+  onApproveAndEdit: (suggestions: AIScheduleSuggestion[], feedback: string) => void;
+  onProvideFeedback: (feedback: string, commonIssues: string[]) => void;
   onDeny: (suggestionId: string) => void;
   onClose: () => void;
 }
@@ -11,23 +14,56 @@ interface AISuggestionsPanelProps {
 const AISuggestionsPanel: React.FC<AISuggestionsPanelProps> = ({
   suggestions,
   onApprove,
+  onApproveAll,
+  onApproveAndEdit,
+  onProvideFeedback,
   onDeny,
   onClose
 }) => {
   const [expandedSuggestions, setExpandedSuggestions] = useState<Set<string>>(new Set());
+  const [showFeedbackForm, setShowFeedbackForm] = useState(false);
+  const [feedbackText, setFeedbackText] = useState('');
+  const [selectedCommonIssues, setSelectedCommonIssues] = useState<string[]>([]);
+  const [viewMode, setViewMode] = useState<'individual' | 'chronological'>('chronological');
+
+  // Common feedback issues
+  const commonIssues = [
+    'Allow more time for traffic/travel',
+    'Tasks are scheduled too close together',
+    'Need longer blocks for deep work',
+    'Prefer different times of day',
+    'Wrong energy level matching',
+    'Missing buffer time between meetings',
+    'Schedule conflicts with personal time',
+    'Need time for breaks/meals'
+  ];
+
+  // Handle common issue toggle
+  const toggleCommonIssue = (issue: string) => {
+    setSelectedCommonIssues(prev => 
+      prev.includes(issue) 
+        ? prev.filter(i => i !== issue)
+        : [...prev, issue]
+    );
+  };
 
   // Filter and sort suggestions
   const pendingSuggestions = useMemo(() => {
     return suggestions
       .filter(s => s.status === 'pending')
       .sort((a, b) => {
-        // Sort by confidence (high to low), then by suggested start time
-        if (a.confidence !== b.confidence) {
-          return b.confidence - a.confidence;
+        if (viewMode === 'chronological') {
+          // Sort by suggested start time for chronological view
+          return a.suggestedStart.getTime() - b.suggestedStart.getTime();
+        } else {
+          // Sort by confidence (high to low), then by suggested start time
+          if (a.confidence !== b.confidence) {
+            return b.confidence - a.confidence;
+          }
+          return a.suggestedStart.getTime() - b.suggestedStart.getTime();
         }
-        return a.suggestedStart.getTime() - b.suggestedStart.getTime();
       });
-  }, [suggestions]);
+  }, [suggestions, viewMode]);
 
   const approvedSuggestions = useMemo(() => {
     return suggestions.filter(s => s.status === 'approved');
@@ -46,6 +82,43 @@ const AISuggestionsPanel: React.FC<AISuggestionsPanelProps> = ({
       newExpanded.add(suggestionId);
     }
     setExpandedSuggestions(newExpanded);
+  };
+
+  // Handle feedback submission
+  const handleFeedbackSubmit = () => {
+    const combinedFeedback = [
+      ...selectedCommonIssues,
+      ...(feedbackText.trim() ? [feedbackText.trim()] : [])
+    ].join('\n• ');
+    
+    if (combinedFeedback) {
+      onProvideFeedback(combinedFeedback, selectedCommonIssues);
+    }
+    
+    // Reset form
+    setFeedbackText('');
+    setSelectedCommonIssues([]);
+    setShowFeedbackForm(false);
+  };
+
+  // Handle approve all
+  const handleApproveAll = () => {
+    onApproveAll(pendingSuggestions);
+  };
+
+  // Handle approve and edit
+  const handleApproveAndEdit = () => {
+    const combinedFeedback = [
+      ...selectedCommonIssues,
+      ...(feedbackText.trim() ? [feedbackText.trim()] : [])
+    ].join('\n• ');
+    
+    onApproveAndEdit(pendingSuggestions, combinedFeedback);
+    
+    // Reset form
+    setFeedbackText('');
+    setSelectedCommonIssues([]);
+    setShowFeedbackForm(false);
   };
 
   // Get confidence color
@@ -244,16 +317,16 @@ const AISuggestionsPanel: React.FC<AISuggestionsPanelProps> = ({
     <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900">
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
               <svg className="w-5 h-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
               </svg>
-              AI Suggestions
+              AI Schedule Plan
             </h2>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              {pendingSuggestions.length} pending, {approvedSuggestions.length} approved
+              {pendingSuggestions.length} pending suggestions • {approvedSuggestions.length} approved
             </p>
           </div>
           
@@ -267,6 +340,123 @@ const AISuggestionsPanel: React.FC<AISuggestionsPanelProps> = ({
             </svg>
           </button>
         </div>
+
+        {/* View Mode Toggle */}
+        <div className="flex items-center justify-between">
+          <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+            <button
+              onClick={() => setViewMode('chronological')}
+              className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                viewMode === 'chronological'
+                  ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+              }`}
+            >
+              Chronological
+            </button>
+            <button
+              onClick={() => setViewMode('individual')}
+              className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                viewMode === 'individual'
+                  ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+              }`}
+            >
+              By Confidence
+            </button>
+          </div>
+
+          {/* Plan-wide Actions */}
+          {pendingSuggestions.length > 0 && (
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowFeedbackForm(!showFeedbackForm)}
+                className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                  showFeedbackForm
+                    ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+                }`}
+              >
+                Provide Feedback
+              </button>
+              <button
+                onClick={handleApproveAll}
+                className="px-3 py-1 text-sm font-medium bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+              >
+                Approve All
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Feedback Form */}
+        {showFeedbackForm && (
+          <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+            <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">
+              Provide Feedback on This Schedule Plan
+            </h3>
+            
+            {/* Common Issues */}
+            <div className="mb-4">
+              <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">Common issues (select any that apply):</p>
+              <div className="grid grid-cols-1 gap-2">
+                {commonIssues.map((issue) => (
+                  <label key={issue} className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={selectedCommonIssues.includes(issue)}
+                      onChange={() => toggleCommonIssue(issue)}
+                      className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                    />
+                    <span className="text-gray-700 dark:text-gray-300">{issue}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Custom Feedback */}
+            <div className="mb-4">
+              <label className="block text-xs text-gray-600 dark:text-gray-400 mb-2">
+                Additional feedback:
+              </label>
+              <textarea
+                value={feedbackText}
+                onChange={(e) => setFeedbackText(e.target.value)}
+                placeholder="Any other adjustments needed? (e.g., 'Group similar tasks together', 'Schedule important calls in the morning')"
+                className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500 dark:bg-gray-700 dark:text-gray-100"
+                rows={3}
+              />
+            </div>
+
+            {/* Feedback Actions */}
+            <div className="flex gap-2">
+              <button
+                onClick={handleApproveAndEdit}
+                disabled={selectedCommonIssues.length === 0 && !feedbackText.trim()}
+                className="px-3 py-1 text-sm font-medium bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+              >
+                Approve & Edit
+              </button>
+              <button
+                onClick={handleFeedbackSubmit}
+                disabled={selectedCommonIssues.length === 0 && !feedbackText.trim()}
+                className="px-3 py-1 text-sm font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+              >
+                Request New Plan
+              </button>
+              <button
+                onClick={() => {
+                  setShowFeedbackForm(false);
+                  setFeedbackText('');
+                  setSelectedCommonIssues([]);
+                }}
+                className="px-3 py-1 text-sm font-medium bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Content */}

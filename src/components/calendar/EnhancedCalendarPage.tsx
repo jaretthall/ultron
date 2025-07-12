@@ -14,8 +14,9 @@ import CounselingSessionModal from './CounselingSessionModal';
 // Import view components (we'll create these)
 import MonthView from './views/MonthView';
 import WeekView from './views/WeekView';
-import DayView from './views/DayView';
+// import DayView from './views/DayView';
 import AISuggestionsPanel from './views/AISuggestionsPanel';
+import DayDetailsSidebar from './DayDetailsSidebar';
 
 // Icons
 const CalendarIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5" }) => (
@@ -30,11 +31,7 @@ const WeekIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5" }) =
   </svg>
 );
 
-const DayIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5" }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
-  </svg>
-);
+// Removed DayIcon as it's no longer needed without day view
 
 const ChevronLeftIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5" }) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
@@ -60,7 +57,7 @@ const SparklesIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5" 
   </svg>
 );
 
-export type CalendarViewType = 'month' | 'week' | 'day';
+export type CalendarViewType = 'month' | 'week';
 
 interface EnhancedCalendarPageProps {
   onTaskClick?: (task: Task) => void;
@@ -81,6 +78,7 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
   const [aiSuggestions, setAISuggestions] = useState<AIScheduleSuggestion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showAISuggestions, setShowAISuggestions] = useState(false);
+  const [showDayDetails, setShowDayDetails] = useState(false);
 
   // Modal states
   const [showNewTaskModal, setShowNewTaskModal] = useState(false);
@@ -154,10 +152,7 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
         endDate.setDate(startDate.getDate() + 6);
         break;
       
-      case 'day':
-        // Just the selected day
-        endDate.setDate(endDate.getDate() + 1);
-        break;
+      // Day view removed - no longer needed
     }
 
     // Reset time to start/end of day
@@ -178,9 +173,6 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
       case 'week':
         newDate.setDate(newDate.getDate() - 7);
         break;
-      case 'day':
-        newDate.setDate(newDate.getDate() - 1);
-        break;
     }
     
     setCurrentDate(newDate);
@@ -195,9 +187,6 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
         break;
       case 'week':
         newDate.setDate(newDate.getDate() + 7);
-        break;
-      case 'day':
-        newDate.setDate(newDate.getDate() + 1);
         break;
     }
     
@@ -233,11 +222,8 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
 
   const handleDateSelect = useCallback((date: Date) => {
     setSelectedDate(date);
-    if (viewType === 'month') {
-      setCurrentDate(date);
-      setViewType('day');
-    }
-  }, [viewType]);
+    setShowDayDetails(true); // Show day details sidebar when date is selected
+  }, []);
 
   const handleAISuggestionApprove = async (suggestion: AIScheduleSuggestion) => {
     try {
@@ -245,6 +231,37 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
       await loadCalendarData(); // Reload data to show the scheduled work session
     } catch (error) {
       console.error('Error applying AI suggestion:', error);
+    }
+  };
+
+  const handleAISuggestionApproveAll = async (suggestions: AIScheduleSuggestion[]) => {
+    try {
+      for (const suggestion of suggestions) {
+        await calendarIntegrationService.applySuggestion(suggestion);
+      }
+      await loadCalendarData(); // Reload data to show all scheduled work sessions
+    } catch (error) {
+      console.error('Error applying AI suggestions:', error);
+    }
+  };
+
+  const handleAISuggestionApproveAndEdit = async (suggestions: AIScheduleSuggestion[], feedback: string) => {
+    try {
+      // Apply suggestions with feedback for modification
+      await calendarIntegrationService.applySuggestionsWithFeedback(suggestions, feedback);
+      await loadCalendarData(); // Reload data
+    } catch (error) {
+      console.error('Error applying AI suggestions with edits:', error);
+    }
+  };
+
+  const handleAISuggestionProvideFeedback = async (feedback: string, commonIssues: string[]) => {
+    try {
+      // Request new AI plan with feedback
+      await calendarIntegrationService.requestNewPlanWithFeedback(feedback, commonIssues);
+      await loadCalendarData(); // Reload data to show new suggestions
+    } catch (error) {
+      console.error('Error providing feedback for new AI plan:', error);
     }
   };
 
@@ -281,9 +298,19 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
       } else if (event.source === 'task' && event.taskId) {
         const task = tasks.find(t => t.id === event.taskId);
         if (task) {
-          await updateTask(event.taskId, {
-            due_date: newStart.toISOString().split('T')[0]
-          });
+          // Check if this is a deadline event or work session event
+          if (event.type === 'deadline') {
+            // Update due_date for deadline events
+            await updateTask(event.taskId, {
+              due_date: newStart.toISOString().split('T')[0]
+            });
+          } else if (event.type === 'work_session') {
+            // Update work session schedule for work session events
+            await updateTask(event.taskId, {
+              work_session_scheduled_start: newStart.toISOString(),
+              work_session_scheduled_end: newEnd.toISOString()
+            });
+          }
           await loadCalendarData(); // Reload calendar data to reflect changes
         }
       }
@@ -317,13 +344,7 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
           return `${weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${weekStart.getFullYear()}`;
         }
       
-      case 'day':
-        return currentDate.toLocaleDateString('en-US', { 
-          weekday: 'long', 
-          month: 'long', 
-          day: 'numeric', 
-          year: 'numeric' 
-        });
+      // Day view removed - no longer needed
       
       default:
         return '';
@@ -387,7 +408,7 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
 
             {/* View Type Selector */}
             <div className="flex rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden">
-              {(['month', 'week', 'day'] as CalendarViewType[]).map((view) => (
+              {(['month', 'week'] as CalendarViewType[]).map((view) => (
                 <button
                   key={view}
                   onClick={() => setViewType(view)}
@@ -399,7 +420,6 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
                 >
                   {view === 'month' && <CalendarIcon className="w-4 h-4" />}
                   {view === 'week' && <WeekIcon className="w-4 h-4" />}
-                  {view === 'day' && <DayIcon className="w-4 h-4" />}
                   {!isMobile && <span className="capitalize">{view}</span>}
                 </button>
               ))}
@@ -418,6 +438,21 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
                 </span>
               </button>
             )}
+
+            {/* Day Details Toggle */}
+            <button
+              onClick={() => setShowDayDetails(!showDayDetails)}
+              className={`px-3 py-2 rounded-lg transition-colors flex items-center gap-2 ${
+                showDayDetails 
+                  ? 'bg-blue-600 text-white' 
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+              {!isMobile && <span>Day Details</span>}
+            </button>
 
             {/* Add Button */}
             <div className="flex gap-2">
@@ -474,25 +509,33 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
                   onEventDrop={handleEventDrop}
                 />
               )}
-
-              {viewType === 'day' && (
-                <DayView
-                  currentDate={currentDate}
-                  events={filteredEvents}
-                  onEventClick={handleEventClick}
-                  onEventDrop={handleEventDrop}
-                />
-              )}
             </>
           )}
         </div>
 
+        {/* Day Details Sidebar */}
+        {showDayDetails && (
+          <DayDetailsSidebar
+            selectedDate={selectedDate}
+            events={calendarEvents}
+            suggestions={aiSuggestions}
+            onEventClick={handleEventClick}
+            onTaskClick={onTaskClick}
+            onSuggestionApprove={handleAISuggestionApprove}
+            onSuggestionDeny={handleAISuggestionDeny}
+            onClose={() => setShowDayDetails(false)}
+          />
+        )}
+
         {/* AI Suggestions Sidebar */}
-        {showAISuggestions && (
+        {showAISuggestions && !showDayDetails && (
           <div className="w-80 bg-white border-l border-gray-200 overflow-auto">
             <AISuggestionsPanel
               suggestions={aiSuggestions}
               onApprove={handleAISuggestionApprove}
+              onApproveAll={handleAISuggestionApproveAll}
+              onApproveAndEdit={handleAISuggestionApproveAndEdit}
+              onProvideFeedback={handleAISuggestionProvideFeedback}
               onDeny={handleAISuggestionDeny}
               onClose={() => setShowAISuggestions(false)}
             />

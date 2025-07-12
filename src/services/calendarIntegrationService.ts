@@ -107,7 +107,10 @@ export class CalendarIntegrationService {
   private convertTasksToEvents(tasks: Task[]): CalendarEvent[] {
     const events: CalendarEvent[] = [];
 
-    tasks.forEach(task => {
+    // Filter out completed tasks from calendar display
+    const activeTasks = tasks.filter(task => task.status !== 'completed');
+
+    activeTasks.forEach(task => {
       // Add deadline event if task has due_date
       if (task.due_date) {
         const dueDate = new Date(task.due_date);
@@ -522,9 +525,35 @@ export class CalendarIntegrationService {
       const user = getCustomAuthUser();
       if (!user?.id) throw new Error('User not authenticated');
 
-      // Update task with scheduled work session
+      let taskId = suggestion.taskId;
+      let task = null;
+      if (taskId) {
+        // Try to fetch the task
+        task = await tasksService.getById(taskId);
+      }
+      if (!task) {
+        // Create a new task from the suggestion
+        const newTask = await tasksService.create({
+          title: suggestion.taskTitle,
+          context: '',
+          priority: (suggestion.taskPriority || 'medium') as import('../../types').TaskPriority,
+          status: 'todo' as import('../../types').TaskStatus,
+          estimated_hours: 1, // Default to 1 if not provided
+          dependencies: [],
+          tags: [],
+          project_id: suggestion.taskProject,
+          due_date: suggestion.suggestedEnd ? suggestion.suggestedEnd.toISOString().split('T')[0] : undefined,
+          task_context: undefined,
+          energy_level: undefined,
+          notes: undefined,
+          completion_notes: undefined,
+        });
+        taskId = newTask.id;
+      }
+
+      // Schedule the work session for the (new or existing) task
       await tasksService.scheduleWorkSession(
-        suggestion.taskId,
+        taskId,
         suggestion.suggestedStart,
         suggestion.suggestedEnd,
         true // Mark as AI suggested
@@ -544,6 +573,35 @@ export class CalendarIntegrationService {
     // For now, just log the denial
     // In the future, this could store denial reasons for AI learning
     console.log('Denied AI scheduling suggestion:', suggestionId);
+  }
+
+  /**
+   * Apply suggestions with feedback for modification
+   */
+  async applySuggestionsWithFeedback(suggestions: AIScheduleSuggestion[], feedback: string): Promise<void> {
+    console.log('Applying AI suggestions with feedback:', suggestions.length, 'suggestions with feedback:', feedback);
+    
+    for (const suggestion of suggestions) {
+      await this.applySuggestion(suggestion);
+    }
+    
+    // In a real implementation, this would:
+    // 1. Apply the suggestions to create work sessions
+    // 2. Send the feedback to AI for future improvements
+    // 3. Update the AI model's understanding of user preferences
+  }
+
+  /**
+   * Request new AI plan with feedback
+   */
+  async requestNewPlanWithFeedback(feedback: string, commonIssues: string[]): Promise<void> {
+    console.log('Requesting new AI plan with feedback:', feedback, 'Common issues:', commonIssues);
+    
+    // In a real implementation, this would:
+    // 1. Send feedback and common issues to AI service
+    // 2. Request generation of new schedule suggestions
+    // 3. Replace current pending suggestions with new ones
+    // 4. Update the database with new suggestions
   }
 }
 
