@@ -5,15 +5,19 @@ interface DayViewProps {
   currentDate: Date;
   events: CalendarEvent[];
   onEventClick: (event: CalendarEvent) => void;
+  onEventDrop?: (event: CalendarEvent, newStart: Date, newEnd: Date) => void;
 }
 
 const DayView: React.FC<DayViewProps> = ({
   currentDate,
   events,
-  onEventClick
+  onEventClick,
+  onEventDrop
 }) => {
   // const [isMobile, setIsMobile] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [draggedEvent, setDraggedEvent] = useState<CalendarEvent | null>(null);
+  const [dragOverSlot, setDragOverSlot] = useState<{ hour: number; minutes: number } | null>(null);
 
   // Detect mobile screen size
   // useEffect(() => {
@@ -143,6 +147,57 @@ const DayView: React.FC<DayViewProps> = ({
       default:
         return '•';
     }
+  };
+
+  // Drag and drop handlers
+  const handleDragStart = (e: React.DragEvent, event: CalendarEvent) => {
+    if (!onEventDrop) return;
+    
+    setDraggedEvent(event);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', event.id);
+    
+    // Add visual feedback
+    const dragImage = e.currentTarget.cloneNode(true) as HTMLElement;
+    dragImage.style.opacity = '0.7';
+    e.dataTransfer.setDragImage(dragImage, 0, 0);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedEvent(null);
+    setDragOverSlot(null);
+  };
+
+  const handleDragOver = (e: React.DragEvent, hour: number, minutes: number = 0) => {
+    if (!draggedEvent || !onEventDrop) return;
+    
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverSlot({ hour, minutes });
+  };
+
+  const handleDragLeave = () => {
+    setDragOverSlot(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, hour: number, minutes: number = 0) => {
+    e.preventDefault();
+    
+    if (!draggedEvent || !onEventDrop) return;
+    
+    // Calculate new start and end times
+    const newStart = new Date(currentDate);
+    newStart.setHours(hour, minutes, 0, 0);
+    
+    const duration = draggedEvent.end.getTime() - draggedEvent.start.getTime();
+    const newEnd = new Date(newStart.getTime() + duration);
+    
+    // Call the drop handler
+    onEventDrop(draggedEvent, newStart, newEnd);
+    
+    // Reset drag state
+    setDraggedEvent(null);
+    setDragOverSlot(null);
   };
 
   // Check if two dates are the same day
@@ -275,8 +330,15 @@ const DayView: React.FC<DayViewProps> = ({
                 key={`${slot.time}-${slot.minutes}-bg`}
                 className={`h-10 border-b hover:bg-blue-50 dark:hover:bg-gray-800 cursor-pointer transition-colors ${
                   slot.isHour ? 'border-gray-200 dark:border-gray-700' : 'border-gray-100/50 dark:border-gray-800/50'
+                } ${
+                  dragOverSlot && dragOverSlot.hour === slot.time && dragOverSlot.minutes === slot.minutes
+                    ? 'bg-blue-100 dark:bg-blue-900/50 border-blue-300 dark:border-blue-600'
+                    : ''
                 }`}
                 title={`${slot.label} - Click to add event`}
+                onDragOver={(e) => handleDragOver(e, slot.time, slot.minutes)}
+                onDragLeave={handleDragLeave}
+                onDrop={(e) => handleDrop(e, slot.time, slot.minutes)}
               />
             ))}
 
@@ -308,9 +370,14 @@ const DayView: React.FC<DayViewProps> = ({
               return (
                 <div
                   key={event.id}
-                  className={`absolute rounded-lg border-l-4 p-3 cursor-pointer shadow-lg hover:shadow-xl transition-all duration-200 ${colorClass}`}
+                  className={`absolute rounded-lg border-l-4 p-3 cursor-pointer shadow-lg hover:shadow-xl transition-all duration-200 ${colorClass} ${
+                    draggedEvent?.id === event.id ? 'opacity-50' : ''
+                  }`}
                   style={style}
+                  draggable={!!onEventDrop}
                   onClick={() => onEventClick(event)}
+                  onDragStart={(e) => handleDragStart(e, event)}
+                  onDragEnd={handleDragEnd}
                 >
                   <div className="flex items-start gap-2">
                     <span className="text-sm">{icon}</span>

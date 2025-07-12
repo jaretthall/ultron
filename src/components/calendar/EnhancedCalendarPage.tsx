@@ -6,6 +6,7 @@ import { formatDateForInput } from '../../utils/dateUtils';
 
 // Import existing modals
 import NewTaskModal from '../tasks/NewTaskModal';
+import EditTaskModal from '../tasks/EditTaskModal';
 import NewEventModal from './NewEventModal';
 import EditEventModal from './EditEventModal';
 import CounselingSessionModal from './CounselingSessionModal';
@@ -67,7 +68,7 @@ interface EnhancedCalendarPageProps {
 }
 
 const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick }) => {
-  const { state, addTask, addSchedule, updateSchedule, deleteSchedule } = useAppState();
+  const { state, addTask, updateTask, addSchedule, updateSchedule, deleteSchedule } = useAppState();
   const { tasks, projects, schedules } = state;
 
   // State for calendar navigation and view
@@ -87,6 +88,7 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
   const [showEditEventModal, setShowEditEventModal] = useState(false);
   const [showCounselingModal, setShowCounselingModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Schedule | null>(null);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
 
   // Mobile responsive state
   const [isMobile, setIsMobile] = useState(false);
@@ -220,8 +222,11 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
       }
     } else if (event.source === 'task' && event.taskId) {
       const task = tasks.find(t => t.id === event.taskId);
-      if (task && onTaskClick) {
-        onTaskClick(task);
+      if (task) {
+        setEditingTask(task);
+        if (onTaskClick) {
+          onTaskClick(task);
+        }
       }
     }
   }, [schedules, tasks, onTaskClick]);
@@ -249,6 +254,41 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
       setAISuggestions(prev => prev.filter(s => s.id !== suggestionId));
     } catch (error) {
       console.error('Error denying AI suggestion:', error);
+    }
+  };
+
+  const handleUpdateTask = async (updatedTask: Task) => {
+    try {
+      await updateTask(updatedTask.id, updatedTask);
+      setEditingTask(null);
+      await loadCalendarData(); // Reload calendar data to reflect changes
+    } catch (error) {
+      console.error('Error updating task:', error);
+    }
+  };
+
+  const handleEventDrop = async (event: CalendarEvent, newStart: Date, newEnd: Date) => {
+    try {
+      if (event.source === 'schedule' && event.scheduleId) {
+        const schedule = schedules.find(s => s.id === event.scheduleId);
+        if (schedule) {
+          await updateSchedule(event.scheduleId, {
+            start_date: newStart.toISOString(),
+            end_date: newEnd.toISOString()
+          });
+          await loadCalendarData(); // Reload calendar data to reflect changes
+        }
+      } else if (event.source === 'task' && event.taskId) {
+        const task = tasks.find(t => t.id === event.taskId);
+        if (task) {
+          await updateTask(event.taskId, {
+            due_date: newStart.toISOString().split('T')[0]
+          });
+          await loadCalendarData(); // Reload calendar data to reflect changes
+        }
+      }
+    } catch (error) {
+      console.error('Error updating event position:', error);
     }
   };
 
@@ -420,6 +460,7 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
                   events={filteredEvents}
                   onDateSelect={handleDateSelect}
                   onEventClick={handleEventClick}
+                  onEventDrop={handleEventDrop}
                 />
               )}
 
@@ -430,6 +471,7 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
                   events={filteredEvents}
                   onDateSelect={handleDateSelect}
                   onEventClick={handleEventClick}
+                  onEventDrop={handleEventDrop}
                 />
               )}
 
@@ -438,6 +480,7 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
                   currentDate={currentDate}
                   events={filteredEvents}
                   onEventClick={handleEventClick}
+                  onEventDrop={handleEventDrop}
                 />
               )}
             </>
@@ -502,6 +545,16 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
           }}
           projects={projects}
           defaultDate={selectedDate}
+        />
+      )}
+
+      {editingTask && (
+        <EditTaskModal
+          task={editingTask}
+          isOpen={!!editingTask}
+          onClose={() => setEditingTask(null)}
+          onUpdateTask={handleUpdateTask}
+          projects={projects}
         />
       )}
     </div>

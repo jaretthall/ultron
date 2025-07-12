@@ -7,6 +7,7 @@ interface WeekViewProps {
   events: CalendarEvent[];
   onDateSelect: (date: Date) => void;
   onEventClick: (event: CalendarEvent) => void;
+  onEventDrop?: (event: CalendarEvent, newStart: Date, newEnd: Date) => void;
 }
 
 const WeekView: React.FC<WeekViewProps> = ({
@@ -14,9 +15,12 @@ const WeekView: React.FC<WeekViewProps> = ({
   selectedDate,
   events,
   onDateSelect,
-  onEventClick
+  onEventClick,
+  onEventDrop
 }) => {
   const [isMobile, setIsMobile] = useState(false);
+  const [draggedEvent, setDraggedEvent] = useState<CalendarEvent | null>(null);
+  const [dragOverSlot, setDragOverSlot] = useState<{ day: Date; hour: number } | null>(null);
 
   // Detect mobile screen size
   useEffect(() => {
@@ -145,6 +149,49 @@ const WeekView: React.FC<WeekViewProps> = ({
     return date.toDateString() === selectedDate.toDateString();
   };
 
+  // Drag and drop handlers
+  const handleDragStart = (e: React.DragEvent, event: CalendarEvent) => {
+    if (!onEventDrop) return;
+    
+    setDraggedEvent(event);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', event.id);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedEvent(null);
+    setDragOverSlot(null);
+  };
+
+  const handleDragOver = (e: React.DragEvent, day: Date, hour: number) => {
+    if (!draggedEvent || !onEventDrop) return;
+    
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverSlot({ day, hour });
+  };
+
+  const handleDragLeave = () => {
+    setDragOverSlot(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, day: Date, hour: number) => {
+    e.preventDefault();
+    
+    if (!draggedEvent || !onEventDrop) return;
+    
+    const newStart = new Date(day);
+    newStart.setHours(hour, 0, 0, 0);
+    
+    const duration = draggedEvent.end.getTime() - draggedEvent.start.getTime();
+    const newEnd = new Date(newStart.getTime() + duration);
+    
+    onEventDrop(draggedEvent, newStart, newEnd);
+    
+    setDraggedEvent(null);
+    setDragOverSlot(null);
+  };
+
   return (
     <div className="h-full flex flex-col bg-white dark:bg-gray-900">
       {/* Week Header */}
@@ -236,8 +283,15 @@ const WeekView: React.FC<WeekViewProps> = ({
                 {timeSlots.map((slot) => (
                   <div
                     key={slot.time}
-                    className="h-15 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
+                    className={`h-15 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer ${
+                      dragOverSlot && dragOverSlot.day.toDateString() === day.toDateString() && dragOverSlot.hour === slot.time
+                        ? 'bg-blue-100 dark:bg-blue-900/50 border-blue-300 dark:border-blue-600'
+                        : ''
+                    }`}
                     onClick={() => onDateSelect(day)}
+                    onDragOver={(e) => handleDragOver(e, day, slot.time)}
+                    onDragLeave={handleDragLeave}
+                    onDrop={(e) => handleDrop(e, day, slot.time)}
                   />
                 ))}
 
@@ -251,9 +305,14 @@ const WeekView: React.FC<WeekViewProps> = ({
                     return (
                       <div
                         key={event.id}
-                        className={`absolute left-1 right-1 rounded-md border-l-4 p-2 cursor-pointer pointer-events-auto shadow-sm ${colorClass} hover:shadow-md transition-shadow`}
+                        className={`absolute left-1 right-1 rounded-md border-l-4 p-2 cursor-pointer pointer-events-auto shadow-sm ${colorClass} hover:shadow-md transition-shadow ${
+                          draggedEvent?.id === event.id ? 'opacity-50' : ''
+                        }`}
                         style={style}
+                        draggable={!!onEventDrop}
                         onClick={() => onEventClick(event)}
+                        onDragStart={(e) => handleDragStart(e, event)}
+                        onDragEnd={handleDragEnd}
                         title={`${event.title}\n${event.start.toLocaleTimeString()} - ${event.end.toLocaleTimeString()}`}
                       >
                         <div className="flex items-start gap-1">

@@ -7,6 +7,7 @@ interface MonthViewProps {
   events: CalendarEvent[];
   onDateSelect: (date: Date) => void;
   onEventClick: (event: CalendarEvent) => void;
+  onEventDrop?: (event: CalendarEvent, newStart: Date, newEnd: Date) => void;
 }
 
 const MonthView: React.FC<MonthViewProps> = ({
@@ -14,9 +15,12 @@ const MonthView: React.FC<MonthViewProps> = ({
   selectedDate,
   events,
   onDateSelect,
-  onEventClick
+  onEventClick,
+  onEventDrop
 }) => {
   const [isMobile, setIsMobile] = useState(false);
+  const [draggedEvent, setDraggedEvent] = useState<CalendarEvent | null>(null);
+  const [dragOverDate, setDragOverDate] = useState<Date | null>(null);
 
   // Detect mobile screen size
   useEffect(() => {
@@ -159,6 +163,50 @@ const MonthView: React.FC<MonthViewProps> = ({
     onEventClick(event);
   };
 
+  // Drag and drop handlers
+  const handleDragStart = (e: React.DragEvent, event: CalendarEvent) => {
+    if (!onEventDrop) return;
+    
+    setDraggedEvent(event);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', event.id);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedEvent(null);
+    setDragOverDate(null);
+  };
+
+  const handleDragOver = (e: React.DragEvent, date: Date) => {
+    if (!draggedEvent || !onEventDrop) return;
+    
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverDate(date);
+  };
+
+  const handleDragLeave = () => {
+    setDragOverDate(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, date: Date) => {
+    e.preventDefault();
+    
+    if (!draggedEvent || !onEventDrop) return;
+    
+    // For month view, we'll move the event to the same time but on the new date
+    const newStart = new Date(date);
+    newStart.setHours(draggedEvent.start.getHours(), draggedEvent.start.getMinutes(), 0, 0);
+    
+    const duration = draggedEvent.end.getTime() - draggedEvent.start.getTime();
+    const newEnd = new Date(newStart.getTime() + duration);
+    
+    onEventDrop(draggedEvent, newStart, newEnd);
+    
+    setDraggedEvent(null);
+    setDragOverDate(null);
+  };
+
   return (
     <div className="h-full flex flex-col bg-white dark:bg-gray-900">
       {/* Month Header */}
@@ -194,8 +242,15 @@ const MonthView: React.FC<MonthViewProps> = ({
                     : 'hover:bg-gray-50 dark:hover:bg-gray-800'
                 } ${
                   !isCurrentMonth ? 'bg-gray-50 dark:bg-gray-800' : ''
+                } ${
+                  dragOverDate && dragOverDate.toDateString() === date.toDateString()
+                    ? 'bg-blue-100 dark:bg-blue-900/50 ring-2 ring-blue-300 dark:ring-blue-600'
+                    : ''
                 }`}
                 onClick={() => handleCellClick(date)}
+                onDragOver={(e) => handleDragOver(e, date)}
+                onDragLeave={handleDragLeave}
+                onDrop={(e) => handleDrop(e, date)}
               >
                 {/* Date number */}
                 <div className="p-2 flex items-center justify-between">
@@ -235,8 +290,13 @@ const MonthView: React.FC<MonthViewProps> = ({
                   {dayEvents.slice(0, isMobile ? 2 : 4).map((event, eventIndex) => (
                     <div
                       key={eventIndex}
-                      className={`${getEventColor(event)} text-white text-xs rounded px-2 py-1 cursor-pointer hover:opacity-80 transition-opacity truncate`}
+                      className={`${getEventColor(event)} text-white text-xs rounded px-2 py-1 cursor-pointer hover:opacity-80 transition-opacity truncate ${
+                        draggedEvent?.id === event.id ? 'opacity-50' : ''
+                      }`}
+                      draggable={!!onEventDrop}
                       onClick={(e) => handleEventClick(event, e)}
+                      onDragStart={(e) => handleDragStart(e, event)}
+                      onDragEnd={handleDragEnd}
                       title={`${event.title}\n${event.start.toLocaleTimeString('en-US', { 
                         hour: 'numeric', 
                         minute: '2-digit',
