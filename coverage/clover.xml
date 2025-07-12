@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1752337363567" clover="3.2.0">
-  <project timestamp="1752337363568" name="All files">
-    <metrics statements="8132" coveredstatements="207" conditionals="4691" coveredconditionals="57" methods="2273" coveredmethods="50" elements="15096" coveredelements="314" complexity="0" loc="8132" ncloc="8132" packages="22" files="96" classes="96"/>
+<coverage generated="1752338374915" clover="3.2.0">
+  <project timestamp="1752338374915" name="All files">
+    <metrics statements="8132" coveredstatements="219" conditionals="4691" coveredconditionals="59" methods="2273" coveredmethods="55" elements="15096" coveredelements="333" complexity="0" loc="8132" ncloc="8132" packages="22" files="96" classes="96"/>
     <package name="services">
       <metrics statements="1245" coveredstatements="47" conditionals="788" coveredconditionals="18" methods="288" coveredmethods="4"/>
       <file name="adaptiveDatabaseService.ts" path="/mnt/c/Users/JarettHall/Programming/Ultron/services/adaptiveDatabaseService.ts">
@@ -7401,7 +7401,7 @@
       </file>
     </package>
     <package name="src.utils">
-      <metrics statements="1046" coveredstatements="145" conditionals="479" coveredconditionals="31" methods="307" coveredmethods="45"/>
+      <metrics statements="1046" coveredstatements="157" conditionals="479" coveredconditionals="33" methods="307" coveredmethods="50"/>
       <file name="accessibilityUtils.ts" path="/mnt/c/Users/JarettHall/Programming/Ultron/src/utils/accessibilityUtils.ts">
         <metrics statements="91" coveredstatements="0" conditionals="55" coveredconditionals="0" methods="16" coveredmethods="0"/>
         <line num="7" count="0" type="stmt"/>
@@ -7823,15 +7823,15 @@
         <line num="348" count="0" type="stmt"/>
       </file>
       <file name="idGeneration.ts" path="/mnt/c/Users/JarettHall/Programming/Ultron/src/utils/idGeneration.ts">
-        <metrics statements="40" coveredstatements="0" conditionals="14" coveredconditionals="0" methods="19" coveredmethods="0"/>
-        <line num="1" count="0" type="stmt"/>
-        <line num="12" count="0" type="stmt"/>
-        <line num="18" count="0" type="stmt"/>
+        <metrics statements="40" coveredstatements="12" conditionals="14" coveredconditionals="2" methods="19" coveredmethods="5"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="12" count="1" type="stmt"/>
+        <line num="18" count="7" type="stmt"/>
         <line num="26" count="0" type="stmt"/>
-        <line num="33" count="0" type="stmt"/>
-        <line num="42" count="0" type="stmt"/>
-        <line num="45" count="0" type="stmt"/>
-        <line num="47" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="33" count="1" type="stmt"/>
+        <line num="42" count="4" type="stmt"/>
+        <line num="45" count="4" type="stmt"/>
+        <line num="47" count="4" type="cond" truecount="2" falsecount="0"/>
         <line num="55" count="0" type="stmt"/>
         <line num="56" count="0" type="stmt"/>
         <line num="64" count="0" type="stmt"/>
@@ -7839,8 +7839,8 @@
         <line num="66" count="0" type="stmt"/>
         <line num="67" count="0" type="cond" truecount="0" falsecount="2"/>
         <line num="69" count="0" type="cond" truecount="0" falsecount="2"/>
-        <line num="76" count="0" type="stmt"/>
-        <line num="80" count="0" type="stmt"/>
+        <line num="76" count="3" type="stmt"/>
+        <line num="80" count="3" type="stmt"/>
         <line num="84" count="0" type="stmt"/>
         <line num="88" count="0" type="stmt"/>
         <line num="92" count="0" type="stmt"/>
@@ -7858,12 +7858,12 @@
         <line num="140" count="0" type="cond" truecount="0" falsecount="2"/>
         <line num="141" count="0" type="cond" truecount="0" falsecount="2"/>
         <line num="142" count="0" type="stmt"/>
-        <line num="150" count="0" type="stmt"/>
+        <line num="150" count="1" type="stmt"/>
         <line num="151" count="0" type="stmt"/>
         <line num="152" count="0" type="stmt"/>
-        <line num="158" count="0" type="stmt"/>
+        <line num="158" count="1" type="stmt"/>
         <line num="159" count="0" type="stmt"/>
-        <line num="162" count="0" type="stmt"/>
+        <line num="162" count="1" type="stmt"/>
       </file>
       <file name="performanceMonitoring.ts" path="/mnt/c/Users/JarettHall/Programming/Ultron/src/utils/performanceMonitoring.ts">
         <metrics statements="128" coveredstatements="0" conditionals="54" coveredconditionals="0" methods="49" coveredmethods="0"/>
