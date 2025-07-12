@@ -16,6 +16,9 @@ npm run test:ci
 ```
 This runs Jest tests with coverage and CI configuration.
 
+**ALWAYS DESIGN FOR DESKTOP + MOBILE SIMULTANEOUSLY:**
+All UI components and features must work seamlessly on both desktop and mobile devices from the start.
+
 ### Recent Issues Fixed
 - Business export data filtering (all projects now properly marked as business context)
 - AI services re-enabled (removed mock data fallbacks)
@@ -36,6 +39,13 @@ This runs Jest tests with coverage and CI configuration.
 - ✅ Enhanced prompt template with time estimation and prioritization
 - ✅ Jest configuration properly configured with single config file
 - ✅ Schedule saving working with cross-device sync (daily_schedules table created)
+- ✅ Calendar integration service layer completed (Step 2/4)
+
+### Calendar Integration Progress
+**Step 1**: ✅ Database schema extended with work session fields
+**Step 2**: ✅ Service layer with AI scheduling, work session management, and data parsing
+**Step 3**: Pending - Calendar UI views (month/week/day with mobile support)
+**Step 4**: Pending - AI suggestion interface (approve/deny/modify)
 
 ### Completed Fixes
 - Schedule saving functionality restored by creating daily_schedules table

@@ -853,6 +853,194 @@ export const tasksService = {
     score += Math.min((task.estimated_hours || 0) * 2, 20); // Cap at 20 points
     
     return score;
+  },
+
+  /**
+   * Schedule a work session for a task
+   */
+  async scheduleWorkSession(
+    taskId: string, 
+    startTime: Date, 
+    endTime: Date, 
+    aiSuggested: boolean = false
+  ): Promise<Task> {
+    if (!supabase) throw new Error('Supabase client not initialized');
+    
+    const user = getCustomAuthUser();
+    if (!user?.id) throw new Error('User not authenticated');
+
+    console.log('Scheduling work session:', {
+      taskId,
+      startTime: startTime.toISOString(),
+      endTime: endTime.toISOString(),
+      aiSuggested
+    });
+
+    const { data, error } = await supabase
+      .from('tasks')
+      .update({
+        work_session_scheduled_start: startTime.toISOString(),
+        work_session_scheduled_end: endTime.toISOString(),
+        ai_suggested: aiSuggested,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', taskId)
+      .eq('user_id', user.id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error scheduling work session:', error);
+      throw new Error(`Failed to schedule work session: ${error.message}`);
+    }
+
+    if (!data) {
+      throw new Error('Task not found or access denied');
+    }
+
+    // Invalidate caches
+    cacheInvalidation.tasks();
+
+    console.log('Work session scheduled successfully:', data.id);
+    return data;
+  },
+
+  /**
+   * Clear scheduled work session for a task
+   */
+  async clearWorkSession(taskId: string): Promise<Task> {
+    if (!supabase) throw new Error('Supabase client not initialized');
+    
+    const user = getCustomAuthUser();
+    if (!user?.id) throw new Error('User not authenticated');
+
+    const { data, error } = await supabase
+      .from('tasks')
+      .update({
+        work_session_scheduled_start: null,
+        work_session_scheduled_end: null,
+        ai_suggested: false,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', taskId)
+      .eq('user_id', user.id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error clearing work session:', error);
+      throw new Error(`Failed to clear work session: ${error.message}`);
+    }
+
+    if (!data) {
+      throw new Error('Task not found or access denied');
+    }
+
+    // Invalidate caches
+    cacheInvalidation.tasks();
+
+    return data;
+  },
+
+  /**
+   * Get tasks with scheduled work sessions in date range
+   */
+  async getTasksWithWorkSessions(startDate: Date, endDate: Date): Promise<Task[]> {
+    if (!supabase) throw new Error('Supabase client not initialized');
+    
+    const user = getCustomAuthUser();
+    if (!user?.id) throw new Error('User not authenticated');
+
+    const { data, error } = await supabase
+      .from('tasks')
+      .select('*')
+      .eq('user_id', user.id)
+      .not('work_session_scheduled_start', 'is', null)
+      .gte('work_session_scheduled_start', startDate.toISOString())
+      .lte('work_session_scheduled_start', endDate.toISOString())
+      .order('work_session_scheduled_start', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching tasks with work sessions:', error);
+      throw new Error(`Failed to fetch work sessions: ${error.message}`);
+    }
+
+    return data || [];
+  },
+
+  /**
+   * Get unscheduled tasks that need work sessions
+   */
+  async getUnscheduledTasks(): Promise<Task[]> {
+    if (!supabase) throw new Error('Supabase client not initialized');
+    
+    const user = getCustomAuthUser();
+    if (!user?.id) throw new Error('User not authenticated');
+
+    const { data, error } = await supabase
+      .from('tasks')
+      .select('*')
+      .eq('user_id', user.id)
+      .neq('status', 'completed')
+      .is('work_session_scheduled_start', null)
+      .gt('estimated_hours', 0)
+      .order('priority', { ascending: false })
+      .order('due_date', { ascending: true, nullsFirst: false });
+
+    if (error) {
+      console.error('Error fetching unscheduled tasks:', error);
+      throw new Error(`Failed to fetch unscheduled tasks: ${error.message}`);
+    }
+
+    return data || [];
+  },
+
+  /**
+   * Reschedule an existing work session
+   */
+  async rescheduleWorkSession(
+    taskId: string, 
+    newStartTime: Date, 
+    newEndTime: Date
+  ): Promise<Task> {
+    if (!supabase) throw new Error('Supabase client not initialized');
+    
+    const user = getCustomAuthUser();
+    if (!user?.id) throw new Error('User not authenticated');
+
+    console.log('Rescheduling work session:', {
+      taskId,
+      newStartTime: newStartTime.toISOString(),
+      newEndTime: newEndTime.toISOString()
+    });
+
+    const { data, error } = await supabase
+      .from('tasks')
+      .update({
+        work_session_scheduled_start: newStartTime.toISOString(),
+        work_session_scheduled_end: newEndTime.toISOString(),
+        ai_suggested: false, // Mark as manually modified
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', taskId)
+      .eq('user_id', user.id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error rescheduling work session:', error);
+      throw new Error(`Failed to reschedule work session: ${error.message}`);
+    }
+
+    if (!data) {
+      throw new Error('Task not found or access denied');
+    }
+
+    // Invalidate caches
+    cacheInvalidation.tasks();
+
+    console.log('Work session rescheduled successfully:', data.id);
+    return data;
   }
 };
 

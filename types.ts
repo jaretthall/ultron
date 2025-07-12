@@ -70,6 +70,9 @@ export interface Task extends UniversalSyncFields {
   energy_level?: 'low' | 'medium' | 'high';
   notes?: string;
   completion_notes?: string;
+  work_session_scheduled_start?: string; // DateTime for scheduled work session
+  work_session_scheduled_end?: string; // DateTime for scheduled work session
+  ai_suggested?: boolean; // Whether work session was suggested by AI
   created_at?: string; // DateTime
   updated_at?: string; // DateTime
   user_id?: string; // For RLS
