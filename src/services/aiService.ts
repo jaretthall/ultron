@@ -23,6 +23,14 @@ export interface AIServiceResult<T> {
 // AI Provider priority order for failover
 const PROVIDER_FAILOVER_ORDER: string[] = ['gemini', 'claude', 'openai'];
 
+// Helper function to safely extract error message
+const getErrorMessage = (error: unknown): string => {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return String(error);
+};
+
 // Provider availability check
 const checkProviderAvailability = (provider: string, userPreferences: UserPreferences): boolean => {
   switch (provider) {
@@ -130,7 +138,7 @@ export const generateAIInsights = async (
           throw new Error(`Unknown provider: ${currentProvider}`);
       }
       
-    } catch (error) {
+    } catch (error: unknown) {
       console.error(`Error with provider ${currentProvider}:`, error);
       
       if (allowFallback) {
@@ -150,7 +158,7 @@ export const generateAIInsights = async (
         },
         provider_used: 'none',
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: getErrorMessage(error)
       };
       break;
     }
@@ -243,15 +251,15 @@ export const generateAIDailyPlan = async (
     
     // Use fallback provider
     try {
-      const plan = await callDailyPlanProvider(fallbackProvider, date, projects, tasks, userPreferences, focusBlockData);
+      const plan = await callDailyPlanProvider(fallbackProvider!, date, projects, tasks, userPreferences, focusBlockData);
       return {
         data: plan,
-        provider_used: fallbackProvider,
+        provider_used: fallbackProvider!,
         success: true,
         fallback_used: true
       };
-    } catch (error) {
-      return generateDefaultDailyPlan(date, fallbackProvider, error instanceof Error ? error.message : 'Unknown error', true);
+    } catch (error: unknown) {
+      return generateDefaultDailyPlan(date, fallbackProvider!, getErrorMessage(error), true);
     }
   }
   
@@ -263,7 +271,7 @@ export const generateAIDailyPlan = async (
       provider_used: primaryProvider,
       success: true
     };
-  } catch (error) {
+  } catch (error: unknown) {
     console.warn(`Primary provider ${primaryProvider} failed:`, error);
     
     // Try fallback if enabled
@@ -272,21 +280,21 @@ export const generateAIDailyPlan = async (
       
       if (fallbackProvider) {
         try {
-          const plan = await callDailyPlanProvider(fallbackProvider, date, projects, tasks, userPreferences, focusBlockData);
+          const plan = await callDailyPlanProvider(fallbackProvider!, date, projects, tasks, userPreferences, focusBlockData);
           return {
             data: plan,
-            provider_used: fallbackProvider,
+            provider_used: fallbackProvider!,
             success: true,
             fallback_used: true
           };
         } catch (fallbackError) {
-          console.error(`Fallback provider ${fallbackProvider} also failed:`, fallbackError);
+          console.error(`Fallback provider ${fallbackProvider!} also failed:`, fallbackError);
         }
       }
     }
     
     // All providers failed
-    return generateDefaultDailyPlan(date, primaryProvider, error instanceof Error ? error.message : 'Unknown error');
+    return generateDefaultDailyPlan(date, primaryProvider, getErrorMessage(error));
   }
   /* END AI SERVICE */
 };
@@ -326,19 +334,19 @@ export const generateAIWorkloadAnalysis = async (
     
     // Use fallback provider
     try {
-      const analysis = await callWorkloadAnalysisProvider(fallbackProvider, projects, tasks, userPreferences, schedulingData);
+      const analysis = await callWorkloadAnalysisProvider(fallbackProvider!, projects, tasks, userPreferences, schedulingData);
       return {
         data: analysis,
-        provider_used: fallbackProvider,
+        provider_used: fallbackProvider!,
         success: true,
         fallback_used: true
       };
-    } catch (error) {
+    } catch (error: unknown) {
       return {
-        data: generateDefaultWorkloadAnalysis(`Fallback provider ${fallbackProvider} failed`),
-        provider_used: fallbackProvider,
+        data: generateDefaultWorkloadAnalysis(`Fallback provider ${fallbackProvider!} failed`),
+        provider_used: fallbackProvider!,
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: getErrorMessage(error),
         fallback_used: true
       };
     }
@@ -352,7 +360,7 @@ export const generateAIWorkloadAnalysis = async (
       provider_used: primaryProvider,
       success: true
     };
-  } catch (error) {
+  } catch (error: unknown) {
     console.warn(`Primary provider ${primaryProvider} failed:`, error);
     
     // Try fallback if enabled
@@ -361,15 +369,15 @@ export const generateAIWorkloadAnalysis = async (
       
       if (fallbackProvider) {
         try {
-          const analysis = await callWorkloadAnalysisProvider(fallbackProvider, projects, tasks, userPreferences, schedulingData);
+          const analysis = await callWorkloadAnalysisProvider(fallbackProvider!, projects, tasks, userPreferences, schedulingData);
           return {
             data: analysis,
-            provider_used: fallbackProvider,
+            provider_used: fallbackProvider!,
             success: true,
             fallback_used: true
           };
         } catch (fallbackError) {
-          console.error(`Fallback provider ${fallbackProvider} also failed:`, fallbackError);
+          console.error(`Fallback provider ${fallbackProvider!} also failed:`, fallbackError);
         }
       }
     }
@@ -379,7 +387,7 @@ export const generateAIWorkloadAnalysis = async (
       data: generateDefaultWorkloadAnalysis(`AI analysis failed with ${primaryProvider}`),
       provider_used: primaryProvider,
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: getErrorMessage(error)
     };
   }
   /* END AI SERVICE */

@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Task, TaskPriority, TaskStatus, Project } from '../../../types';
 import LoadingSpinner from '../LoadingSpinner';
+import { TASK_TEMPLATES, TaskTemplate } from '../../constants/templates';
 // Phase 6: Security and monitoring integration
 import { InputValidator } from '../../utils/securityUtils';
 import { trackUserInteraction, captureException, ErrorCategory, ErrorSeverity } from '../../services/monitoringService';
@@ -39,12 +40,34 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
   const [tags, setTags] = useState('');
   const [estimatedHours, setEstimatedHours] = useState<number | string>(0);
   const [progress, setProgress] = useState(0);
+  const [selectedTemplate, setSelectedTemplate] = useState<string>('');
   const [formErrors, setFormErrors] = useState<TaskFormErrors>({});
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Filter out temporary projects (those with IDs starting with 'temp_')
   const availableProjects = useMemo(() => projects.filter(p => !p.id.startsWith('temp_')), [projects]);
+
+  // Get relevant task templates based on selected project
+  const relevantTemplates = useMemo(() => {
+    if (selectedProjectIdState === 'standalone') {
+      return TASK_TEMPLATES;
+    }
+    
+    const selectedProject = availableProjects.find(p => p.id === selectedProjectIdState);
+    if (!selectedProject) return TASK_TEMPLATES;
+    
+    // Filter templates based on project type and context
+    return TASK_TEMPLATES.filter(template => {
+      // Show all templates for business projects
+      if (selectedProject.project_context === 'business') {
+        return true;
+      }
+      
+      // For personal projects, show templates that don't require business context
+      return !template.project_context || template.project_context === selectedProject.project_context;
+    });
+  }, [selectedProjectIdState, availableProjects]);
 
   useEffect(() => {
     if (isOpen) {
@@ -58,6 +81,7 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
         setTags('');
         setEstimatedHours(0);
         setProgress(0);
+        setSelectedTemplate('');
         setFormErrors({});
         setErrorMessage('');
     } else {
@@ -71,11 +95,34 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
         setTags('');
         setEstimatedHours(0);
         setProgress(0);
+        setSelectedTemplate('');
         setFormErrors({});
         setErrorMessage('');
     }
   }, [isOpen, defaultProjectId, defaultDueDate, availableProjects]);
 
+  const handleTemplateChange = (templateId: string) => {
+    setSelectedTemplate(templateId);
+    
+    if (templateId === '') {
+      // Reset to defaults
+      setTitle('');
+      setContext('');
+      setPriority(TaskPriority.MEDIUM);
+      setTags('');
+      setEstimatedHours(0);
+      return;
+    }
+
+    const template = TASK_TEMPLATES.find(t => t.id === templateId);
+    if (template) {
+      setTitle(template.name);
+      setContext(template.context);
+      setPriority(template.priority);
+      setTags(template.tags.join(', '));
+      setEstimatedHours(template.estimated_hours);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -104,6 +151,7 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
     setDueDate(defaultDueDate || '');
     setTags('');
     setProgress(0);
+    setSelectedTemplate('');
     setErrorMessage('');
     onClose();
   };
@@ -163,7 +211,8 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
         priority, 
         hasProject: !!newTaskData.project_id,
         estimatedHours: estimatedHoursNum,
-        tagCount: sanitizedTags.length
+        tagCount: sanitizedTags.length,
+        templateUsed: selectedTemplate
       });
 
       await onAddTask(newTaskData);
@@ -199,12 +248,17 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
           aria-labelledby="newTaskModalTitle"
       >
         <div 
-          className="bg-slate-800 p-6 rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
-          onClick={e => e.stopPropagation()} 
+            className="bg-slate-800 p-6 rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
         >
           <div className="flex justify-between items-center mb-6">
-            <h2 id="newTaskModalTitle" className="text-2xl font-semibold text-sky-400">Create New Task</h2>
-            <button onClick={handleCloseModal} className="text-slate-400 hover:text-slate-200" aria-label="Close modal">
+            <h2 id="newTaskModalTitle" className="text-2xl font-semibold text-sky-400">Add New Task</h2>
+            <button 
+                onClick={handleCloseModal} 
+                className="text-slate-400 hover:text-slate-200" 
+                aria-label="Close modal"
+                disabled={isSubmitting}
+            >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-7 h-7">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -217,47 +271,76 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
             </div>
           )}
 
-          {availableProjects.length === 0 && projects.length > 0 && (
-            <div className="mb-4 p-3 bg-yellow-800/20 border border-yellow-600 rounded-lg">
-              <p className="text-yellow-400 text-sm">
-                Some projects are still being saved. Wait for them to finish before creating tasks.
-              </p>
-            </div>
-          )}
-                  <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Task Template Selection */}
             <div>
-              <label htmlFor="taskTitle" className="block text-sm font-medium text-slate-300 mb-1">Title <span className="text-red-500">*</span></label>
+              <label htmlFor="taskTemplate" className="block text-sm font-medium text-slate-300 mb-1">
+                Task Template
+                <span className="block text-xs text-slate-400 font-normal mt-0.5">
+                  Choose a template to pre-fill common task types, or start from scratch.
+                </span>
+              </label>
+              <select
+                id="taskTemplate"
+                value={selectedTemplate}
+                onChange={(e) => handleTemplateChange(e.target.value)}
+                className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
+                disabled={isSubmitting}
+              >
+                <option value="">Start from scratch</option>
+                {relevantTemplates.map((template) => (
+                  <option key={template.id} value={template.id}>
+                    {template.name}
+                  </option>
+                ))}
+              </select>
+              {selectedTemplate && (
+                <div className="mt-2 p-3 bg-slate-700/50 rounded-md">
+                  <p className="text-xs text-slate-300">
+                    {TASK_TEMPLATES.find(t => t.id === selectedTemplate)?.description}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label htmlFor="taskTitle" className="block text-sm font-medium text-slate-300 mb-1">
+                Title <span className="text-red-500">*</span>
+              </label>
               <input
                 type="text"
                 id="taskTitle"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className={`w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500 ${formErrors.title ? 'border-red-500' : ''}`}
+                className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
                 required
-                aria-required="true"
-                aria-describedby={formErrors.title ? "taskTitleError" : undefined}
                 disabled={isSubmitting}
+                aria-required="true"
               />
-              {formErrors.title && <p id="taskTitleError" className="text-xs text-red-400 mt-1">{formErrors.title}</p>}
+              {formErrors.title && (
+                <p className="mt-1 text-sm text-red-400">{formErrors.title}</p>
+              )}
             </div>
-                      <div>
+
+            <div>
               <label htmlFor="taskContext" className="block text-sm font-medium text-slate-300 mb-1">
-                Context <span className="text-sky-400">*</span>
+                Context/Description
                 <span className="block text-xs text-slate-400 font-normal mt-0.5">
-                  Provide detailed context to help AI understand this task's purpose, requirements, and any important background information.
+                  Provide detailed context to help with task execution and AI understanding.
                 </span>
               </label>
               <textarea
                 id="taskContext"
                 value={context}
                 onChange={(e) => setContext(e.target.value)}
-                rows={4}
-                placeholder="Describe what this task involves, why it's important, any specific requirements, constraints, or context that would help the AI understand and prioritize this task effectively..."
+                rows={3}
                 className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
+                placeholder="Describe what needs to be done, any constraints, requirements, or important details..."
                 disabled={isSubmitting}
               />
             </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="taskPriority" className="block text-sm font-medium text-slate-300 mb-1">Priority</label>
                 <select
@@ -267,9 +350,14 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
                   className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
                   disabled={isSubmitting}
                 >
-                  {Object.values(TaskPriority).map(p => <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>)}
+                  {Object.values(TaskPriority).map((priorityValue) => (
+                    <option key={priorityValue} value={priorityValue}>
+                      {priorityValue.charAt(0).toUpperCase() + priorityValue.slice(1)}
+                    </option>
+                  ))}
                 </select>
               </div>
+
               <div>
                 <label htmlFor="taskProject" className="block text-sm font-medium text-slate-300 mb-1">Project</label>
                 <select
@@ -280,97 +368,97 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
                   disabled={isSubmitting}
                 >
                   <option value="standalone">Standalone Task</option>
-                  {availableProjects.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
+                  {availableProjects.map((project) => (
+                    <option key={project.id} value={project.id}>
+                      {project.title}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
-                      <div>
-              <label htmlFor="taskDueDate" className="block text-sm font-medium text-slate-300 mb-1">Due Date</label>
-              <input
-                type="date"
-                id="taskDueDate"
-                value={dueDate} 
-                onChange={(e) => setDueDate(e.target.value)}
-                className={`w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500 ${formErrors.due_date ? 'border-red-500' : ''}`}
-                aria-describedby={formErrors.due_date ? "taskDueDateError" : undefined}
-                disabled={isSubmitting}
-              />
-              {formErrors.due_date && <p id="taskDueDateError" className="text-xs text-red-400 mt-1">{formErrors.due_date}</p>}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="taskEstimatedHours" className="block text-sm font-medium text-slate-300 mb-1">
+                  Estimated Hours
+                </label>
+                <input
+                  type="number"
+                  id="taskEstimatedHours"
+                  value={estimatedHours}
+                  onChange={(e) => setEstimatedHours(e.target.value)}
+                  min="0"
+                  max="24"
+                  step="0.5"
+                  className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
+                  disabled={isSubmitting}
+                />
+                {formErrors.estimated_hours && (
+                  <p className="mt-1 text-sm text-red-400">{formErrors.estimated_hours}</p>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="taskDueDate" className="block text-sm font-medium text-slate-300 mb-1">
+                  Due Date (optional)
+                </label>
+                <input
+                  type="date"
+                  id="taskDueDate"
+                  value={dueDate}
+                  onChange={(e) => setDueDate(e.target.value)}
+                  className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
+                  disabled={isSubmitting}
+                />
+                {formErrors.due_date && (
+                  <p className="mt-1 text-sm text-red-400">{formErrors.due_date}</p>
+                )}
+              </div>
             </div>
-             <div>
-              <label htmlFor="taskEstimatedHours" className="block text-sm font-medium text-slate-300 mb-1">Estimated Hours</label>
-              <input
-                type="number"
-                id="taskEstimatedHours"
-                value={estimatedHours}
-                onChange={(e) => setEstimatedHours(e.target.value === '' ? '' : parseFloat(e.target.value))}
-                min="0"
-                step="0.5"
-                className={`w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500 ${formErrors.estimated_hours ? 'border-red-500' : ''}`}
-                aria-describedby={formErrors.estimated_hours ? "taskEstimatedHoursError" : undefined}
-                disabled={isSubmitting}
-              />
-              {formErrors.estimated_hours && <p id="taskEstimatedHoursError" className="text-xs text-red-400 mt-1">{formErrors.estimated_hours}</p>}
-            </div>
-                      <div>
-              <label htmlFor="taskTags" className="block text-sm font-medium text-slate-300 mb-1">Tags (comma-separated)</label>
+
+            <div>
+              <label htmlFor="taskTags" className="block text-sm font-medium text-slate-300 mb-1">
+                Tags (comma separated)
+              </label>
               <input
                 type="text"
                 id="taskTags"
                 value={tags}
                 onChange={(e) => setTags(e.target.value)}
-                placeholder="e.g., urgent, design, frontend"
+                placeholder="e.g., urgent, review, development"
                 className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
                 disabled={isSubmitting}
               />
             </div>
-                      
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1">
-                Progress: {progress}%
-              </label>
-              <div className="space-y-2">
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={progress}
-                  onChange={(e) => setProgress(Number(e.target.value))}
-                  className="w-full h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer slider"
-                  style={{
-                    background: `linear-gradient(to right, #06b6d4 0%, #06b6d4 ${progress}%, #475569 ${progress}%, #475569 100%)`
-                  }}
-                  disabled={isSubmitting}
-                />
-                <div className="flex justify-between text-xs text-slate-400">
-                  <span>Not Started</span>
-                  <span>In Progress</span>
-                  <span>Completed</span>
-                </div>
-              </div>
-            </div>
-                      
-            <div className="flex justify-end space-x-3 pt-2">
+
+            <div className="flex justify-end space-x-3 pt-4">
               <button
                 type="button"
                 onClick={handleCloseModal}
-                className="px-4 py-2 text-sm font-medium text-slate-300 bg-slate-600 hover:bg-slate-500 rounded-md transition-colors disabled:opacity-50"
                 disabled={isSubmitting}
+                className="px-4 py-2 text-slate-400 hover:text-slate-200 transition-colors"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 rounded-md transition-colors disabled:bg-sky-800 disabled:cursor-not-allowed flex items-center justify-center min-w-[100px]"
                 disabled={isSubmitting}
+                className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
               >
-                {isSubmitting ? <LoadingSpinner size="h-5 w-5" /> : 'Add Task'}
+                {isSubmitting ? (
+                  <>
+                    <LoadingSpinner size="sm" />
+                    <span>Creating...</span>
+                  </>
+                ) : (
+                  <span>Create Task</span>
+                )}
               </button>
             </div>
-        </form>
+          </form>
+        </div>
       </div>
-    </div>
-  );
+    );
 };
 
 export default NewTaskModal;

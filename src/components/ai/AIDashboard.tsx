@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 // Using inline SVG icons to match application pattern
 import { useAppState } from '../../contexts/AppStateContext';
 import { generateAIInsights, generateAIDailyPlan, generateAIWorkloadAnalysis, checkAIProviderHealth, AIServiceResult, AIInsights, DailyPlan, WorkloadAnalysis } from '../../services/aiService';
+import { AI_EXPORT_TEMPLATES, AIExportTemplate } from '../../constants/templates';
 
 // Icon components as inline SVGs
 const CalendarIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5" }) => (
@@ -464,7 +465,9 @@ const AIDashboard: React.FC = () => {
   );
 
   const DataExportPanel: React.FC = () => {
-    const generateAIPrompt = (type: 'business' | 'personal' | 'all') => {
+    const [selectedTemplate, setSelectedTemplate] = useState<string>('daily-schedule');
+    
+    const generateAIPrompt = (type: 'business' | 'personal' | 'all', templateId?: string) => {
       const now = new Date();
       const today = now.toISOString().split('T')[0];
       const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
@@ -475,6 +478,22 @@ const AIDashboard: React.FC = () => {
       friday.setDate(now.getDate() + daysUntilFriday);
       const businessWeekEnd = friday.toISOString().split('T')[0];
 
+      // Use template if provided
+      if (templateId) {
+        const template = AI_EXPORT_TEMPLATES.find(t => t.id === templateId);
+        if (template) {
+          const customPrompt = template.prompt
+            .replace('{today}', today)
+            .replace('{tomorrow}', tomorrow)
+            .replace('{businessWeekEnd}', businessWeekEnd);
+          
+          return `${customPrompt}
+
+**DATA TO ANALYZE:**`;
+        }
+      }
+
+      // Fallback to original prompt logic
       const typeFilter = type === 'business' ? 'business and work-related' : 
                         type === 'personal' ? 'personal' : 'all';
       
@@ -554,6 +573,7 @@ Please format the response as Markdown that I can copy-paste into my schedule te
       // Debug: Log all projects and tasks to understand the data structure
       console.log('=== EXPORT DEBUG ===');
       console.log('Export type:', type);
+      console.log('Selected template:', selectedTemplate);
       console.log('Total projects:', projects.length);
       console.log('Total tasks:', tasks.length);
       
@@ -636,6 +656,7 @@ Please format the response as Markdown that I can copy-paste into my schedule te
       const exportData = {
         exportInfo: {
           type: type,
+          template: selectedTemplate,
           exportDate: new Date().toISOString(),
           projectCount: filteredProjects.length,
           taskCount: filteredTasks.length
@@ -666,7 +687,7 @@ Please format the response as Markdown that I can copy-paste into my schedule te
         }))
       };
 
-      const promptText = generateAIPrompt(type);
+      const promptText = generateAIPrompt(type, selectedTemplate);
       const jsonData = JSON.stringify(exportData, null, 2);
       const fullExport = `${promptText}\n\n\`\`\`json\n${jsonData}\n\`\`\``;
 
@@ -675,7 +696,7 @@ Please format the response as Markdown that I can copy-paste into my schedule te
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `ultron-${type}-data-${new Date().toISOString().split('T')[0]}.md`;
+      a.download = `ultron-${type}-${selectedTemplate}-${new Date().toISOString().split('T')[0]}.md`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -689,6 +710,36 @@ Please format the response as Markdown that I can copy-paste into my schedule te
           <p className="text-sm text-gray-600 mb-4">
             Export your project and task data with AI prompts to generate schedules externally, then paste the results back into your homepage schedule.
           </p>
+          
+          {/* Template Selection */}
+          <div className="mb-4">
+            <label htmlFor="exportTemplate" className="block text-sm font-medium text-gray-700 mb-2">
+              Export Template
+              <span className="block text-xs text-gray-500 font-normal mt-0.5">
+                Choose a template to structure your AI prompt for different use cases.
+              </span>
+            </label>
+            <select
+              id="exportTemplate"
+              value={selectedTemplate}
+              onChange={(e) => setSelectedTemplate(e.target.value)}
+              className="w-full bg-white border border-gray-300 text-gray-900 rounded-md p-2.5 focus:ring-blue-500 focus:border-blue-500"
+            >
+              {AI_EXPORT_TEMPLATES.map((template) => (
+                <option key={template.id} value={template.id}>
+                  {template.name}
+                </option>
+              ))}
+            </select>
+            {selectedTemplate && (
+              <div className="mt-2 p-3 bg-blue-50 rounded-md">
+                <p className="text-sm text-blue-800">
+                  <strong>{AI_EXPORT_TEMPLATES.find(t => t.id === selectedTemplate)?.name}:</strong>{' '}
+                  {AI_EXPORT_TEMPLATES.find(t => t.id === selectedTemplate)?.description}
+                </p>
+              </div>
+            )}
+          </div>
           
           <div className="space-y-3">
             <button
@@ -735,6 +786,7 @@ Please format the response as Markdown that I can copy-paste into my schedule te
           <div className="mt-4 p-3 bg-gray-50 rounded border">
             <h4 className="font-medium text-gray-900 mb-2">How to Use:</h4>
             <ol className="text-sm text-gray-700 space-y-1 list-decimal list-inside">
+              <li>Select an AI export template that matches your goal</li>
               <li>Click one of the export buttons above</li>
               <li>A markdown file will download with your data and AI prompt</li>
               <li>Copy the entire content and paste it into ChatGPT, Claude, or your preferred AI</li>
@@ -747,6 +799,7 @@ Please format the response as Markdown that I can copy-paste into my schedule te
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
           <h4 className="font-medium text-yellow-800 mb-2">Export Details:</h4>
           <ul className="text-sm text-yellow-700 space-y-1">
+            <li><strong>Selected Template:</strong> {AI_EXPORT_TEMPLATES.find(t => t.id === selectedTemplate)?.name}</li>
             <li><strong>Total Available:</strong> {projects.length} projects, {tasks.length} tasks</li>
             <li><strong>Note:</strong> Export filters by business/personal context - check console for filtering debug info</li>
             {projects.length === 0 && tasks.length === 0 && (

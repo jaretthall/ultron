@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { dailyScheduleService } from '../../../services/databaseService';
+import { SCHEDULE_TEMPLATES, ScheduleTemplate } from '../../constants/templates';
 
 interface ManualScheduleDisplayProps {
   onEditTaskRequest?: (task: any) => void;
@@ -9,6 +10,7 @@ const ManualScheduleDisplay: React.FC<ManualScheduleDisplayProps> = ({ onEditTas
   const [scheduleText, setScheduleText] = useState<string>('');
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [showTemplates, setShowTemplates] = useState(false);
   const [currentDate] = useState(new Date().toISOString().split('T')[0]); // Today's date
 
   // Load saved schedule from database on component mount
@@ -96,6 +98,11 @@ const ManualScheduleDisplay: React.FC<ManualScheduleDisplayProps> = ({ onEditTas
     }
   };
 
+  const handleTemplateSelect = (template: ScheduleTemplate) => {
+    setScheduleText(template.schedule);
+    setShowTemplates(false);
+  };
+
   // Simple markdown-to-HTML renderer for display
   const renderMarkdown = (text: string) => {
     return text
@@ -126,6 +133,13 @@ const ManualScheduleDisplay: React.FC<ManualScheduleDisplayProps> = ({ onEditTas
                 {isLoading ? 'Loading...' : 'Edit'}
               </button>
               <button
+                onClick={() => setShowTemplates(!showTemplates)}
+                disabled={isLoading}
+                className="px-3 py-1 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm rounded transition-colors"
+              >
+                Templates
+              </button>
+              <button
                 onClick={clearSchedule}
                 disabled={isLoading}
                 className="px-3 py-1 bg-slate-600 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm rounded transition-colors"
@@ -135,6 +149,13 @@ const ManualScheduleDisplay: React.FC<ManualScheduleDisplayProps> = ({ onEditTas
             </>
           ) : (
             <>
+              <button
+                onClick={() => setShowTemplates(!showTemplates)}
+                disabled={isLoading}
+                className="px-3 py-1 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm rounded transition-colors"
+              >
+                Templates
+              </button>
               <button
                 onClick={handleSave}
                 disabled={isLoading}
@@ -154,6 +175,51 @@ const ManualScheduleDisplay: React.FC<ManualScheduleDisplayProps> = ({ onEditTas
         </div>
       </div>
 
+      {/* Schedule Templates Panel */}
+      {showTemplates && (
+        <div className="mb-4 p-4 bg-slate-900 rounded-lg border border-slate-600">
+          <h3 className="text-lg font-semibold text-white mb-3">Schedule Templates</h3>
+          <p className="text-sm text-slate-400 mb-4">
+            Choose a template to quickly populate your schedule with a pre-built day structure.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {SCHEDULE_TEMPLATES.map((template) => (
+              <div
+                key={template.id}
+                className="bg-slate-800 p-3 rounded-lg border border-slate-600 hover:border-slate-500 transition-colors cursor-pointer"
+                onClick={() => handleTemplateSelect(template)}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-medium text-white">{template.name}</h4>
+                  <span className="text-xs text-slate-400 bg-slate-700 px-2 py-1 rounded">
+                    {template.theme}
+                  </span>
+                </div>
+                <p className="text-sm text-slate-400 mb-3">{template.description}</p>
+                <div className="flex flex-wrap gap-1">
+                  {template.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="text-xs text-slate-300 bg-slate-700 px-2 py-1 rounded"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-3 text-center">
+            <button
+              onClick={() => setShowTemplates(false)}
+              className="text-sm text-slate-400 hover:text-slate-300 transition-colors"
+            >
+              Close Templates
+            </button>
+          </div>
+        </div>
+      )}
+
       {isEditing ? (
         <div className="space-y-3">
           <p className="text-sm text-slate-400">
@@ -166,7 +232,7 @@ const ManualScheduleDisplay: React.FC<ManualScheduleDisplayProps> = ({ onEditTas
             placeholder="Enter your daily schedule here..."
           />
           <div className="text-xs text-slate-500">
-            <strong>Tip:</strong> You can paste AI-generated schedules here from the AI Data Export tool. Schedules are saved to your account and sync across devices.
+            <strong>Tip:</strong> You can paste AI-generated schedules here from the AI Data Export tool. Use the Templates button to start with a pre-built structure. Schedules are saved to your account and sync across devices.
           </div>
         </div>
       ) : (
@@ -193,13 +259,22 @@ const ManualScheduleDisplay: React.FC<ManualScheduleDisplayProps> = ({ onEditTas
                 </svg>
               </div>
               <p className="text-slate-400 mb-3">No schedule created yet</p>
-              <button
-                onClick={handleEdit}
-                disabled={isLoading}
-                className="px-4 py-2 bg-sky-600 hover:bg-sky-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded transition-colors"
-              >
-                Create Schedule
-              </button>
+              <div className="flex justify-center space-x-2">
+                <button
+                  onClick={handleEdit}
+                  disabled={isLoading}
+                  className="px-4 py-2 bg-sky-600 hover:bg-sky-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded transition-colors"
+                >
+                  Create Schedule
+                </button>
+                <button
+                  onClick={() => setShowTemplates(true)}
+                  disabled={isLoading}
+                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded transition-colors"
+                >
+                  Use Template
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -208,7 +283,7 @@ const ManualScheduleDisplay: React.FC<ManualScheduleDisplayProps> = ({ onEditTas
       {!isEditing && scheduleText.trim() && (
         <div className="mt-4 pt-4 border-t border-slate-700">
           <p className="text-xs text-slate-500">
-            💡 Use the AI Data Export tool to generate schedules, then paste them here.
+            💡 Use the AI Data Export tool to generate schedules, then paste them here. Or use Templates for quick pre-built structures.
           </p>
         </div>
       )}

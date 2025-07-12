@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Project, ProjectStatus, ProjectContext } from '../../../types';
+import { PROJECT_TEMPLATES, ProjectTemplate } from '../../constants/templates';
 
 interface NewProjectModalProps {
   isOpen: boolean;
@@ -18,6 +19,7 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
   const [tags, setTags] = useState('');
   const [businessRelevance, setBusinessRelevance] = useState(5);
   const [preferredTimeSlots, setPreferredTimeSlots] = useState<string[]>([]);
+  const [selectedTemplate, setSelectedTemplate] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -41,10 +43,38 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
       setTags('');
       setBusinessRelevance(5);
       setPreferredTimeSlots([]);
+      setSelectedTemplate('');
       setIsSubmitting(false);
       setErrorMessage('');
     }
   }, [isOpen]);
+
+  const handleTemplateChange = (templateId: string) => {
+    setSelectedTemplate(templateId);
+    
+    if (templateId === '') {
+      // Reset to defaults
+      setTitle('');
+      setProjectDescription('');
+      setGoals('');
+      setTags('');
+      setProjectContext(ProjectContext.BUSINESS);
+      setBusinessRelevance(5);
+      setPreferredTimeSlots([]);
+      return;
+    }
+
+    const template = PROJECT_TEMPLATES.find(t => t.id === templateId);
+    if (template) {
+      setTitle(template.name);
+      setProjectDescription(template.context);
+      setGoals(template.goals.join('\n'));
+      setTags(template.tags.join(', '));
+      setProjectContext(template.project_context);
+      setBusinessRelevance(template.business_relevance);
+      setPreferredTimeSlots(template.preferred_time_slots);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -124,6 +154,37 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Template Selection */}
+          <div>
+            <label htmlFor="projectTemplate" className="block text-sm font-medium text-slate-300 mb-1">
+              Project Template
+              <span className="block text-xs text-slate-400 font-normal mt-0.5">
+                Choose a template to pre-fill common project types, or start from scratch.
+              </span>
+            </label>
+            <select
+              id="projectTemplate"
+              value={selectedTemplate}
+              onChange={(e) => handleTemplateChange(e.target.value)}
+              className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
+              disabled={isSubmitting}
+            >
+              <option value="">Start from scratch</option>
+              {PROJECT_TEMPLATES.map((template) => (
+                <option key={template.id} value={template.id}>
+                  {template.name}
+                </option>
+              ))}
+            </select>
+            {selectedTemplate && (
+              <div className="mt-2 p-3 bg-slate-700/50 rounded-md">
+                <p className="text-xs text-slate-300">
+                  {PROJECT_TEMPLATES.find(t => t.id === selectedTemplate)?.description}
+                </p>
+              </div>
+            )}
+          </div>
+
           <div>
             <label htmlFor="projectTitle" className="block text-sm font-medium text-slate-300 mb-1">Title <span className="text-red-500">*</span></label>
             <input
@@ -137,6 +198,7 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
               aria-required="true"
             />
           </div>
+
           <div>
             <label htmlFor="projectDescription" className="block text-sm font-medium text-slate-300 mb-1">
               Context <span className="text-sky-400">*</span>
@@ -149,23 +211,25 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
               value={projectDescription}
               onChange={(e) => setProjectDescription(e.target.value)}
               placeholder="Describe what this project involves, its objectives, constraints, stakeholders, and any context that would help the AI understand and prioritize this project effectively..."
-              rows={3}
+              rows={4}
               className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
               disabled={isSubmitting}
             />
           </div>
+
           <div>
             <label htmlFor="projectGoals" className="block text-sm font-medium text-slate-300 mb-1">Goals (one goal per line)</label>
             <textarea
               id="projectGoals"
               value={goals}
               onChange={(e) => setGoals(e.target.value)}
-              rows={3}
+              rows={4}
               placeholder="e.g., Finalize design mockups&#10;Develop core features&#10;User testing"
               className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
               disabled={isSubmitting}
             />
           </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label htmlFor="projectStatus" className="block text-sm font-medium text-slate-300 mb-1">Status</label>
@@ -200,8 +264,22 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
               </select>
             </div>
           </div>
+
           <div>
-            <label htmlFor="projectDeadline" className="block text-sm font-medium text-slate-300 mb-1">Deadline</label>
+            <label htmlFor="projectTags" className="block text-sm font-medium text-slate-300 mb-1">Tags (comma separated)</label>
+            <input
+              type="text"
+              id="projectTags"
+              value={tags}
+              onChange={(e) => setTags(e.target.value)}
+              placeholder="e.g., web, development, urgent"
+              className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
+              disabled={isSubmitting}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="projectDeadline" className="block text-sm font-medium text-slate-300 mb-1">Deadline (optional)</label>
             <input
               type="date"
               id="projectDeadline"
@@ -209,12 +287,15 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
               onChange={(e) => setDeadline(e.target.value)}
               className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
               disabled={isSubmitting}
-              aria-label="Project deadline"
             />
           </div>
+
           <div>
             <label htmlFor="businessRelevance" className="block text-sm font-medium text-slate-300 mb-1">
-              Business Relevance: {businessRelevance}/10
+              Business Relevance (1-10)
+              <span className="block text-xs text-slate-400 font-normal mt-0.5">
+                How important is this project to your business goals?
+              </span>
             </label>
             <input
               type="range"
@@ -222,61 +303,68 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
               min="1"
               max="10"
               value={businessRelevance}
-              onChange={(e) => setBusinessRelevance(parseInt(e.target.value))}
-              className="w-full h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer slider"
+              onChange={(e) => setBusinessRelevance(Number(e.target.value))}
+              className="w-full h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer"
+              disabled={isSubmitting}
             />
             <div className="flex justify-between text-xs text-slate-400 mt-1">
-              <span>Low Priority</span>
-              <span>High Priority</span>
+              <span>1 (Low)</span>
+              <span className="text-sky-400 font-medium">{businessRelevance}</span>
+              <span>10 (Critical)</span>
             </div>
           </div>
-          
+
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">Preferred Time Slots</label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            <label className="block text-sm font-medium text-slate-300 mb-3">
+              Preferred Time Slots
+              <span className="block text-xs text-slate-400 font-normal mt-0.5">
+                When do you work best on this type of project?
+              </span>
+            </label>
+            <div className="grid grid-cols-2 gap-2">
               {timeSlotOptions.map((slot) => (
-                <label key={slot} className="flex items-center space-x-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={preferredTimeSlots.includes(slot)}
-                    onChange={() => handleTimeSlotToggle(slot)}
-                    className="w-4 h-4 text-sky-600 bg-slate-700 border-slate-600 rounded focus:ring-sky-500 focus:ring-2"
-                  />
-                  <span className="text-sm text-slate-300 capitalize">
-                    {slot.replace('-', ' ')}
-                  </span>
-                </label>
+                <button
+                  key={slot}
+                  type="button"
+                  onClick={() => handleTimeSlotToggle(slot)}
+                  disabled={isSubmitting}
+                  className={`p-2 text-sm rounded-md border transition-colors ${
+                    preferredTimeSlots.includes(slot)
+                      ? 'bg-sky-600 text-white border-sky-500'
+                      : 'bg-slate-700 text-slate-300 border-slate-600 hover:bg-slate-600'
+                  }`}
+                >
+                  {slot.charAt(0).toUpperCase() + slot.slice(1).replace('-', ' ')}
+                </button>
               ))}
             </div>
           </div>
-          
-          <div>
-            <label htmlFor="projectTags" className="block text-sm font-medium text-slate-300 mb-1">Tags (comma-separated)</label>
-            <input
-              type="text"
-              id="projectTags"
-              value={tags}
-              onChange={(e) => setTags(e.target.value)}
-              placeholder="e.g., development, Q3, client-project"
-              className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
-              disabled={isSubmitting}
-            />
-          </div>
-          <div className="flex justify-end space-x-3 pt-2">
+
+          <div className="flex justify-end space-x-3 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-slate-300 bg-slate-600 hover:bg-slate-500 rounded-md transition-colors disabled:opacity-50"
               disabled={isSubmitting}
+              className="px-4 py-2 text-slate-400 hover:text-slate-200 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 rounded-md transition-colors disabled:bg-sky-800 disabled:cursor-not-allowed flex items-center justify-center min-w-[130px]"
               disabled={isSubmitting}
+              className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
             >
-              {isSubmitting ? 'Creating...' : 'Create Project'}
+              {isSubmitting ? (
+                <>
+                  <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>Creating...</span>
+                </>
+              ) : (
+                <span>Create Project</span>
+              )}
             </button>
           </div>
         </form>
