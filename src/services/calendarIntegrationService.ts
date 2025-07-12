@@ -1,7 +1,7 @@
 // Calendar Integration Service
 // Merges tasks, events, schedules, and AI suggestions into unified calendar views
-import { Task, Schedule, DailySchedule } from '../types';
-import { tasksService, schedulesService } from './databaseService';
+import { Task, Schedule, DailySchedule } from '../../types';
+import { tasksService, schedulesService } from '../../services/databaseService';
 // import { dailyScheduleService } from './databaseService'; // Temporarily disabled
 import { getCustomAuthUser } from '../contexts/CustomAuthContext';
 
@@ -389,13 +389,13 @@ export class CalendarIntegrationService {
     let confidence = 0.7; // Base confidence
 
     // Factor in task priority (higher priority = higher confidence)
-    const priorityBonus = {
+    const priorityBonus: Record<string, number> = {
       'urgent': 0.2,
       'high': 0.15,
       'medium': 0.1,
       'low': 0.05
     };
-    confidence += priorityBonus[task.priority] || 0;
+    confidence += priorityBonus[task.priority || 'medium'] || 0;
 
     // Factor in time until due date
     if (task.due_date) {

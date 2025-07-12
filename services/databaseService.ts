@@ -5,7 +5,7 @@ import { enhanceError } from '../src/utils/errorHandling';
 import { RetryableOperations } from '../src/utils/retryLogic';
 import { CACHE_KEYS, CACHE_TTL, cacheInvalidation, withCache } from '../src/utils/dataCache';
 import {
-  Project, Task, UserPreferences, Tag, TagCategory, Schedule, DailySchedule,
+  Project, Task, UserPreferences, Tag, TagCategory, Schedule,
   ProjectStatus, ProjectContext, TaskPriority, TaskStatus
 } from '../types';
 
