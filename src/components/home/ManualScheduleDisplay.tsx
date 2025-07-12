@@ -67,11 +67,31 @@ const ManualScheduleDisplay: React.FC<ManualScheduleDisplayProps> = ({ onEditTas
   const handleSave = async () => {
     try {
       setIsLoading(true);
+      console.log('Attempting to save schedule:', { currentDate, scheduleTextLength: scheduleText.length });
       await dailyScheduleService.saveDailySchedule(currentDate, scheduleText, 'mixed');
+      console.log('Schedule saved successfully');
       setIsEditing(false);
     } catch (error) {
-      console.error('Failed to save schedule:', error);
-      alert('Failed to save schedule. Please try again.');
+      console.error('Failed to save schedule - detailed error:', error);
+      
+      // More specific error messaging
+      let errorMessage = 'Failed to save schedule. Please try again.';
+      if (error instanceof Error) {
+        if (error.message.includes('not authenticated')) {
+          errorMessage = 'User not authenticated. Please sign in and try again.';
+        } else if (error.message.includes('daily_schedules')) {
+          errorMessage = 'Database error: daily_schedules table not accessible. Please contact support.';
+        } else if (error.message.includes('RLS')) {
+          errorMessage = 'Permission error. Please sign out and sign back in.';
+        }
+        console.error('Error details:', {
+          message: error.message,
+          stack: error.stack,
+          name: error.name
+        });
+      }
+      
+      alert(errorMessage);
     } finally {
       setIsLoading(false);
     }

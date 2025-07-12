@@ -2029,7 +2029,17 @@ export const dailyScheduleService = {
     if (!supabase) throw new Error('Supabase client not initialized');
     
     const user = getCustomAuthUser();
-    if (!user?.id) throw new Error('User not authenticated');
+    if (!user?.id) {
+      console.error('No authenticated user found for saveDailySchedule');
+      throw new Error('User not authenticated - please sign in');
+    }
+
+    console.log('Saving daily schedule:', {
+      userId: user.id,
+      date,
+      scheduleTextLength: scheduleText.length,
+      scheduleType
+    });
 
     const scheduleData = {
       user_id: user.id,
@@ -2039,18 +2049,51 @@ export const dailyScheduleService = {
       updated_at: new Date().toISOString()
     };
 
-    // Use upsert to insert or update
-    const { data, error } = await supabase
-      .from('daily_schedules')
-      .upsert(scheduleData, {
-        onConflict: 'user_id,schedule_date'
-      })
-      .select()
-      .single();
+    try {
+      // Use upsert to insert or update
+      const { data, error } = await supabase
+        .from('daily_schedules')
+        .upsert(scheduleData, {
+          onConflict: 'user_id,schedule_date'
+        })
+        .select()
+        .single();
 
-    if (error) handleError('saving daily schedule', error);
-    
-    return data;
+      if (error) {
+        console.error('Supabase error details:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
+        
+        // Provide more specific error messages
+        if (error.code === '42P01') {
+          throw new Error('daily_schedules table does not exist. Please run the database setup script.');
+        } else if (error.code === '42501') {
+          throw new Error('Permission denied. RLS policy may be blocking access.');
+        } else if (error.message.includes('foreign key')) {
+          throw new Error('User authentication mismatch. Please sign out and sign back in.');
+        } else {
+          throw new Error(`Database error: ${error.message}`);
+        }
+      }
+      
+      if (!data) {
+        throw new Error('No data returned from daily schedule save operation');
+      }
+      
+      console.log('Daily schedule saved successfully:', { id: data.id, date: data.schedule_date });
+      return data;
+      
+    } catch (err) {
+      if (err instanceof Error && err.message.includes('Database error')) {
+        throw err; // Re-throw our custom errors
+      }
+      
+      console.error('Unexpected error saving daily schedule:', err);
+      throw new Error(`Failed to save daily schedule: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    }
   },
 
   async deleteDailySchedule(date: string): Promise<void> {
