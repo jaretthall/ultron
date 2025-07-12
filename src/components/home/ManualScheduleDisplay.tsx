@@ -200,6 +200,27 @@ const ManualScheduleDisplay: React.FC<ManualScheduleDisplayProps> = ({ onEditTas
         </div>
       </div>
 
+      {/* Temporary Unavailability Notification */}
+      <div className="mb-4 p-4 bg-amber-900/20 border border-amber-700/50 rounded-lg">
+        <div className="flex items-start space-x-3">
+          <svg className="w-5 h-5 text-amber-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+          </svg>
+          <div className="flex-1">
+            <h4 className="text-sm font-medium text-amber-400 mb-1">
+              Schedule Saving Temporarily Unavailable
+            </h4>
+            <p className="text-sm text-amber-300/90 mb-2">
+              Daily schedule saving and loading is currently disabled due to a database configuration issue. 
+              You can still view, edit, and use templates, but your changes will not be saved.
+            </p>
+            <p className="text-xs text-amber-300/70">
+              This feature will be restored once the database setup is completed. Contact support for updates.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Schedule Templates Panel */}
       {showTemplates && (
         <div className="mb-4 p-4 bg-slate-900 rounded-lg border border-slate-600">
@@ -257,7 +278,8 @@ const ManualScheduleDisplay: React.FC<ManualScheduleDisplayProps> = ({ onEditTas
             placeholder="Enter your daily schedule here..."
           />
           <div className="text-xs text-slate-500">
-            <strong>Tip:</strong> You can paste AI-generated schedules here from the AI Data Export tool. Use the Templates button to start with a pre-built structure. Schedules are saved to your account and sync across devices.
+            <strong>Tip:</strong> You can paste AI-generated schedules here from the AI Data Export tool. Use the Templates button to start with a pre-built structure. 
+            <span className="text-amber-400">Note: Schedule saving is temporarily disabled - changes will not be persisted.</span>
           </div>
         </div>
       ) : (
@@ -309,6 +331,7 @@ const ManualScheduleDisplay: React.FC<ManualScheduleDisplayProps> = ({ onEditTas
         <div className="mt-4 pt-4 border-t border-slate-700">
           <p className="text-xs text-slate-500">
             💡 Use the AI Data Export tool to generate schedules, then paste them here. Or use Templates for quick pre-built structures.
+            <span className="text-amber-400 ml-2">⚠️ Changes are not saved due to temporary service unavailability.</span>
           </p>
         </div>
       )}

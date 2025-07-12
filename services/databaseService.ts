@@ -2187,7 +2187,29 @@ export const subscriptions = {
   }
 };
 
-// Daily Schedule Service - Temporarily disabled to fix 406 errors
+// ===================================================================
+// DAILY SCHEDULE SERVICE - TEMPORARILY DISABLED
+// ===================================================================
+// 
+// STATUS: Temporarily disabled due to missing daily_schedules table
+// 
+// REQUIRED ACTIONS TO RESTORE:
+// 1. Create daily_schedules table using: sql-scripts/add-daily-schedules-table.sql
+// 2. Configure RLS policies for the table
+// 3. Test all CRUD operations
+// 4. Re-enable the service by uncommenting the code below
+// 
+// TIMELINE: Target restoration within 2 weeks (by end of current sprint)
+// 
+// TODO: Track progress at https://github.com/user/repo/issues/[issue-number]
+// TODO: Database migration script needs to be run in production
+// TODO: Update UI components to re-enable schedule persistence
+// 
+// DEPENDENCIES:
+// - Database schema update (daily_schedules table)
+// - RLS policy configuration
+// - User authentication verification
+// 
 // The daily_schedules table doesn't exist yet, so all methods are disabled
 // export const dailyScheduleService = {
 //   async getDailySchedule(date: string): Promise<DailySchedule | null> {
@@ -2320,21 +2342,23 @@ export const subscriptions = {
 // };
 
 // Temporary stub for dailyScheduleService to prevent import errors
+// This stub throws descriptive errors to prevent user confusion about data persistence
 export const dailyScheduleService = {
   async getDailySchedule(date: string) {
     console.log('dailyScheduleService.getDailySchedule() temporarily disabled - would have fetched:', date);
-    return null;
+    throw new Error('Daily schedule service is temporarily unavailable. The daily_schedules table needs to be created. Please contact support or try again later.');
   },
   async saveDailySchedule(date: string, scheduleText: string, scheduleType: any) {
     console.log('dailyScheduleService.saveDailySchedule() temporarily disabled - would have saved:', { date, scheduleTextLength: scheduleText.length, scheduleType });
-    return { id: 'temp', schedule_date: date, schedule_text: scheduleText, schedule_type: scheduleType };
+    throw new Error('Daily schedule saving is temporarily unavailable. Your changes will not be saved. The daily_schedules table needs to be created. Please contact support or try again later.');
   },
   async deleteDailySchedule(date: string) {
     console.log('dailyScheduleService.deleteDailySchedule() temporarily disabled - would have deleted:', date);
+    throw new Error('Daily schedule deletion is temporarily unavailable. The daily_schedules table needs to be created. Please contact support or try again later.');
   },
   async getRecentSchedules(limit: number = 7) {
     console.log('dailyScheduleService.getRecentSchedules() temporarily disabled - would have fetched:', limit);
-    return [];
+    throw new Error('Daily schedule history is temporarily unavailable. The daily_schedules table needs to be created. Please contact support or try again later.');
   }
 };
 

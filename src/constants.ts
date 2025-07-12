@@ -1,5 +1,5 @@
 // Application constants
-export const APP_VERSION = '3.1.3';
+export const APP_VERSION = '3.1.4';
 
 // AI Model configurations
 export const AVAILABLE_GEMINI_MODELS = [
