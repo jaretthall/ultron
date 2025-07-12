@@ -6,7 +6,7 @@ import NewTaskModal from '../tasks/NewTaskModal';
 import NewEventModal from './NewEventModal';
 import EditEventModal from './EditEventModal';
 import CounselingSessionModal from './CounselingSessionModal';
-import TestScheduleCreation from './TestScheduleCreation';
+// import TestScheduleCreation from './TestScheduleCreation';"
 import TaskScheduler from './TaskScheduler';
 import WorkingHoursManager from './WorkingHoursManager';
 import FocusBlockManager from './FocusBlockManager';
@@ -235,7 +235,7 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ onTaskClick, onEditTask }) 
         </div>
         
         {/* Temporary test component */}
-        <TestScheduleCreation />
+        {/* <TestScheduleCreation /> */}
         
         <div className="flex justify-between items-center mb-4">
           <div></div>

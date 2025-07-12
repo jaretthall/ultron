@@ -11,7 +11,7 @@ import FeedbackToast from './components/FeedbackToast';
 const ProjectDashboardPage = lazy(() => import('./components/project_dashboard/ProjectDashboardPage'));
 const HomePage = lazy(() => import('./components/home/HomePage'));
 const TaskManagementPage = lazy(() => import('./components/tasks/TaskManagementPage'));
-const CalendarPage = lazy(() => import('./components/calendar/CalendarPage'));
+const CalendarPage = lazy(() => import('./components/calendar/EnhancedCalendarPage'));
 const DocumentsPage = lazy(() => import('./components/documents/DocumentsPage'));
 const SettingsPage = lazy(() => import('./components/settings/SettingsPage'));
 const AIDashboard = lazy(() => import('./components/ai/AIDashboard'));
