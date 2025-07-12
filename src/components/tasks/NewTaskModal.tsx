@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Task, TaskPriority, TaskStatus, Project } from '../../../types';
 import LoadingSpinner from '../LoadingSpinner';
-import { TASK_TEMPLATES, TaskTemplate } from '../../constants/templates';
+import { TASK_TEMPLATES } from '../../constants/templates';
 // Phase 6: Security and monitoring integration
 import { InputValidator } from '../../utils/securityUtils';
 import { trackUserInteraction, captureException, ErrorCategory, ErrorSeverity } from '../../services/monitoringService';

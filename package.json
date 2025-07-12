@@ -1,6 +1,6 @@
 {
   "name": "ultron",
-  "version": "3.1.5",
+  "version": "3.1.6",
   "private": true,
   "type": "module",
   "homepage": "https://ultron-productivity.vercel.app/",
@@ -27,14 +27,16 @@
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
+    "@types/react-router-dom": "^5.3.3",
     "@types/uuid": "^10.0.0",
     "@vercel/speed-insights": "^1.2.0",
     "cypress": "^14.4.1",
     "date-fns": "^4.1.0",
     "lucide-react": "^0.518.0",
+    "openai": "^4.67.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "openai": "^4.67.3",
+    "react-router-dom": "^7.6.3",
     "uuid": "^11.1.0"
   },
   "devDependencies": {

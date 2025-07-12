@@ -1,4 +1,4 @@
-import { ProjectContext, ProjectStatus, TaskPriority, TaskStatus } from '../../types';
+import { ProjectContext, TaskPriority } from '../../types';
 
 // Project Templates
 export interface ProjectTemplate {

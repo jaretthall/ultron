@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Project, ProjectStatus, ProjectContext } from '../../../types';
-import { PROJECT_TEMPLATES, ProjectTemplate } from '../../constants/templates';
+import { PROJECT_TEMPLATES } from '../../constants/templates';
 
 interface NewProjectModalProps {
   isOpen: boolean;

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 // Using inline SVG icons to match application pattern
 import { useAppState } from '../../contexts/AppStateContext';
 import { generateAIInsights, generateAIDailyPlan, generateAIWorkloadAnalysis, checkAIProviderHealth, AIServiceResult, AIInsights, DailyPlan, WorkloadAnalysis } from '../../services/aiService';
-import { AI_EXPORT_TEMPLATES, AIExportTemplate } from '../../constants/templates';
+import { AI_EXPORT_TEMPLATES } from '../../constants/templates';
 
 // Icon components as inline SVGs
 const CalendarIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5" }) => (
