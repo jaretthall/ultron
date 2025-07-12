@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-// import { dailyScheduleService } from '../../../services/databaseService'; // Temporarily disabled
+import { dailyScheduleService } from '../../../services/databaseService';
 import { SCHEDULE_TEMPLATES, ScheduleTemplate } from '../../constants/templates';
 
 interface ManualScheduleDisplayProps {
@@ -21,13 +21,11 @@ const ManualScheduleDisplay: React.FC<ManualScheduleDisplayProps> = ({ onEditTas
   const loadSchedule = async () => {
     try {
       setIsLoading(true);
-      // Temporarily disabled to fix 406 errors
-      // const schedule = await dailyScheduleService.getDailySchedule(currentDate);
+      const schedule = await dailyScheduleService.getDailySchedule(currentDate);
       
-      // Always use default placeholder until daily_schedules table is configured
-      // if (schedule?.schedule_text) {
-      //   setScheduleText(schedule.schedule_text);
-      // } else {
+      if (schedule?.schedule_text) {
+        setScheduleText(schedule.schedule_text);
+      } else {
         // Default placeholder text for new schedules
         setScheduleText(`# Today's Schedule
 
@@ -47,7 +45,7 @@ const ManualScheduleDisplay: React.FC<ManualScheduleDisplayProps> = ({ onEditTas
 - [ ] Family time
 
 *Paste your AI-generated schedule here or edit manually*`);
-      // }
+      }
     } catch (error) {
       console.error('Failed to load schedule:', error);
       // Fallback to default text on error
@@ -70,9 +68,8 @@ const ManualScheduleDisplay: React.FC<ManualScheduleDisplayProps> = ({ onEditTas
     try {
       setIsLoading(true);
       console.log('Attempting to save schedule:', { currentDate, scheduleTextLength: scheduleText.length });
-      // Temporarily disabled to fix 406 errors
-      // await dailyScheduleService.saveDailySchedule(currentDate, scheduleText, 'mixed');
-      console.log('Schedule save temporarily disabled - would have saved:', scheduleText.substring(0, 50) + '...');
+      await dailyScheduleService.saveDailySchedule(currentDate, scheduleText, 'mixed');
+      console.log('Schedule saved (or mocked)');
       setIsEditing(false);
     } catch (error) {
       console.error('Failed to save schedule - detailed error:', error);
@@ -110,10 +107,9 @@ const ManualScheduleDisplay: React.FC<ManualScheduleDisplayProps> = ({ onEditTas
     if (confirm('Clear the current schedule? This cannot be undone.')) {
       try {
         setIsLoading(true);
-        // Temporarily disabled to fix 406 errors
-        // await dailyScheduleService.deleteDailySchedule(currentDate);
+        await dailyScheduleService.deleteDailySchedule(currentDate);
         setScheduleText('');
-        console.log('Schedule clear temporarily disabled - would have cleared schedule for:', currentDate);
+        console.log('Schedule cleared');
       } catch (error) {
         console.error('Failed to clear schedule:', error);
         alert('Failed to clear schedule. Please try again.');
