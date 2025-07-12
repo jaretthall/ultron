@@ -1,7 +1,7 @@
 // Calendar Integration Service
 // Merges tasks, events, schedules, and AI suggestions into unified calendar views
 import { Task, Schedule, DailySchedule } from '../../types';
-import { tasksService, schedulesService, dailyScheduleService } from '../../services/databaseService';
+import { tasksService, schedulesService } from '../../services/databaseService';
 import { getCustomAuthUser } from '../contexts/CustomAuthContext';
 
 export interface CalendarEvent {

@@ -5,7 +5,7 @@ import { enhanceError } from '../src/utils/errorHandling';
 import { RetryableOperations } from '../src/utils/retryLogic';
 import { CACHE_KEYS, CACHE_TTL, cacheInvalidation, withCache } from '../src/utils/dataCache';
 import {
-  Project, Task, UserPreferences, Tag, TagCategory, Schedule,
+  Project, Task, UserPreferences, Tag, TagCategory, Schedule, DailySchedule,
   ProjectStatus, ProjectContext, TaskPriority, TaskStatus
 } from '../types';
 
@@ -2344,11 +2344,11 @@ export const subscriptions = {
 // Temporary stub for dailyScheduleService to prevent import errors
 // Returns safe values instead of making database calls to prevent 406 errors
 export const dailyScheduleService = {
-  async getDailySchedule(date: string) {
+  async getDailySchedule(date: string): Promise<DailySchedule | null> {
     console.log('dailyScheduleService.getDailySchedule() temporarily disabled - would have fetched:', date);
     return null; // Return null instead of throwing error
   },
-  async saveDailySchedule(date: string, scheduleText: string, scheduleType: any) {
+  async saveDailySchedule(date: string, scheduleText: string, scheduleType: 'business' | 'personal' | 'mixed' = 'mixed'): Promise<DailySchedule> {
     console.log('dailyScheduleService.saveDailySchedule() temporarily disabled - would have saved:', { date, scheduleTextLength: scheduleText.length, scheduleType });
     // Return a mock successful response instead of throwing error
     return { 
@@ -2360,11 +2360,11 @@ export const dailyScheduleService = {
       updated_at: new Date().toISOString()
     };
   },
-  async deleteDailySchedule(date: string) {
+  async deleteDailySchedule(date: string): Promise<void> {
     console.log('dailyScheduleService.deleteDailySchedule() temporarily disabled - would have deleted:', date);
     return; // Return void instead of throwing error
   },
-  async getRecentSchedules(limit: number = 7) {
+  async getRecentSchedules(limit: number = 7): Promise<DailySchedule[]> {
     console.log('dailyScheduleService.getRecentSchedules() temporarily disabled - would have fetched:', limit);
     return []; // Return empty array instead of throwing error
   }

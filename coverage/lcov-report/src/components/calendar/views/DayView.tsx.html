@@ -3,15 +3,15 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for src/components/home/EnhancedHomeStats.tsx</title>
+    <title>Code coverage report for src/components/calendar/views/DayView.tsx</title>
     <meta charset="utf-8" />
-    <link rel="stylesheet" href="../../../prettify.css" />
-    <link rel="stylesheet" href="../../../base.css" />
-    <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.png" />
+    <link rel="stylesheet" href="../../../../prettify.css" />
+    <link rel="stylesheet" href="../../../../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../../../../favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style type='text/css'>
         .coverage-summary .sorter {
-            background-image: url(../../../sort-arrow-sprite.png);
+            background-image: url(../../../../sort-arrow-sprite.png);
         }
     </style>
 </head>
@@ -19,34 +19,34 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../../../index.html">All files</a> / <a href="index.html">src/components/home</a> EnhancedHomeStats.tsx</h1>
+        <h1><a href="../../../../index.html">All files</a> / <a href="index.html">src/components/calendar/views</a> DayView.tsx</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/70</span>
+                <span class='fraction'>0/102</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/51</span>
+                <span class='fraction'>0/68</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/30</span>
+                <span class='fraction'>0/35</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/62</span>
+                <span class='fraction'>0/96</span>
             </div>
         
             
@@ -436,7 +436,393 @@
 <a name='L371'></a><a href='#L371'>371</a>
 <a name='L372'></a><a href='#L372'>372</a>
 <a name='L373'></a><a href='#L373'>373</a>
-<a name='L374'></a><a href='#L374'>374</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L374'></a><a href='#L374'>374</a>
+<a name='L375'></a><a href='#L375'>375</a>
+<a name='L376'></a><a href='#L376'>376</a>
+<a name='L377'></a><a href='#L377'>377</a>
+<a name='L378'></a><a href='#L378'>378</a>
+<a name='L379'></a><a href='#L379'>379</a>
+<a name='L380'></a><a href='#L380'>380</a>
+<a name='L381'></a><a href='#L381'>381</a>
+<a name='L382'></a><a href='#L382'>382</a>
+<a name='L383'></a><a href='#L383'>383</a>
+<a name='L384'></a><a href='#L384'>384</a>
+<a name='L385'></a><a href='#L385'>385</a>
+<a name='L386'></a><a href='#L386'>386</a>
+<a name='L387'></a><a href='#L387'>387</a>
+<a name='L388'></a><a href='#L388'>388</a>
+<a name='L389'></a><a href='#L389'>389</a>
+<a name='L390'></a><a href='#L390'>390</a>
+<a name='L391'></a><a href='#L391'>391</a>
+<a name='L392'></a><a href='#L392'>392</a>
+<a name='L393'></a><a href='#L393'>393</a>
+<a name='L394'></a><a href='#L394'>394</a>
+<a name='L395'></a><a href='#L395'>395</a>
+<a name='L396'></a><a href='#L396'>396</a>
+<a name='L397'></a><a href='#L397'>397</a>
+<a name='L398'></a><a href='#L398'>398</a>
+<a name='L399'></a><a href='#L399'>399</a>
+<a name='L400'></a><a href='#L400'>400</a>
+<a name='L401'></a><a href='#L401'>401</a>
+<a name='L402'></a><a href='#L402'>402</a>
+<a name='L403'></a><a href='#L403'>403</a>
+<a name='L404'></a><a href='#L404'>404</a>
+<a name='L405'></a><a href='#L405'>405</a>
+<a name='L406'></a><a href='#L406'>406</a>
+<a name='L407'></a><a href='#L407'>407</a>
+<a name='L408'></a><a href='#L408'>408</a>
+<a name='L409'></a><a href='#L409'>409</a>
+<a name='L410'></a><a href='#L410'>410</a>
+<a name='L411'></a><a href='#L411'>411</a>
+<a name='L412'></a><a href='#L412'>412</a>
+<a name='L413'></a><a href='#L413'>413</a>
+<a name='L414'></a><a href='#L414'>414</a>
+<a name='L415'></a><a href='#L415'>415</a>
+<a name='L416'></a><a href='#L416'>416</a>
+<a name='L417'></a><a href='#L417'>417</a>
+<a name='L418'></a><a href='#L418'>418</a>
+<a name='L419'></a><a href='#L419'>419</a>
+<a name='L420'></a><a href='#L420'>420</a>
+<a name='L421'></a><a href='#L421'>421</a>
+<a name='L422'></a><a href='#L422'>422</a>
+<a name='L423'></a><a href='#L423'>423</a>
+<a name='L424'></a><a href='#L424'>424</a>
+<a name='L425'></a><a href='#L425'>425</a>
+<a name='L426'></a><a href='#L426'>426</a>
+<a name='L427'></a><a href='#L427'>427</a>
+<a name='L428'></a><a href='#L428'>428</a>
+<a name='L429'></a><a href='#L429'>429</a>
+<a name='L430'></a><a href='#L430'>430</a>
+<a name='L431'></a><a href='#L431'>431</a>
+<a name='L432'></a><a href='#L432'>432</a>
+<a name='L433'></a><a href='#L433'>433</a>
+<a name='L434'></a><a href='#L434'>434</a>
+<a name='L435'></a><a href='#L435'>435</a>
+<a name='L436'></a><a href='#L436'>436</a>
+<a name='L437'></a><a href='#L437'>437</a>
+<a name='L438'></a><a href='#L438'>438</a>
+<a name='L439'></a><a href='#L439'>439</a>
+<a name='L440'></a><a href='#L440'>440</a>
+<a name='L441'></a><a href='#L441'>441</a>
+<a name='L442'></a><a href='#L442'>442</a>
+<a name='L443'></a><a href='#L443'>443</a>
+<a name='L444'></a><a href='#L444'>444</a>
+<a name='L445'></a><a href='#L445'>445</a>
+<a name='L446'></a><a href='#L446'>446</a>
+<a name='L447'></a><a href='#L447'>447</a>
+<a name='L448'></a><a href='#L448'>448</a>
+<a name='L449'></a><a href='#L449'>449</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -476,9 +862,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -488,159 +872,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -679,24 +910,28 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -709,7 +944,10 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -721,468 +959,455 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" >import React, { useMemo } from 'react';</span>
-<span class="cstat-no" title="statement not covered" >import { Project, Task, TaskStatus, TaskPriority, ProjectStatus, ProjectContext } from '../../../types';</span>
+<span class="cline-any cline-no">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" >import React, { useMemo, useState, useEffect } from 'react';</span>
+import { CalendarEvent } from '../../../services/calendarIntegrationService';
 &nbsp;
-interface EnhancedHomeStatsProps {
-  projects: Project[];
-  tasks: Task[];
+interface DayViewProps {
+  currentDate: Date;
+  events: CalendarEvent[];
+  onEventClick: (event: CalendarEvent) =&gt; void;
 }
 &nbsp;
-interface StatsData {
-  completionStats: {
-    tasksCompletedToday: number;
-    tasksCompletedThisWeek: number;
-    avgTasksPerDay: number;
-  };
-  priorityBreakdown: {
-    urgent: number;
-    high: number;
-    medium: number;
-    low: number;
-  };
-  contextStats: {
-    businessTasksActive: number;
-    personalTasksActive: number;
-    businessProjectsActive: number;
-    personalProjectsActive: number;
-  };
-  deadlineStats: {
-    dueTodayCount: number;
-    dueThisWeekCount: number;
-    overdueCount: number;
-    upcomingCount: number;
-  };
-  productivityMetrics: {
-    avgProgressPerTask: number;
-    totalEstimatedHours: number;
-    completedHours: number;
-    efficiencyRating: number;
-  };
-}
+const DayView: React.FC&lt;DayViewProps&gt; = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >({</span></span>
+  currentDate,
+  events,
+  onEventClick
+}) =&gt; {
+  // const [isMobile, setIsMobile] = useState(false);
+  const [currentTime, setCurrentTime] = <span class="cstat-no" title="statement not covered" >useState(new Date());</span>
 &nbsp;
-const EnhancedHomeStats: React.FC&lt;EnhancedHomeStatsProps&gt; = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >({</span> projects, tasks }) =&gt; {</span>
-  // Memoize static icons to prevent re-creation on every render
-  const icons = <span class="cstat-no" title="statement not covered" >useMemo(<span class="fstat-no" title="function not covered" >() =</span>&gt; (<span class="cstat-no" title="statement not covered" >{</span></span>
-    check: (
-      &lt;svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"&gt;
-        &lt;path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /&gt;
-      &lt;/svg&gt;
-    ),
-    clock: (
-      &lt;svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"&gt;
-        &lt;path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /&gt;
-      &lt;/svg&gt;
-    ),
-    trending: (
-      &lt;svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"&gt;
-        &lt;path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /&gt;
-      &lt;/svg&gt;
-    ),
-    exclamation: (
-      &lt;svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"&gt;
-        &lt;path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 19.5c-.77.833.192 2.5 1.732 2.5z" /&gt;
-      &lt;/svg&gt;
-    ),
-    calendar: (
-      &lt;svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"&gt;
-        &lt;path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /&gt;
-      &lt;/svg&gt;
-    ),
-    chart: (
-      &lt;svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"&gt;
-        &lt;path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /&gt;
-      &lt;/svg&gt;
-    )
-  }), []);
+  // Detect mobile screen size
+  // useEffect(() =&gt; {
+  //   const checkMobile = () =&gt; {
+  //     setIsMobile(window.innerWidth &lt; 768);
+  //   };
+  //   
+  //   checkMobile();
+  //   window.addEventListener('resize', checkMobile);
+  //   return () =&gt; window.removeEventListener('resize', checkMobile);
+  // }, []);
 &nbsp;
-  const stats = <span class="cstat-no" title="statement not covered" >useMemo(<span class="fstat-no" title="function not covered" >(): StatsData =</span>&gt; {</span>
-    const now = <span class="cstat-no" title="statement not covered" >new Date();</span>
-    const today = <span class="cstat-no" title="statement not covered" >now.toDateString();</span>
-    const thisWeekStart = <span class="cstat-no" title="statement not covered" >new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);</span>
+  // Update current time every minute to show the current time indicator
+<span class="cstat-no" title="statement not covered" >  useEffect(<span class="fstat-no" title="function not covered" >() =</span>&gt; {</span>
+    const timer = <span class="cstat-no" title="statement not covered" >setInterval(<span class="fstat-no" title="function not covered" >() =</span>&gt; {</span>
+<span class="cstat-no" title="statement not covered" >      setCurrentTime(new Date());</span>
+    }, 60000); // Update every minute
 &nbsp;
-    // Completion stats
-    const tasksCompletedToday = <span class="cstat-no" title="statement not covered" >tasks.filter(<span class="fstat-no" title="function not covered" >t </span>=&gt; </span>
-<span class="cstat-no" title="statement not covered" >      t.status === TaskStatus.COMPLETED &amp;&amp; </span>
-      t.updated_at &amp;&amp; 
-      new Date(t.updated_at).toDateString() === today
-    ).length;
+<span class="cstat-no" title="statement not covered" >    return <span class="fstat-no" title="function not covered" >() =</span>&gt; <span class="cstat-no" title="statement not covered" >clearInterval(timer);</span></span>
+  }, []);
 &nbsp;
-    const tasksCompletedThisWeek = <span class="cstat-no" title="statement not covered" >tasks.filter(<span class="fstat-no" title="function not covered" >t </span>=&gt; </span>
-<span class="cstat-no" title="statement not covered" >      t.status === TaskStatus.COMPLETED &amp;&amp; </span>
-      t.updated_at &amp;&amp; 
-      new Date(t.updated_at) &gt;= thisWeekStart
-    ).length;
-&nbsp;
-    const avgTasksPerDay = <span class="cstat-no" title="statement not covered" >tasksCompletedThisWeek / 7;</span>
-&nbsp;
-    // Priority breakdown (active tasks only)
-    const activeTasks = <span class="cstat-no" title="statement not covered" >tasks.filter(<span class="fstat-no" title="function not covered" >t </span>=&gt; <span class="cstat-no" title="statement not covered" >t.status !== TaskStatus.COMPLETED)</span>;</span>
-    const priorityBreakdown = <span class="cstat-no" title="statement not covered" >{</span>
-      urgent: activeTasks.filter(<span class="fstat-no" title="function not covered" >t </span>=&gt; <span class="cstat-no" title="statement not covered" >t.priority === TaskPriority.URGENT)</span>.length,
-      high: activeTasks.filter(<span class="fstat-no" title="function not covered" >t </span>=&gt; <span class="cstat-no" title="statement not covered" >t.priority === TaskPriority.HIGH)</span>.length,
-      medium: activeTasks.filter(<span class="fstat-no" title="function not covered" >t </span>=&gt; <span class="cstat-no" title="statement not covered" >t.priority === TaskPriority.MEDIUM)</span>.length,
-      low: activeTasks.filter(<span class="fstat-no" title="function not covered" >t </span>=&gt; <span class="cstat-no" title="statement not covered" >t.priority === TaskPriority.LOW)</span>.length,
-    };
-&nbsp;
-    // Context stats
-    const businessTasks = <span class="cstat-no" title="statement not covered" >tasks.filter(<span class="fstat-no" title="function not covered" >t </span>=&gt; {</span>
-<span class="cstat-no" title="statement not covered" >      <span class="missing-if-branch" title="if path not taken" >I</span>if (t.project_id) {</span>
-        const project = <span class="cstat-no" title="statement not covered" >projects.find(<span class="fstat-no" title="function not covered" >p </span>=&gt; <span class="cstat-no" title="statement not covered" >p.id === t.project_id)</span>;</span>
-<span class="cstat-no" title="statement not covered" >        return project?.context === ProjectContext.BUSINESS;</span>
+  // Generate detailed time slots (every 30 minutes from 6 AM to 11 PM)
+  const timeSlots = <span class="cstat-no" title="statement not covered" >useMemo(<span class="fstat-no" title="function not covered" >() =</span>&gt; {</span>
+    const slots = <span class="cstat-no" title="statement not covered" >[];</span>
+<span class="cstat-no" title="statement not covered" >    for (let hour = <span class="cstat-no" title="statement not covered" >6;</span> hour &lt;= 23; hour++) {</span>
+      // Full hour
+<span class="cstat-no" title="statement not covered" >      slots.push({</span>
+        time: hour,
+        minutes: 0,
+        label: hour === 12 ? '12:00 PM' : hour &gt; 12 ? `${hour - 12}:00 PM` : `${hour}:00 AM`,
+        isHour: true
+      });
+      
+      // Half hour (except for the last slot)
+<span class="cstat-no" title="statement not covered" >      <span class="missing-if-branch" title="if path not taken" >I</span>if (hour &lt; 23) {</span>
+<span class="cstat-no" title="statement not covered" >        slots.push({</span>
+          time: hour,
+          minutes: 30,
+          label: hour === 12 ? '12:30 PM' : hour &gt; 12 ? `${hour - 12}:30 PM` : `${hour}:30 AM`,
+          isHour: false
+        });
       }
-<span class="cstat-no" title="statement not covered" >      return t.task_context === 'business';</span>
+    }
+<span class="cstat-no" title="statement not covered" >    return slots;</span>
+  }, []);
+&nbsp;
+  // Filter events for the current day
+  const dayEvents = <span class="cstat-no" title="statement not covered" >useMemo(<span class="fstat-no" title="function not covered" >() =</span>&gt; {</span>
+    const dayStart = <span class="cstat-no" title="statement not covered" >new Date(currentDate);</span>
+<span class="cstat-no" title="statement not covered" >    dayStart.setHours(0, 0, 0, 0);</span>
+    
+    const dayEnd = <span class="cstat-no" title="statement not covered" >new Date(currentDate);</span>
+<span class="cstat-no" title="statement not covered" >    dayEnd.setHours(23, 59, 59, 999);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    return events.filter(<span class="fstat-no" title="function not covered" >event </span>=&gt; {</span>
+<span class="cstat-no" title="statement not covered" >      return event.start &gt;= dayStart &amp;&amp; event.start &lt;= dayEnd;</span>
+    }).sort(<span class="fstat-no" title="function not covered" >(a</span>, b) =&gt; <span class="cstat-no" title="statement not covered" >a.start.getTime() - b.start.getTime())</span>;
+  }, [currentDate, events]);
+&nbsp;
+  // Calculate event positioning with overlap detection
+  const getEventLayout = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(e</span>vents: CalendarEvent[]) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    return events.map(<span class="fstat-no" title="function not covered" >(e</span>vent, index) =&gt; {</span>
+      const startHour = <span class="cstat-no" title="statement not covered" >event.start.getHours();</span>
+      const startMinutes = <span class="cstat-no" title="statement not covered" >event.start.getMinutes();</span>
+      const endHour = <span class="cstat-no" title="statement not covered" >event.end.getHours();</span>
+      const endMinutes = <span class="cstat-no" title="statement not covered" >event.end.getMinutes();</span>
+&nbsp;
+      // Calculate position within the time grid (6 AM = 0)
+      const topPosition = <span class="cstat-no" title="statement not covered" >((startHour - 6) * 2 + (startMinutes &gt;= 30 ? 1 : 0)) * 40;</span> // 40px per 30-min slot
+      const durationMinutes = <span class="cstat-no" title="statement not covered" >(endHour - startHour) * 60 + (endMinutes - startMinutes);</span>
+      const height = <span class="cstat-no" title="statement not covered" >Math.max((durationMinutes / 30) * 40, 20);</span> // Minimum 20px height
+&nbsp;
+      // Simple overlap detection
+      const overlappingEvents = <span class="cstat-no" title="statement not covered" >events.filter(<span class="fstat-no" title="function not covered" >(o</span>therEvent, otherIndex) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >        <span class="missing-if-branch" title="if path not taken" >I</span>if (otherIndex &gt;= index) <span class="cstat-no" title="statement not covered" >return false; </span></span>// Only check previous events
+<span class="cstat-no" title="statement not covered" >        return event.start &lt; otherEvent.end &amp;&amp; event.end &gt; otherEvent.start;</span>
+      });
+&nbsp;
+      const leftOffset = <span class="cstat-no" title="statement not covered" >overlappingEvents.length * 10;</span> // 10px offset per overlap
+      const width = <span class="cstat-no" title="statement not covered" >`calc(100% - ${overlappingEvents.length * 10}px)`;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      return {</span>
+        event,
+        style: {
+          top: `${topPosition}px`,
+          height: `${height}px`,
+          left: `${leftOffset}px`,
+          width: width,
+          zIndex: 10 + index
+        }
+      };
     });
+  };
 &nbsp;
-    const personalTasks = <span class="cstat-no" title="statement not covered" >tasks.filter(<span class="fstat-no" title="function not covered" >t </span>=&gt; {</span>
-<span class="cstat-no" title="statement not covered" >      <span class="missing-if-branch" title="if path not taken" >I</span>if (t.project_id) {</span>
-        const project = <span class="cstat-no" title="statement not covered" >projects.find(<span class="fstat-no" title="function not covered" >p </span>=&gt; <span class="cstat-no" title="statement not covered" >p.id === t.project_id)</span>;</span>
-<span class="cstat-no" title="statement not covered" >        return project?.context === ProjectContext.PERSONAL;</span>
-      }
-<span class="cstat-no" title="statement not covered" >      return t.task_context === 'personal';</span>
-    });
+  const eventLayout = <span class="cstat-no" title="statement not covered" >useMemo(<span class="fstat-no" title="function not covered" >() =</span>&gt; <span class="cstat-no" title="statement not covered" >getEventLayout(dayEvents),</span> [dayEvents]);</span>
 &nbsp;
-    const contextStats = <span class="cstat-no" title="statement not covered" >{</span>
-      businessTasksActive: businessTasks.filter(<span class="fstat-no" title="function not covered" >t </span>=&gt; <span class="cstat-no" title="statement not covered" >t.status !== TaskStatus.COMPLETED)</span>.length,
-      personalTasksActive: personalTasks.filter(<span class="fstat-no" title="function not covered" >t </span>=&gt; <span class="cstat-no" title="statement not covered" >t.status !== TaskStatus.COMPLETED)</span>.length,
-      businessProjectsActive: projects.filter(<span class="fstat-no" title="function not covered" >p </span>=&gt; 
-<span class="cstat-no" title="statement not covered" >        p.context === ProjectContext.BUSINESS &amp;&amp; p.status === ProjectStatus.ACTIVE</span>
-      ).length,
-      personalProjectsActive: projects.filter(<span class="fstat-no" title="function not covered" >p </span>=&gt; 
-<span class="cstat-no" title="statement not covered" >        p.context === ProjectContext.PERSONAL &amp;&amp; p.status === ProjectStatus.ACTIVE</span>
-      ).length,
-    };
+  // Get event color based on type and priority
+  const getEventColor = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(e</span>vent: CalendarEvent) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    switch (event.type) {</span>
+      case 'deadline':
+<span class="cstat-no" title="statement not covered" >        return 'bg-red-500 border-red-600 text-white shadow-red-100';</span>
+      case 'work_session':
+<span class="cstat-no" title="statement not covered" >        <span class="missing-if-branch" title="if path not taken" >I</span>if (event.source === 'ai_generated') {</span>
+<span class="cstat-no" title="statement not covered" >          return 'bg-purple-500 border-purple-600 text-white shadow-purple-100';</span>
+        }
+<span class="cstat-no" title="statement not covered" >        return 'bg-blue-500 border-blue-600 text-white shadow-blue-100';</span>
+      case 'counseling_session':
+<span class="cstat-no" title="statement not covered" >        return 'bg-teal-500 border-teal-600 text-white shadow-teal-100';</span>
+      case 'event':
+<span class="cstat-no" title="statement not covered" >        return 'bg-green-500 border-green-600 text-white shadow-green-100';</span>
+      default:
+<span class="cstat-no" title="statement not covered" >        return 'bg-gray-500 border-gray-600 text-white shadow-gray-100';</span>
+    }
+  };
 &nbsp;
-    // Deadline stats
-    const todayEnd = <span class="cstat-no" title="statement not covered" >new Date(now);</span>
-<span class="cstat-no" title="statement not covered" >    todayEnd.setHours(23, 59, 59, 999);</span>
+  // Get event icon
+  const getEventIcon = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(e</span>vent: CalendarEvent) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    switch (event.type) {</span>
+      case 'deadline':
+<span class="cstat-no" title="statement not covered" >        return '⏰';</span>
+      case 'work_session':
+<span class="cstat-no" title="statement not covered" >        return event.source === 'ai_generated' ? '🤖' : '🔨';</span>
+      case 'counseling_session':
+<span class="cstat-no" title="statement not covered" >        return '💬';</span>
+      case 'event':
+<span class="cstat-no" title="statement not covered" >        return '📅';</span>
+      default:
+<span class="cstat-no" title="statement not covered" >        return '•';</span>
+    }
+  };
+&nbsp;
+  // Check if two dates are the same day
+  const isSameDay = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(d</span>ate1: Date, date2: Date) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    return date1.toDateString() === date2.toDateString();</span>
+  };
+&nbsp;
+  // Calculate current time indicator position
+  const getCurrentTimePosition = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >() =</span>&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (!isSameDay(currentTime, currentDate)) <span class="cstat-no" title="statement not covered" >return null;</span></span>
+&nbsp;
+    const currentHour = <span class="cstat-no" title="statement not covered" >currentTime.getHours();</span>
+    const currentMinutes = <span class="cstat-no" title="statement not covered" >currentTime.getMinutes();</span>
     
-    const thisWeekEnd = <span class="cstat-no" title="statement not covered" >new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);</span>
-    
-    const allItems = <span class="cstat-no" title="statement not covered" >[</span>
-      ...tasks.filter(<span class="fstat-no" title="function not covered" >t </span>=&gt; <span class="cstat-no" title="statement not covered" >t.due_date &amp;&amp; t.status !== TaskStatus.COMPLETED)</span>,
-      ...projects.filter(<span class="fstat-no" title="function not covered" >p </span>=&gt; <span class="cstat-no" title="statement not covered" >p.deadline &amp;&amp; p.status !== 'completed')</span>
-    ];
+<span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (currentHour &lt; 6 || currentHour &gt; 23) <span class="cstat-no" title="statement not covered" >return null;</span></span>
 &nbsp;
-    const deadlineStats = <span class="cstat-no" title="statement not covered" >{</span>
-      dueTodayCount: allItems.filter(<span class="fstat-no" title="function not covered" >item </span>=&gt; {
-        const dueDate = <span class="cstat-no" title="statement not covered" >new Date((item as any).due_date || (item as any).deadline);</span>
-<span class="cstat-no" title="statement not covered" >        return dueDate &lt;= todayEnd &amp;&amp; dueDate &gt;= now;</span>
-      }).length,
-      
-      dueThisWeekCount: allItems.filter(<span class="fstat-no" title="function not covered" >item </span>=&gt; {
-        const dueDate = <span class="cstat-no" title="statement not covered" >new Date((item as any).due_date || (item as any).deadline);</span>
-<span class="cstat-no" title="statement not covered" >        return dueDate &lt;= thisWeekEnd &amp;&amp; dueDate &gt; todayEnd;</span>
-      }).length,
-      
-      overdueCount: allItems.filter(<span class="fstat-no" title="function not covered" >item </span>=&gt; {
-        const dueDate = <span class="cstat-no" title="statement not covered" >new Date((item as any).due_date || (item as any).deadline);</span>
-<span class="cstat-no" title="statement not covered" >        return dueDate &lt; now;</span>
-      }).length,
-      
-      upcomingCount: allItems.filter(<span class="fstat-no" title="function not covered" >item </span>=&gt; {
-        const dueDate = <span class="cstat-no" title="statement not covered" >new Date((item as any).due_date || (item as any).deadline);</span>
-<span class="cstat-no" title="statement not covered" >        return dueDate &gt; thisWeekEnd;</span>
-      }).length,
-    };
+    const position = <span class="cstat-no" title="statement not covered" >((currentHour - 6) * 2 + (currentMinutes / 30)) * 40;</span>
+<span class="cstat-no" title="statement not covered" >    return position;</span>
+  };
 &nbsp;
-    // Productivity metrics
-    const totalEstimatedHours = <span class="cstat-no" title="statement not covered" >tasks.reduce(<span class="fstat-no" title="function not covered" >(s</span>um, task) =&gt; <span class="cstat-no" title="statement not covered" >sum + (task.estimated_hours || 0),</span> 0);</span>
-    const completedTasks = <span class="cstat-no" title="statement not covered" >tasks.filter(<span class="fstat-no" title="function not covered" >t </span>=&gt; <span class="cstat-no" title="statement not covered" >t.status === TaskStatus.COMPLETED)</span>;</span>
-    const completedHours = <span class="cstat-no" title="statement not covered" >completedTasks.reduce(<span class="fstat-no" title="function not covered" >(s</span>um, task) =&gt; <span class="cstat-no" title="statement not covered" >sum + (task.estimated_hours || 0),</span> 0);</span>
-    
-    const tasksWithProgress = <span class="cstat-no" title="statement not covered" >tasks.filter(<span class="fstat-no" title="function not covered" >t </span>=&gt; <span class="cstat-no" title="statement not covered" >t.progress !== undefined)</span>;</span>
-    const avgProgressPerTask = <span class="cstat-no" title="statement not covered" >tasksWithProgress.length &gt; 0 </span>
-      ? tasksWithProgress.reduce(<span class="fstat-no" title="function not covered" >(s</span>um, task) =&gt; <span class="cstat-no" title="statement not covered" >sum + (task.progress || 0),</span> 0) / tasksWithProgress.length
-      : 0;
+  const currentTimePosition = <span class="cstat-no" title="statement not covered" >getCurrentTimePosition();</span>
 &nbsp;
-    // Efficiency rating (0-100) based on completion rate and progress
-    const completionRate = <span class="cstat-no" title="statement not covered" >tasks.length &gt; 0 ? (completedTasks.length / tasks.length) * 100 : 0;</span>
-    const efficiencyRating = <span class="cstat-no" title="statement not covered" >Math.round((completionRate * 0.7) + (avgProgressPerTask * 0.3));</span>
-&nbsp;
+  // Format day header
+  const dayHeader = <span class="cstat-no" title="statement not covered" >useMemo(<span class="fstat-no" title="function not covered" >() =</span>&gt; {</span>
+    const isToday = <span class="cstat-no" title="statement not covered" >isSameDay(currentDate, new Date());</span>
 <span class="cstat-no" title="statement not covered" >    return {</span>
-      completionStats: {
-        tasksCompletedToday,
-        tasksCompletedThisWeek,
-        avgTasksPerDay,
-      },
-      priorityBreakdown,
-      contextStats,
-      deadlineStats,
-      productivityMetrics: {
-        avgProgressPerTask,
-        totalEstimatedHours,
-        completedHours,
-        efficiencyRating,
-      },
+      weekday: currentDate.toLocaleDateString('en-US', { weekday: 'long' }),
+      date: currentDate.toLocaleDateString('en-US', { 
+        month: 'long', 
+        day: 'numeric', 
+        year: 'numeric' 
+      }),
+      isToday
     };
-  }, [projects, tasks]);
+  }, [currentDate]);
 &nbsp;
-  const StatCard: React.FC&lt;{ 
-    title: string; 
-    value: number | string; 
-    subtitle?: string; 
-    color?: string;
-    icon?: React.ReactNode;
-  }&gt; = <span class="cstat-no" title="statement not covered" >React.memo(<span class="fstat-no" title="function not covered" >({</span> title, value, subtitle, color = <span class="branch-0 cbranch-no" title="branch not covered" >'text-slate-300',</span> icon }) =&gt; (</span>
-<span class="cstat-no" title="statement not covered" >    &lt;div className="bg-slate-700 rounded-lg p-4"&gt;</span>
-      &lt;div className="flex items-center justify-between mb-2"&gt;
-        &lt;h3 className="text-sm font-medium text-slate-400"&gt;{title}&lt;/h3&gt;
-        {icon &amp;&amp; &lt;div className={color}&gt;{icon}&lt;/div&gt;}
-      &lt;/div&gt;
-      &lt;div className={`text-2xl font-bold ${color}`}&gt;{value}&lt;/div&gt;
-      {subtitle &amp;&amp; &lt;p className="text-xs text-slate-500 mt-1"&gt;{subtitle}&lt;/p&gt;}
-    &lt;/div&gt;
-  ));
+  // Get priority indicator
+  const getPriorityDot = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(p</span>riority?: string) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    switch (priority) {</span>
+      case 'urgent':
+<span class="cstat-no" title="statement not covered" >        return &lt;div className="w-2 h-2 rounded-full bg-red-400 inline-block mr-1" /&gt;;</span>
+      case 'high':
+<span class="cstat-no" title="statement not covered" >        return &lt;div className="w-2 h-2 rounded-full bg-orange-400 inline-block mr-1" /&gt;;</span>
+      case 'medium':
+<span class="cstat-no" title="statement not covered" >        return &lt;div className="w-2 h-2 rounded-full bg-yellow-400 inline-block mr-1" /&gt;;</span>
+      case 'low':
+<span class="cstat-no" title="statement not covered" >        return &lt;div className="w-2 h-2 rounded-full bg-green-400 inline-block mr-1" /&gt;;</span>
+      default:
+<span class="cstat-no" title="statement not covered" >        return null;</span>
+    }
+  };
 &nbsp;
 <span class="cstat-no" title="statement not covered" >  return (</span>
-    &lt;div className="space-y-6"&gt;
-      {/* Completion Stats */}
-      &lt;div className="bg-slate-800 rounded-lg p-4 lg:p-6"&gt;
-        &lt;h2 className="text-lg lg:text-xl font-semibold text-white mb-4"&gt;Productivity Metrics&lt;/h2&gt;
-        &lt;div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4"&gt;
-          &lt;StatCard
-            title="Completed Today"
-            value={stats.completionStats.tasksCompletedToday}
-            color="text-green-400"
-            icon={icons.check}
-          /&gt;
-          &lt;StatCard
-            title="This Week"
-            value={stats.completionStats.tasksCompletedThisWeek}
-            subtitle={`${stats.completionStats.avgTasksPerDay.toFixed(1)} avg/day`}
-            color="text-blue-400"
-          /&gt;
-          &lt;StatCard
-            title="Efficiency"
-            value={`${stats.productivityMetrics.efficiencyRating}%`}
-            color={
-              stats.productivityMetrics.efficiencyRating &gt;= 80 ? 'text-green-400' :
-              stats.productivityMetrics.efficiencyRating &gt;= 60 ? 'text-yellow-400' : 'text-red-400'
-            }
-          /&gt;
-          &lt;StatCard
-            title="Avg Progress"
-            value={`${Math.round(stats.productivityMetrics.avgProgressPerTask)}%`}
-            subtitle="Per active task"
-            color="text-purple-400"
-          /&gt;
-        &lt;/div&gt;
-      &lt;/div&gt;
-&nbsp;
-      {/* Priority &amp; Context Breakdown */}
-      &lt;div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6"&gt;
-        &lt;div className="bg-slate-800 rounded-lg p-4 lg:p-6"&gt;
-          &lt;h3 className="text-base lg:text-lg font-semibold text-white mb-4"&gt;Priority Breakdown&lt;/h3&gt;
-          &lt;div className="space-y-3"&gt;
-            &lt;div className="flex items-center justify-between"&gt;
-              &lt;span className="text-sm text-red-400"&gt;🔥 Urgent&lt;/span&gt;
-              &lt;span className="text-lg font-bold text-red-400"&gt;{stats.priorityBreakdown.urgent}&lt;/span&gt;
-            &lt;/div&gt;
-            &lt;div className="flex items-center justify-between"&gt;
-              &lt;span className="text-sm text-orange-400"&gt;⚡ High&lt;/span&gt;
-              &lt;span className="text-lg font-bold text-orange-400"&gt;{stats.priorityBreakdown.high}&lt;/span&gt;
-            &lt;/div&gt;
-            &lt;div className="flex items-center justify-between"&gt;
-              &lt;span className="text-sm text-yellow-400"&gt;📋 Medium&lt;/span&gt;
-              &lt;span className="text-lg font-bold text-yellow-400"&gt;{stats.priorityBreakdown.medium}&lt;/span&gt;
-            &lt;/div&gt;
-            &lt;div className="flex items-center justify-between"&gt;
-              &lt;span className="text-sm text-green-400"&gt;📝 Low&lt;/span&gt;
-              &lt;span className="text-lg font-bold text-green-400"&gt;{stats.priorityBreakdown.low}&lt;/span&gt;
-            &lt;/div&gt;
+    &lt;div className="h-full flex flex-col bg-white dark:bg-gray-900"&gt;
+      {/* Day Header */}
+      &lt;div className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4"&gt;
+        &lt;div className="flex items-center justify-between"&gt;
+          &lt;div&gt;
+            &lt;h2 className={`text-xl font-semibold ${dayHeader.isToday ? 'text-blue-600' : 'text-gray-900 dark:text-gray-100'}`}&gt;
+              {dayHeader.weekday}
+            &lt;/h2&gt;
+            &lt;p className="text-sm text-gray-600 dark:text-gray-400 mt-1"&gt;
+              {dayHeader.date}
+              {dayHeader.isToday &amp;&amp; &lt;span className="ml-2 text-blue-600 font-medium"&gt;Today&lt;/span&gt;}
+            &lt;/p&gt;
           &lt;/div&gt;
-        &lt;/div&gt;
-&nbsp;
-        &lt;div className="bg-slate-800 rounded-lg p-4 lg:p-6"&gt;
-          &lt;h3 className="text-base lg:text-lg font-semibold text-white mb-4"&gt;Context Distribution&lt;/h3&gt;
-          &lt;div className="grid grid-cols-2 gap-4"&gt;
-            &lt;div&gt;
-              &lt;h4 className="text-sm font-medium text-purple-400 mb-2"&gt;Business&lt;/h4&gt;
-              &lt;div className="space-y-1 text-sm"&gt;
-                &lt;div className="flex justify-between"&gt;
-                  &lt;span className="text-slate-400"&gt;Tasks&lt;/span&gt;
-                  &lt;span className="text-slate-200"&gt;{stats.contextStats.businessTasksActive}&lt;/span&gt;
-                &lt;/div&gt;
-                &lt;div className="flex justify-between"&gt;
-                  &lt;span className="text-slate-400"&gt;Projects&lt;/span&gt;
-                  &lt;span className="text-slate-200"&gt;{stats.contextStats.businessProjectsActive}&lt;/span&gt;
-                &lt;/div&gt;
-              &lt;/div&gt;
+          
+          {/* Event summary */}
+          &lt;div className="text-right"&gt;
+            &lt;div className="text-lg font-semibold text-gray-900 dark:text-gray-100"&gt;
+              {dayEvents.length} {dayEvents.length === 1 ? 'Event' : 'Events'}
             &lt;/div&gt;
-            &lt;div&gt;
-              &lt;h4 className="text-sm font-medium text-green-400 mb-2"&gt;Personal&lt;/h4&gt;
-              &lt;div className="space-y-1 text-sm"&gt;
-                &lt;div className="flex justify-between"&gt;
-                  &lt;span className="text-slate-400"&gt;Tasks&lt;/span&gt;
-                  &lt;span className="text-slate-200"&gt;{stats.contextStats.personalTasksActive}&lt;/span&gt;
-                &lt;/div&gt;
-                &lt;div className="flex justify-between"&gt;
-                  &lt;span className="text-slate-400"&gt;Projects&lt;/span&gt;
-                  &lt;span className="text-slate-200"&gt;{stats.contextStats.personalProjectsActive}&lt;/span&gt;
-                &lt;/div&gt;
-              &lt;/div&gt;
+            &lt;div className="text-sm text-gray-600 dark:text-gray-400"&gt;
+              {dayEvents.filter(<span class="fstat-no" title="function not covered" >e </span>=&gt; <span class="cstat-no" title="statement not covered" >e.type === 'work_session')</span>.length} Work Sessions, {' '}
+              {dayEvents.filter(<span class="fstat-no" title="function not covered" >e </span>=&gt; <span class="cstat-no" title="statement not covered" >e.type === 'deadline')</span>.length} Deadlines
             &lt;/div&gt;
           &lt;/div&gt;
         &lt;/div&gt;
       &lt;/div&gt;
 &nbsp;
-      {/* Deadline &amp; Hours Tracking */}
-      &lt;div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6"&gt;
-        &lt;div className="bg-slate-800 rounded-lg p-4 lg:p-6"&gt;
-          &lt;h3 className="text-base lg:text-lg font-semibold text-white mb-4"&gt;Deadline Overview&lt;/h3&gt;
-          &lt;div className="grid grid-cols-2 gap-4"&gt;
-            &lt;StatCard
-              title="Due Today"
-              value={stats.deadlineStats.dueTodayCount}
-              color="text-red-400"
-            /&gt;
-            &lt;StatCard
-              title="This Week"
-              value={stats.deadlineStats.dueThisWeekCount}
-              color="text-yellow-400"
-            /&gt;
-            &lt;StatCard
-              title="Overdue"
-              value={stats.deadlineStats.overdueCount}
-              color="text-red-500"
-            /&gt;
-            &lt;StatCard
-              title="Upcoming"
-              value={stats.deadlineStats.upcomingCount}
-              color="text-blue-400"
-            /&gt;
+      {/* Tasks Section */}
+      {dayEvents.filter(<span class="fstat-no" title="function not covered" >e </span>=&gt; <span class="cstat-no" title="statement not covered" >e.type === 'deadline')</span>.length &gt; 0 &amp;&amp; (
+        &lt;div className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-3"&gt;
+          &lt;h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"&gt;Tasks &amp; Deadlines&lt;/h3&gt;
+          &lt;div className="flex flex-wrap gap-2"&gt;
+            {dayEvents.filter(<span class="fstat-no" title="function not covered" >e </span>=&gt; <span class="cstat-no" title="statement not covered" >e.type === 'deadline')</span>.map(<span class="fstat-no" title="function not covered" >(e</span>vent) =&gt; (
+<span class="cstat-no" title="statement not covered" >              &lt;div</span>
+                key={event.id}
+                className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs cursor-pointer ${getEventColor(event)} hover:shadow-sm transition-shadow`}
+                onClick={<span class="fstat-no" title="function not covered" >() =</span>&gt; <span class="cstat-no" title="statement not covered" >onEventClick(event)}</span>
+                title={event.title}
+              &gt;
+                &lt;span&gt;{getEventIcon(event)}&lt;/span&gt;
+                &lt;span className="truncate max-w-[200px]"&gt;{event.title}&lt;/span&gt;
+                {event.priority &amp;&amp; (
+                  &lt;span className="ml-1 opacity-75"&gt;({event.priority})&lt;/span&gt;
+                )}
+              &lt;/div&gt;
+            ))}
           &lt;/div&gt;
         &lt;/div&gt;
+      )}
 &nbsp;
-        &lt;div className="bg-slate-800 rounded-lg p-4 lg:p-6"&gt;
-          &lt;h3 className="text-base lg:text-lg font-semibold text-white mb-4"&gt;Time Tracking&lt;/h3&gt;
-          &lt;div className="space-y-4"&gt;
-            &lt;div className="flex items-center justify-between"&gt;
-              &lt;span className="text-sm text-slate-400"&gt;Total Estimated&lt;/span&gt;
-              &lt;span className="text-lg font-bold text-blue-400"&gt;
-                {stats.productivityMetrics.totalEstimatedHours.toFixed(1)}h
-              &lt;/span&gt;
-            &lt;/div&gt;
-            &lt;div className="flex items-center justify-between"&gt;
-              &lt;span className="text-sm text-slate-400"&gt;Completed&lt;/span&gt;
-              &lt;span className="text-lg font-bold text-green-400"&gt;
-                {stats.productivityMetrics.completedHours.toFixed(1)}h
-              &lt;/span&gt;
-            &lt;/div&gt;
-            &lt;div className="w-full bg-slate-700 rounded-full h-3"&gt;
-              &lt;div 
-                className="bg-green-500 h-3 rounded-full transition-all duration-300"
-                style={{ 
-                  width: `${stats.productivityMetrics.totalEstimatedHours &gt; 0 
-                    ? (stats.productivityMetrics.completedHours / stats.productivityMetrics.totalEstimatedHours) * 100 
-                    : 0}%` 
-                }}
-              &gt;&lt;/div&gt;
-            &lt;/div&gt;
+      {/* Time Grid */}
+      &lt;div className="flex-1 overflow-auto"&gt;
+        &lt;div className="flex"&gt;
+          {/* Time Labels */}
+          &lt;div className="w-20 flex-shrink-0 border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800"&gt;
+            {timeSlots.map(<span class="fstat-no" title="function not covered" >(s</span>lot) =&gt; (
+<span class="cstat-no" title="statement not covered" >              &lt;div</span>
+                key={`${slot.time}-${slot.minutes}`}
+                className={`h-10 border-b border-gray-100 dark:border-gray-800 flex items-center px-2 text-xs ${
+                  slot.isHour ? 'font-medium text-gray-500 dark:text-gray-400' : 'text-gray-400 dark:text-gray-600'
+                }`}
+              &gt;
+                {slot.isHour &amp;&amp; (
+                  &lt;div className="text-right w-full"&gt;
+                    {slot.label}
+                  &lt;/div&gt;
+                )}
+              &lt;/div&gt;
+            ))}
+          &lt;/div&gt;
+&nbsp;
+          {/* Events Area */}
+          &lt;div className="flex-1 relative"&gt;
+            {/* Time grid background */}
+            {timeSlots.map(<span class="fstat-no" title="function not covered" >(s</span>lot) =&gt; (
+<span class="cstat-no" title="statement not covered" >              &lt;div</span>
+                key={`${slot.time}-${slot.minutes}-bg`}
+                className={`h-10 border-b hover:bg-blue-50 dark:hover:bg-gray-800 cursor-pointer transition-colors ${
+                  slot.isHour ? 'border-gray-200 dark:border-gray-700' : 'border-gray-100/50 dark:border-gray-800/50'
+                }`}
+                title={`${slot.label} - Click to add event`}
+              /&gt;
+            ))}
+&nbsp;
+            {/* Current time indicator */}
+            {currentTimePosition !== null &amp;&amp; (
+              &lt;div
+                className="absolute left-0 right-0 z-20 pointer-events-none"
+                style={{ top: `${currentTimePosition}px` }}
+              &gt;
+                &lt;div className="flex items-center"&gt;
+                  &lt;div className="w-3 h-3 bg-red-500 rounded-full border-2 border-white shadow-md" /&gt;
+                  &lt;div className="flex-1 h-0.5 bg-red-500" /&gt;
+                &lt;/div&gt;
+                &lt;div className="text-xs text-red-600 font-medium ml-4 -mt-1"&gt;
+                  {currentTime.toLocaleTimeString('en-US', { 
+                    hour: 'numeric', 
+                    minute: '2-digit',
+                    hour12: true 
+                  })}
+                &lt;/div&gt;
+              &lt;/div&gt;
+            )}
+&nbsp;
+            {/* Events */}
+            {eventLayout.map(<span class="fstat-no" title="function not covered" >({</span> event, style }) =&gt; {
+              const colorClass = <span class="cstat-no" title="statement not covered" >getEventColor(event);</span>
+              const icon = <span class="cstat-no" title="statement not covered" >getEventIcon(event);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >              return (</span>
+                &lt;div
+                  key={event.id}
+                  className={`absolute rounded-lg border-l-4 p-3 cursor-pointer shadow-lg hover:shadow-xl transition-all duration-200 ${colorClass}`}
+                  style={style}
+                  onClick={<span class="fstat-no" title="function not covered" >() =</span>&gt; <span class="cstat-no" title="statement not covered" >onEventClick(event)}</span>
+                &gt;
+                  &lt;div className="flex items-start gap-2"&gt;
+                    &lt;span className="text-sm"&gt;{icon}&lt;/span&gt;
+                    &lt;div className="flex-1 min-w-0"&gt;
+                      &lt;div className="flex items-center gap-1 mb-1"&gt;
+                        {getPriorityDot(event.priority)}
+                        &lt;h3 className="font-semibold text-sm truncate"&gt;
+                          {event.title}
+                        &lt;/h3&gt;
+                      &lt;/div&gt;
+                      
+                      &lt;div className="text-xs opacity-90 mb-2"&gt;
+                        {event.start.toLocaleTimeString('en-US', { 
+                          hour: 'numeric', 
+                          minute: '2-digit',
+                          hour12: true 
+                        })} - {event.end.toLocaleTimeString('en-US', { 
+                          hour: 'numeric', 
+                          minute: '2-digit',
+                          hour12: true 
+                        })}
+                      &lt;/div&gt;
+&nbsp;
+                      {/* Event metadata */}
+                      &lt;div className="space-y-1"&gt;
+                        {event.metadata?.estimatedHours &amp;&amp; (
+                          &lt;div className="text-xs opacity-75 flex items-center gap-1"&gt;
+                            &lt;span&gt;⏱️&lt;/span&gt;
+                            &lt;span&gt;{event.metadata.estimatedHours}h estimated&lt;/span&gt;
+                          &lt;/div&gt;
+                        )}
+                        
+                        {event.metadata?.progress !== undefined &amp;&amp; (
+                          &lt;div className="text-xs opacity-75 flex items-center gap-1"&gt;
+                            &lt;span&gt;📊&lt;/span&gt;
+                            &lt;span&gt;{event.metadata.progress}% complete&lt;/span&gt;
+                          &lt;/div&gt;
+                        )}
+&nbsp;
+                        {event.metadata?.energyLevel &amp;&amp; (
+                          &lt;div className="text-xs opacity-75 flex items-center gap-1"&gt;
+                            &lt;span&gt;⚡&lt;/span&gt;
+                            &lt;span&gt;{event.metadata.energyLevel} energy&lt;/span&gt;
+                          &lt;/div&gt;
+                        )}
+&nbsp;
+                        {event.metadata?.aiSuggested &amp;&amp; (
+                          &lt;div className="text-xs opacity-75 flex items-center gap-1"&gt;
+                            &lt;span&gt;🤖&lt;/span&gt;
+                            &lt;span&gt;AI suggested&lt;/span&gt;
+                          &lt;/div&gt;
+                        )}
+                      &lt;/div&gt;
+&nbsp;
+                      {/* Event type indicator */}
+                      &lt;div className="mt-2"&gt;
+                        &lt;span className="inline-block px-2 py-1 rounded text-xs font-medium bg-white bg-opacity-20"&gt;
+                          {event.type.replace('_', ' ').replace(/\b\w/g, <span class="fstat-no" title="function not covered" >l </span>=&gt; <span class="cstat-no" title="statement not covered" >l.toUpperCase())</span>}
+                        &lt;/span&gt;
+                      &lt;/div&gt;
+                    &lt;/div&gt;
+                  &lt;/div&gt;
+                &lt;/div&gt;
+              );
+            })}
+&nbsp;
+            {/* Empty state */}
+            {dayEvents.length === 0 &amp;&amp; (
+              &lt;div className="absolute inset-0 flex items-center justify-center"&gt;
+                &lt;div className="text-center text-gray-500 dark:text-gray-400"&gt;
+                  &lt;div className="text-4xl mb-2"&gt;📅&lt;/div&gt;
+                  &lt;p className="text-lg font-medium text-gray-900 dark:text-gray-100"&gt;No events scheduled&lt;/p&gt;
+                  &lt;p className="text-sm text-gray-600 dark:text-gray-400"&gt;Click on a time slot to add an event&lt;/p&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+            )}
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+&nbsp;
+      {/* Day Summary Footer */}
+      {dayEvents.length &gt; 0 &amp;&amp; (
+        &lt;div className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4"&gt;
+          &lt;div className="grid grid-cols-2 lg:grid-cols-4 gap-4"&gt;
             &lt;div className="text-center"&gt;
-              &lt;span className="text-xs text-slate-400"&gt;
-                {stats.productivityMetrics.totalEstimatedHours &gt; 0 
-                  ? Math.round((stats.productivityMetrics.completedHours / stats.productivityMetrics.totalEstimatedHours) * 100)
-                  : 0}% Complete
+              &lt;div className="text-lg font-semibold text-blue-600"&gt;
+                {dayEvents.filter(<span class="fstat-no" title="function not covered" >e </span>=&gt; <span class="cstat-no" title="statement not covered" >e.type === 'work_session')</span>.length}
+              &lt;/div&gt;
+              &lt;div className="text-xs text-gray-600 dark:text-gray-400"&gt;Work Sessions&lt;/div&gt;
+            &lt;/div&gt;
+            
+            &lt;div className="text-center"&gt;
+              &lt;div className="text-lg font-semibold text-red-600"&gt;
+                {dayEvents.filter(<span class="fstat-no" title="function not covered" >e </span>=&gt; <span class="cstat-no" title="statement not covered" >e.type === 'deadline')</span>.length}
+              &lt;/div&gt;
+              &lt;div className="text-xs text-gray-600 dark:text-gray-400"&gt;Deadlines&lt;/div&gt;
+            &lt;/div&gt;
+            
+            &lt;div className="text-center"&gt;
+              &lt;div className="text-lg font-semibold text-green-600"&gt;
+                {dayEvents.filter(<span class="fstat-no" title="function not covered" >e </span>=&gt; <span class="cstat-no" title="statement not covered" >e.type === 'event')</span>.length}
+              &lt;/div&gt;
+              &lt;div className="text-xs text-gray-600 dark:text-gray-400"&gt;Events&lt;/div&gt;
+            &lt;/div&gt;
+            
+            &lt;div className="text-center"&gt;
+              &lt;div className="text-lg font-semibold text-purple-600"&gt;
+                {dayEvents.filter(<span class="fstat-no" title="function not covered" >e </span>=&gt; <span class="cstat-no" title="statement not covered" >e.metadata?.aiSuggested)</span>.length}
+              &lt;/div&gt;
+              &lt;div className="text-xs text-gray-600 dark:text-gray-400"&gt;AI Suggested&lt;/div&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+          
+          {/* Total time breakdown */}
+          &lt;div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700"&gt;
+            &lt;div className="flex justify-between text-sm"&gt;
+              &lt;span className="text-gray-600 dark:text-gray-400"&gt;Total scheduled time:&lt;/span&gt;
+              &lt;span className="font-medium text-gray-900 dark:text-gray-100"&gt;
+                {Math.round(
+                  dayEvents
+                    .filter(<span class="fstat-no" title="function not covered" >e </span>=&gt; <span class="cstat-no" title="statement not covered" >e.type === 'work_session')</span>
+                    .reduce(<span class="fstat-no" title="function not covered" >(t</span>otal, event) =&gt; {
+                      const duration = <span class="cstat-no" title="statement not covered" >(event.end.getTime() - event.start.getTime()) / (1000 * 60 * 60);</span>
+<span class="cstat-no" title="statement not covered" >                      return total + duration;</span>
+                    }, 0) * 10
+                ) / 10}h
               &lt;/span&gt;
             &lt;/div&gt;
           &lt;/div&gt;
         &lt;/div&gt;
-      &lt;/div&gt;
+      )}
     &lt;/div&gt;
   );
 };
 &nbsp;
-<span class="cstat-no" title="statement not covered" >export default EnhancedHomeStats;</span></pre></td></tr></table></pre>
+<span class="cstat-no" title="statement not covered" >export default DayView;</span></pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
@@ -1191,14 +1416,14 @@ const EnhancedHomeStats: React.FC&lt;EnhancedHomeStatsProps&gt; = <span class="c
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
                 at 2025-07-12T16:22:32.769Z
             </div>
-        <script src="../../../prettify.js"></script>
+        <script src="../../../../prettify.js"></script>
         <script>
             window.onload = function () {
                 prettyPrint();
             };
         </script>
-        <script src="../../../sorter.js"></script>
-        <script src="../../../block-navigation.js"></script>
+        <script src="../../../../sorter.js"></script>
+        <script src="../../../../block-navigation.js"></script>
     </body>
 </html>
     
