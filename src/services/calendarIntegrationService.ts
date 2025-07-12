@@ -28,6 +28,9 @@ export interface CalendarEvent {
 export interface AIScheduleSuggestion {
   id: string;
   taskId: string;
+  taskTitle: string;
+  taskPriority?: 'low' | 'medium' | 'high' | 'urgent';
+  taskProject?: string;
   suggestedStart: Date;
   suggestedEnd: Date;
   confidence: number;
@@ -339,6 +342,9 @@ export class CalendarIntegrationService {
             return {
               id: `suggestion-${task.id}-${Date.now()}`,
               taskId: task.id,
+              taskTitle: task.title,
+              taskPriority: task.priority,
+              taskProject: task.project_id,
               suggestedStart: slotStart,
               suggestedEnd: slotEnd,
               confidence,
