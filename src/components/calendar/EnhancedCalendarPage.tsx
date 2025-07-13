@@ -85,6 +85,7 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
   const [showNewEventModal, setShowNewEventModal] = useState(false);
   const [showEditEventModal, setShowEditEventModal] = useState(false);
   const [showCounselingModal, setShowCounselingModal] = useState(false);
+  const [showFeaturesModal, setShowFeaturesModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Schedule | null>(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
@@ -388,6 +389,15 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
           {/* Title and Date Range */}
           <div className="flex items-center gap-4">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Calendar</h1>
+            <button
+              onClick={() => setShowFeaturesModal(true)}
+              className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              title="View calendar features and mobile optimizations"
+            >
+              <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </button>
             <div className="text-lg font-medium text-gray-700 dark:text-gray-300">
               {formatDateRange}
             </div>
@@ -656,6 +666,140 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
           onUpdateTask={handleUpdateTask}
           projects={projects}
         />
+      )}
+
+      {/* Features Information Modal */}
+      {showFeaturesModal && (
+        <div 
+          className="fixed inset-0 bg-slate-900 bg-opacity-75 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+          onClick={() => setShowFeaturesModal(false)}
+          aria-modal="true"
+          role="dialog"
+          aria-labelledby="featuresModalTitle"
+        >
+          <div 
+            className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-6">
+              <h2 id="featuresModalTitle" className="text-2xl font-semibold text-blue-600 dark:text-blue-400">
+                📅 Calendar Features & Mobile Optimizations
+              </h2>
+              <button 
+                onClick={() => setShowFeaturesModal(false)} 
+                className="text-slate-400 hover:text-slate-200"
+                aria-label="Close modal"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-7 h-7">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-6 text-slate-700 dark:text-slate-300">
+              {/* Key Features Section */}
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-3">
+                  🚀 Key Features Implemented
+                </h3>
+                
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-medium text-blue-600 dark:text-blue-400 mb-2">
+                      1. Prominent Top Action Buttons
+                    </h4>
+                    <ul className="list-disc list-inside space-y-1 text-sm">
+                      <li>Three main buttons (Task, Event, Counseling) are now centered, larger, and more prominent</li>
+                      <li>They span the full width with equal spacing for easy thumb access</li>
+                      <li>Clear icons and labels with good contrast</li>
+                      <li>A centered "Today" button below them</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium text-green-600 dark:text-green-400 mb-2">
+                      2. Compact Month View with Colored Dots
+                    </h4>
+                    <ul className="list-disc list-inside space-y-1 text-sm">
+                      <li>Square month view showing the full month</li>
+                      <li>Red dots for tasks/deadlines</li>
+                      <li>Green dots for events</li>
+                      <li>Visual indicators for today (blue highlight) and selected day (blue ring)</li>
+                      <li>Easy navigation with prev/next month buttons</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium text-purple-600 dark:text-purple-400 mb-2">
+                      3. Day View List Mode
+                    </h4>
+                    <ul className="list-disc list-inside space-y-1 text-sm">
+                      <li>Shows today by default</li>
+                      <li>Switches to any day you select from the month view</li>
+                      <li>Organized sections for tasks and events with color-coded headers</li>
+                      <li>Clean, touch-friendly cards for each item</li>
+                      <li>Quick edit buttons on each item</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium text-orange-600 dark:text-orange-400 mb-2">
+                      4. Mobile Detection & Integration
+                    </h4>
+                    <ul className="list-disc list-inside space-y-1 text-sm">
+                      <li>Automatically detects mobile screens (&lt; 768px width)</li>
+                      <li>Seamlessly switches between desktop and mobile views</li>
+                      <li>All existing functionality (modals, adding items) works in mobile mode</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium text-teal-600 dark:text-teal-400 mb-2">
+                      5. Enhanced User Experience
+                    </h4>
+                    <ul className="list-disc list-inside space-y-1 text-sm">
+                      <li>Counseling sessions get special blue highlighting</li>
+                      <li>Empty state messaging when no items exist</li>
+                      <li>Smooth transitions and proper touch targets</li>
+                      <li>Maintains all calendar functionality while being mobile-optimized</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              {/* Mobile Workflow Section */}
+              <div className="border-t border-slate-200 dark:border-slate-600 pt-6">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-3">
+                  📱 Mobile Workflow
+                </h3>
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                  <p className="text-sm mb-3 font-medium">The mobile view now provides a much more efficient workflow:</p>
+                  <ul className="list-disc list-inside space-y-1 text-sm">
+                    <li><strong>Quick actions at the top</strong> for adding items</li>
+                    <li><strong>Month overview with dot indicators</strong> to see busy days at a glance</li>
+                    <li><strong>Detailed day view below</strong> showing exactly what's happening on the selected day</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* AI Features Section */}
+              <div className="border-t border-slate-200 dark:border-slate-600 pt-6">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-3">
+                  🤖 AI Suggestions Features
+                </h3>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li>AI analyzes your tasks, deadlines, and schedule</li>
+                  <li>Suggests optimal time slots based on priority and energy levels</li>
+                  <li>You can approve, deny, or manually adjust suggestions with the "Modify Time" button</li>
+                  <li>AI learns from your preferences over time</li>
+                  <li>Strict business/personal time separation</li>
+                  <li>Automatic cleanup of old suggestions</li>
+                  <li>Progress notes only suggested after counseling sessions</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
