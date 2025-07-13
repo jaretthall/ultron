@@ -536,13 +536,7 @@ export class CalendarIntegrationService {
         checkDate.setDate(checkDate.getDate() + dayOffset);
         
         // Enhanced context-aware scheduling with strict business/personal separation
-        const currentDay = new Date().getDay();
-        const currentHour = new Date().getHours();
-        const isCurrentlyWeekend = currentDay === 0 || currentDay === 6;
         const isCheckDateWeekend = checkDate.getDay() === 0 || checkDate.getDay() === 6;
-        
-        // Determine if we're currently in business hours (9 AM - 5 PM on weekdays)
-        const isCurrentlyBusinessHours = !isCurrentlyWeekend && currentHour >= 9 && currentHour < 17;
         
         // Strict context separation: never mix business and personal inappropriately
         if (task.task_context === 'business') {
@@ -552,21 +546,14 @@ export class CalendarIntegrationService {
           if (isCheckDateWeekend) {
             continue; // Never suggest business tasks for weekends
           }
-          
-          // Don't suggest business tasks for evening slots (after 5 PM) 
-          if (hour >= 17) {
-            continue; // Business tasks shouldn't be suggested for evenings
-          }
         } else if (task.task_context === 'personal') {
           // Personal tasks should only be suggested for:
           // 1. Weekends (any time)
           // 2. Weekday evenings (after business hours)
           // 3. Early mornings before business hours
           if (!isCheckDateWeekend) {
-            // On weekdays, only suggest personal tasks outside business hours
-            if (hour >= 9 && hour < 17) {
-              continue; // Don't suggest personal tasks during business hours
-            }
+            // On weekdays, we'll filter by hour in the inner loop
+            // This allows us to check each specific time slot
           }
         }
 
@@ -575,6 +562,19 @@ export class CalendarIntegrationService {
           const slotStart = new Date(checkDate);
           slotStart.setHours(hour, 0, 0, 0);
           const slotEnd = new Date(slotStart.getTime() + sessionDuration);
+
+          // Apply hour-based context filtering
+          if (task.task_context === 'business') {
+            // Don't suggest business tasks for evening slots (after 5 PM) 
+            if (hour >= 17) {
+              continue; // Business tasks shouldn't be suggested for evenings
+            }
+          } else if (task.task_context === 'personal') {
+            // On weekdays, only suggest personal tasks outside business hours
+            if (!isCheckDateWeekend && hour >= 9 && hour < 17) {
+              continue; // Don't suggest personal tasks during business hours
+            }
+          }
 
           // Check if slot conflicts with existing events
           const hasConflict = existingEvents.some(event => 

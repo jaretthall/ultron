@@ -115,7 +115,6 @@ const SmartSummaryCards: React.FC<SmartSummaryCardsProps> = ({ tasks, onTaskClic
 
   const calculateFreeTime = (): string => {
     const now = currentTime;
-    const hour = now.getHours();
     
     if (nextEvent) {
       const timeUntilNext = Math.round((nextEvent.start.getTime() - now.getTime()) / (1000 * 60));
