@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { Task, Schedule } from '../../../types';
 import { useAppState } from '../../contexts/AppStateContext';
 import { formatDateForInput, isSameDate } from '../../utils/dateUtils';
@@ -10,6 +10,7 @@ import CounselingSessionModal from './CounselingSessionModal';
 import TaskScheduler from './TaskScheduler';
 import WorkingHoursManager from './WorkingHoursManager';
 import FocusBlockManager from './FocusBlockManager';
+import MobileCalendarView from './MobileCalendarView';
 // import EditTaskModal from '../tasks/EditTaskModal';
 
 const PlusIcon: React.FC = () => (
@@ -43,6 +44,22 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ onTaskClick, onEditTask }) 
   const [isTaskSchedulerOpen, setIsTaskSchedulerOpen] = useState(false);
   const [isWorkingHoursOpen, setIsWorkingHoursOpen] = useState(false);
   const [isFocusBlockManagerOpen, setIsFocusBlockManagerOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [forceMobileView, setForceMobileView] = useState(false);
+
+  // Mobile detection
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Determine if mobile view should be shown (automatic detection OR manual force)
+  const shouldShowMobileView = isMobile || forceMobileView;
 
   // Memoize static data
   const daysOfWeek = useMemo(() => ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], []);
@@ -224,6 +241,112 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ onTaskClick, onEditTask }) 
     }
   };
 
+  // Mobile view handlers
+  const handleMobileAddTask = useCallback(() => {
+    setShowNewTaskModal(true);
+  }, []);
+
+  const handleMobileAddEvent = useCallback(() => {
+    setShowNewEventModal(true);
+  }, []);
+
+  const handleMobileAddCounseling = useCallback(() => {
+    setShowCounselingModal(true);
+  }, []);
+
+  const handleMobileTaskClick = useCallback((task: Task) => {
+    if (onTaskClick) {
+      onTaskClick(task);
+    }
+  }, [onTaskClick]);
+
+  const handleMobileEventClick = useCallback((event: Schedule) => {
+    setSelectedEvent(event);
+    if (isCounselingSession(event)) {
+      setShowCounselingModal(true);
+    } else {
+      setShowEditEventModal(true);
+    }
+  }, [isCounselingSession]);
+
+  const handleMobileEditTask = useCallback((task: Task) => {
+    if (onEditTask) {
+      onEditTask(task);
+    }
+  }, [onEditTask]);
+
+  const handleMobileEditEvent = useCallback((event: Schedule) => {
+    setSelectedEvent(event);
+    setShowEditEventModal(true);
+  }, []);
+
+  // Mobile view
+  if (shouldShowMobileView) {
+    return (
+      <div className="flex-1 overflow-hidden bg-slate-900 text-slate-100 flex flex-col">
+        <MobileCalendarView
+          tasks={tasks}
+          schedules={schedules}
+          projects={projects}
+          onAddTask={handleMobileAddTask}
+          onAddEvent={handleMobileAddEvent}
+          onAddCounseling={handleMobileAddCounseling}
+          onTaskClick={handleMobileTaskClick}
+          onEventClick={handleMobileEventClick}
+          onEditTask={handleMobileEditTask}
+          onEditEvent={handleMobileEditEvent}
+          currentDate={currentDate}
+          onCurrentDateChange={setCurrentDate}
+        />
+        
+        {/* Mobile Modals */}
+        {showNewTaskModal && (
+          <NewTaskModal
+            isOpen={showNewTaskModal}
+            onClose={() => setShowNewTaskModal(false)}
+            onAddTask={handleAddTask}
+            projects={projects}
+            defaultDueDate={formatDateForInput(selectedDate)}
+          />
+        )}
+        
+        {showNewEventModal && (
+          <NewEventModal
+            isOpen={showNewEventModal}
+            onClose={() => setShowNewEventModal(false)}
+            onAddEvent={handleAddEvent}
+            projects={projects}
+            defaultDate={selectedDate ? formatDateForInput(selectedDate) : undefined}
+          />
+        )}
+        
+        {showEditEventModal && (
+          <EditEventModal
+            isOpen={showEditEventModal}
+            onClose={() => {
+              setShowEditEventModal(false);
+              setSelectedEvent(null);
+            }}
+            onUpdateEvent={handleUpdateEvent}
+            onDeleteEvent={handleDeleteEvent}
+            event={selectedEvent}
+            projects={projects}
+          />
+        )}
+        
+        {showCounselingModal && (
+          <CounselingSessionModal
+            isOpen={showCounselingModal}
+            onClose={() => setShowCounselingModal(false)}
+            onAddCounselingSession={handleAddCounselingSession}
+            projects={projects}
+            defaultDate={selectedDate || undefined}
+          />
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 p-4 md:p-6 lg:p-8 overflow-hidden bg-slate-900 text-slate-100 flex flex-col lg:flex-row">
       <div className="flex-1 flex flex-col lg:mr-6">
@@ -270,6 +393,16 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ onTaskClick, onEditTask }) 
             
             {/* Secondary actions - hidden on mobile, shown in overflow menu */}
             <div className="hidden lg:flex items-center gap-2">
+              <button
+                onClick={() => setForceMobileView(!forceMobileView)}
+                className={`${forceMobileView ? 'bg-orange-600 hover:bg-orange-700' : 'bg-slate-600 hover:bg-slate-700'} text-white font-medium py-2 px-4 rounded-lg flex items-center text-sm`}
+                title="Toggle Mobile View"
+              >
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+                {forceMobileView ? 'Desktop' : 'Mobile'} View
+              </button>
               <button
                 onClick={() => setIsWorkingHoursOpen(true)}
                 className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg flex items-center text-sm"
