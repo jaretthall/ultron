@@ -272,6 +272,23 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
     }
   };
 
+  const handleAISuggestionModify = async (suggestion: AIScheduleSuggestion) => {
+    try {
+      // Apply the suggestion first to create the task
+      await calendarIntegrationService.applySuggestion(suggestion);
+      
+      // Find the created task and open it for editing
+      const task = tasks.find(t => t.id === suggestion.taskId);
+      if (task) {
+        setEditingTask(task);
+      }
+      
+      await loadCalendarData(); // Reload data to show the scheduled work session
+    } catch (error) {
+      console.error('Error modifying AI suggestion:', error);
+    }
+  };
+
   const handleUpdateTask = async (updatedTask: Task) => {
     try {
       await updateTask(updatedTask.id, updatedTask);
@@ -574,6 +591,7 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
                 onApproveAndEdit={handleAISuggestionApproveAndEdit}
                 onProvideFeedback={handleAISuggestionProvideFeedback}
                 onDeny={handleAISuggestionDeny}
+                onModify={handleAISuggestionModify}
                 onRefresh={loadCalendarData}
                 onClose={() => setShowAISuggestions(false)}
               />

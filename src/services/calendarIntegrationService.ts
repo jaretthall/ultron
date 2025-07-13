@@ -492,22 +492,67 @@ export class CalendarIntegrationService {
   }
 
   /**
+   * Check if a task is a progress note that should not be scheduled before its counseling session
+   */
+  private isProgressNoteBeforeCounseling(task: Task, existingEvents: CalendarEvent[]): boolean {
+    // Check if this is a progress note task
+    const isProgressNote = task.tags?.includes('progress-note') ||
+                          task.tags?.includes('therapy') ||
+                          task.tags?.includes('documentation') ||
+                          task.title.toLowerCase().includes('progress note') ||
+                          task.title.toLowerCase().includes('clinical') ||
+                          task.title.toLowerCase().includes('therapy note');
+    
+    if (!isProgressNote) return false;
+    
+    // Extract date from progress note title (format: "Progress Note - YYYY-MM-DD")
+    const dateMatch = task.title.match(/Progress Note.*(\d{4}-\d{2}-\d{2})/);
+    if (!dateMatch) return false;
+    
+    const progressNoteDate = new Date(dateMatch[1]);
+    
+    // Find counseling sessions on the same date
+    const counselingSessions = existingEvents.filter(event => 
+      event.type === 'counseling_session' &&
+      event.start.toDateString() === progressNoteDate.toDateString()
+    );
+    
+    // If there's a counseling session on the same date, don't suggest progress note before it
+    if (counselingSessions.length > 0) {
+      const earliestCounseling = counselingSessions.reduce((earliest, session) => 
+        session.start < earliest.start ? session : earliest
+      );
+      
+      // Progress notes should only be suggested after counseling sessions
+      const now = new Date();
+      return now < earliestCounseling.start;
+    }
+    
+    return false;
+  }
+
+  /**
    * Generate AI suggestions for scheduling unscheduled tasks
    */
   private async generateAIScheduleSuggestions(tasks: Task[], existingEvents: CalendarEvent[]): Promise<AIScheduleSuggestion[]> {
     const suggestions: AIScheduleSuggestion[] = [];
+    const now = new Date();
     
     // Find tasks that need work sessions scheduled
     const unscheduledTasks = tasks.filter(task => 
       !task.work_session_scheduled_start && 
       task.status !== 'completed' && 
-      task.estimated_hours > 0
+      task.estimated_hours > 0 &&
+      !this.isProgressNoteBeforeCounseling(task, existingEvents)
     );
 
     for (const task of unscheduledTasks) {
       const suggestion = await this.generateTaskScheduleSuggestion(task, existingEvents);
       if (suggestion) {
-        suggestions.push(suggestion);
+        // Only include suggestions that are in the future (cleanup old suggestions)
+        if (suggestion.suggestedStart > now) {
+          suggestions.push(suggestion);
+        }
       }
     }
 
