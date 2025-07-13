@@ -9,6 +9,7 @@ import NewTaskModal from '../tasks/NewTaskModal';
 import EditTaskModal from '../tasks/EditTaskModal';
 import NewEventModal from './NewEventModal';
 import EditEventModal from './EditEventModal';
+import EditWorkSessionModal from './EditWorkSessionModal';
 import CounselingSessionModal from './CounselingSessionModal';
 
 // Import view components (we'll create these)
@@ -84,9 +85,11 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
   const [showNewTaskModal, setShowNewTaskModal] = useState(false);
   const [showNewEventModal, setShowNewEventModal] = useState(false);
   const [showEditEventModal, setShowEditEventModal] = useState(false);
+  const [showEditWorkSessionModal, setShowEditWorkSessionModal] = useState(false);
   const [showCounselingModal, setShowCounselingModal] = useState(false);
   const [showFeaturesModal, setShowFeaturesModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Schedule | null>(null);
+  const [selectedWorkSession, setSelectedWorkSession] = useState<CalendarEvent | null>(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
   // Mobile responsive state
@@ -129,6 +132,32 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
       
     } catch (error) {
       console.error('Error loading calendar data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const resetAndRefreshAISuggestions = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Calculate date range based on view type
+      const { startDate, endDate } = getDateRangeForView(currentDate, viewType);
+      
+      console.log('🔄 Resetting and refreshing AI suggestions for range:', { startDate, endDate, viewType });
+      
+      const calendarData = await calendarIntegrationService.getCalendarDataWithReset(startDate, endDate);
+      
+      setCalendarEvents(calendarData.events);
+      setAISuggestions(calendarData.suggestions);
+      
+      console.log('🔄 AI suggestions reset and reloaded:', {
+        events: calendarData.events.length,
+        suggestions: calendarData.suggestions.length
+      });
+      
+    } catch (error) {
+      console.error('Error resetting AI suggestions:', error);
     } finally {
       setIsLoading(false);
     }
@@ -202,6 +231,8 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
 
   // Event handlers
   const handleEventClick = useCallback((event: CalendarEvent) => {
+    console.log('Event clicked:', event);
+    
     if (event.source === 'schedule' && event.scheduleId) {
       const schedule = schedules.find(s => s.id === event.scheduleId);
       if (schedule) {
@@ -216,6 +247,10 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
           onTaskClick(task);
         }
       }
+    } else if (event.type === 'work_session' && (event.source === 'ai_generated' || event.source === 'manual')) {
+      // Handle AI-generated or manual work sessions
+      setSelectedWorkSession(event);
+      setShowEditWorkSessionModal(true);
     }
   }, [schedules, tasks, onTaskClick]);
 
@@ -311,27 +346,94 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
           });
           await loadCalendarData(); // Reload calendar data to reflect changes
         }
-      } else if (event.source === 'task' && event.taskId) {
+      } else if ((event.source === 'task' || event.source === 'manual' || event.source === 'ai_generated') && event.taskId) {
         const task = tasks.find(t => t.id === event.taskId);
         if (task) {
           // Check if this is a deadline event or work session event
           if (event.type === 'deadline') {
             // Update due_date for deadline events
             await updateTask(event.taskId, {
-              due_date: newStart.toISOString().split('T')[0]
+              due_date: newStart.toISOString()
             });
           } else if (event.type === 'work_session') {
-            // Update work session schedule for work session events
-            await updateTask(event.taskId, {
-              work_session_scheduled_start: newStart.toISOString(),
-              work_session_scheduled_end: newEnd.toISOString()
-            });
+            // Check if this is a time-blocked task or work session
+            if (event.metadata?.timeBlocked) {
+              // Update scheduled_start and scheduled_end for time-blocked tasks
+              await updateTask(event.taskId, {
+                scheduled_start: newStart.toISOString(),
+                scheduled_end: newEnd.toISOString()
+              });
+            } else {
+              // Update work session schedule for work session events
+              await updateTask(event.taskId, {
+                work_session_scheduled_start: newStart.toISOString(),
+                work_session_scheduled_end: newEnd.toISOString()
+              });
+            }
           }
           await loadCalendarData(); // Reload calendar data to reflect changes
         }
       }
     } catch (error) {
       console.error('Error updating event position:', error);
+    }
+  };
+
+  // Work session handlers
+  const handleWorkSessionSave = async (updatedEvent: CalendarEvent) => {
+    try {
+      if (updatedEvent.taskId) {
+        const task = tasks.find(t => t.id === updatedEvent.taskId);
+        if (task) {
+          // Determine which fields to update based on event type
+          if (updatedEvent.metadata?.timeBlocked) {
+            // Update scheduled_start/end for time-blocked tasks
+            await updateTask(updatedEvent.taskId, {
+              scheduled_start: updatedEvent.start.toISOString(),
+              scheduled_end: updatedEvent.end.toISOString()
+            });
+          } else {
+            // Update work_session_scheduled_start/end for AI/manual work sessions
+            await updateTask(updatedEvent.taskId, {
+              work_session_scheduled_start: updatedEvent.start.toISOString(),
+              work_session_scheduled_end: updatedEvent.end.toISOString()
+            });
+          }
+          await loadCalendarData(); // Reload calendar data to reflect changes
+        }
+      }
+    } catch (error) {
+      console.error('Error saving work session:', error);
+    }
+  };
+
+  const handleWorkSessionDelete = async (eventId: string) => {
+    try {
+      const event = calendarEvents.find(e => e.id === eventId);
+      if (event && event.taskId) {
+        const task = tasks.find(t => t.id === event.taskId);
+        if (task) {
+          // Clear the scheduling fields based on event type
+          if (event.metadata?.timeBlocked) {
+            // Clear scheduled_start/end for time-blocked tasks
+            await updateTask(event.taskId, {
+              scheduled_start: null,
+              scheduled_end: null,
+              is_time_blocked: false
+            });
+          } else {
+            // Clear work_session_scheduled_start/end for AI/manual work sessions
+            await updateTask(event.taskId, {
+              work_session_scheduled_start: null,
+              work_session_scheduled_end: null,
+              ai_suggested: false
+            });
+          }
+          await loadCalendarData(); // Reload calendar data to reflect changes
+        }
+      }
+    } catch (error) {
+      console.error('Error deleting work session:', error);
     }
   };
 
@@ -384,127 +486,159 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
   return (
     <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-4">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          {/* Title and Date Range */}
-          <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Calendar</h1>
-            <button
-              onClick={() => setShowFeaturesModal(true)}
-              className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              title="View calendar features and mobile optimizations"
-            >
-              <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </button>
-            <div className="text-lg font-medium text-gray-700 dark:text-gray-300">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-2 md:px-4 py-2 md:py-4">
+        <div className="flex flex-col gap-3">
+          {/* Title and Date Range - Mobile optimized */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <h1 className={`font-bold text-gray-900 dark:text-gray-100 ${isMobile ? 'text-lg' : 'text-2xl'}`}>
+                Calendar
+              </h1>
+              <button
+                onClick={() => setShowFeaturesModal(true)}
+                className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                title="View calendar features and mobile optimizations"
+              >
+                <svg className="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </button>
+            </div>
+            <div className={`font-medium text-gray-700 dark:text-gray-300 ${isMobile ? 'text-sm' : 'text-lg'}`}>
               {formatDateRange}
             </div>
           </div>
 
-          {/* Controls */}
-          <div className="flex items-center gap-2 md:gap-4 overflow-x-auto">
-            {/* Navigation */}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={navigatePrevious}
-                className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                aria-label="Previous"
-              >
-                <ChevronLeftIcon className="w-4 h-4" />
-              </button>
-              
-              <button
-                onClick={navigateToday}
-                className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm font-medium text-gray-900 dark:text-gray-100"
-              >
-                Today
-              </button>
-              
-              <button
-                onClick={navigateNext}
-                className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                aria-label="Next"
-              >
-                <ChevronRightIcon className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* View Type Selector */}
-            <div className="flex rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden">
-              {(['month', 'week'] as CalendarViewType[]).map((view) => (
+          {/* Controls - Mobile optimized layout */}
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
+            {/* First row: Navigation + View Type */}
+            <div className="flex items-center justify-between sm:justify-start gap-2">
+              {/* Navigation */}
+              <div className="flex items-center gap-1">
                 <button
-                  key={view}
-                  onClick={() => setViewType(view)}
-                  className={`px-3 py-2 text-sm font-medium transition-colors flex items-center gap-2 ${
-                    viewType === view
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-                  }`}
+                  onClick={navigatePrevious}
+                  className={`${isMobile ? 'p-1.5' : 'p-2'} rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors`}
+                  aria-label="Previous"
                 >
-                  {view === 'month' && <CalendarIcon className="w-4 h-4" />}
-                  {view === 'week' && <WeekIcon className="w-4 h-4" />}
-                  {!isMobile && <span className="capitalize">{view}</span>}
+                  <ChevronLeftIcon className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
                 </button>
-              ))}
+                
+                <button
+                  onClick={navigateToday}
+                  className={`${isMobile ? 'px-2 py-1.5 text-xs' : 'px-3 py-2 text-sm'} rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium text-gray-900 dark:text-gray-100`}
+                >
+                  Today
+                </button>
+                
+                <button
+                  onClick={navigateNext}
+                  className={`${isMobile ? 'p-1.5' : 'p-2'} rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors`}
+                  aria-label="Next"
+                >
+                  <ChevronRightIcon className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
+                </button>
+              </div>
+
+              {/* View Type Selector */}
+              <div className="flex rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden">
+                {(['month', 'week'] as CalendarViewType[]).map((view) => (
+                  <button
+                    key={view}
+                    onClick={() => setViewType(view)}
+                    className={`${isMobile ? 'px-2 py-1.5' : 'px-3 py-2'} text-sm font-medium transition-colors flex items-center gap-1 ${
+                      viewType === view
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    }`}
+                  >
+                    {view === 'month' && <CalendarIcon className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />}
+                    {view === 'week' && <WeekIcon className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />}
+                    {!isMobile && <span className="capitalize">{view}</span>}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            {/* AI Suggestions Button */}
-            {pendingSuggestions > 0 && (
-              <button
-                onClick={() => setShowAISuggestions(!showAISuggestions)}
-                className="relative px-3 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition-colors flex items-center gap-2"
-              >
-                <SparklesIcon className="w-4 h-4" />
-                {!isMobile && <span>AI Suggestions</span>}
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  {pendingSuggestions}
-                </span>
-              </button>
-            )}
+            {/* Second row: Action buttons */}
+            <div className="flex items-center justify-between sm:justify-start gap-1 sm:gap-2 overflow-x-auto">
+              {/* AI Suggestions Buttons */}
+              <div className="flex gap-1">
+                <button
+                  onClick={() => {
+                    if (pendingSuggestions > 0) {
+                      setShowAISuggestions(!showAISuggestions);
+                    } else {
+                      // Generate new AI suggestions
+                      loadCalendarData();
+                    }
+                  }}
+                  className={`relative ${isMobile ? 'px-2 py-1.5' : 'px-3 py-2'} rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition-colors flex items-center gap-1 sm:gap-2 flex-shrink-0`}
+                  title={pendingSuggestions > 0 ? "View AI suggestions" : "Generate AI suggestions"}
+                >
+                  <SparklesIcon className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
+                  {!isMobile && <span>AI</span>}
+                  {pendingSuggestions > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                      {pendingSuggestions}
+                    </span>
+                  )}
+                </button>
+                
+                {/* Reset AI Suggestions Button */}
+                <button
+                  onClick={resetAndRefreshAISuggestions}
+                  className={`${isMobile ? 'px-1.5 py-1.5' : 'px-2 py-2'} rounded-lg bg-purple-500 text-white hover:bg-purple-600 transition-colors flex items-center justify-center flex-shrink-0`}
+                  title="Reset and refresh AI suggestions"
+                  disabled={isLoading}
+                >
+                  <svg className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} ${isLoading ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                </button>
+              </div>
 
-            {/* Day Details Toggle */}
-            <button
-              onClick={() => setShowDayDetails(!showDayDetails)}
-              className={`px-3 py-2 rounded-lg transition-colors flex items-center gap-2 ${
-                showDayDetails 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-              }`}
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-              </svg>
-              {!isMobile && <span>Day Details</span>}
-            </button>
+              {/* Day Details Toggle */}
+              <button
+                onClick={() => setShowDayDetails(!showDayDetails)}
+                className={`${isMobile ? 'px-2 py-1.5' : 'px-3 py-2'} rounded-lg transition-colors flex items-center gap-1 flex-shrink-0 ${
+                  showDayDetails 
+                    ? 'bg-blue-600 text-white' 
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+              >
+                <svg className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                {!isMobile && <span>Details</span>}
+              </button>
 
-            {/* Add Buttons */}
-            <div className="flex gap-1 md:gap-2">
-              <button
-                onClick={() => setShowNewTaskModal(true)}
-                className="px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors flex items-center gap-2"
-              >
-                <PlusIcon className="w-4 h-4" />
-                {!isMobile && <span>Task</span>}
-              </button>
-              
-              <button
-                onClick={() => setShowNewEventModal(true)}
-                className="px-3 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors flex items-center gap-2"
-              >
-                <PlusIcon className="w-4 h-4" />
-                {!isMobile && <span>Event</span>}
-              </button>
-              
-              <button
-                onClick={() => setShowCounselingModal(true)}
-                className="px-3 py-2 rounded-lg bg-teal-600 text-white hover:bg-teal-700 transition-colors flex items-center gap-2"
-                title="Schedule counseling session with automatic progress note"
-              >
-                <PlusIcon className="w-4 h-4" />
-                {!isMobile && <span>Counseling</span>}
-              </button>
+              {/* Add Buttons */}
+              <div className="flex gap-1 sm:gap-2">
+                <button
+                  onClick={() => setShowNewTaskModal(true)}
+                  className={`${isMobile ? 'px-2 py-1.5' : 'px-3 py-2'} rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors flex items-center gap-1 flex-shrink-0`}
+                >
+                  <PlusIcon className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
+                  {!isMobile && <span>Task</span>}
+                </button>
+                
+                <button
+                  onClick={() => setShowNewEventModal(true)}
+                  className={`${isMobile ? 'px-2 py-1.5' : 'px-3 py-2'} rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors flex items-center gap-1 flex-shrink-0`}
+                >
+                  <PlusIcon className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
+                  {!isMobile && <span>Event</span>}
+                </button>
+                
+                <button
+                  onClick={() => setShowCounselingModal(true)}
+                  className={`${isMobile ? 'px-2 py-1.5' : 'px-3 py-2'} rounded-lg bg-teal-600 text-white hover:bg-teal-700 transition-colors flex items-center gap-1 flex-shrink-0`}
+                  title="Schedule counseling session with automatic progress note"
+                >
+                  <PlusIcon className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
+                  {!isMobile && <span>Counsel</span>}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -603,6 +737,7 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
                 onDeny={handleAISuggestionDeny}
                 onModify={handleAISuggestionModify}
                 onRefresh={loadCalendarData}
+                onReset={resetAndRefreshAISuggestions}
                 onClose={() => setShowAISuggestions(false)}
               />
             </div>
@@ -642,6 +777,20 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
           onDeleteEvent={deleteSchedule}
           event={selectedEvent}
           projects={projects}
+        />
+      )}
+
+      {showEditWorkSessionModal && selectedWorkSession && (
+        <EditWorkSessionModal
+          isOpen={showEditWorkSessionModal}
+          onClose={() => {
+            setShowEditWorkSessionModal(false);
+            setSelectedWorkSession(null);
+          }}
+          onSave={handleWorkSessionSave}
+          onDelete={handleWorkSessionDelete}
+          event={selectedWorkSession}
+          task={selectedWorkSession.taskId ? tasks.find(t => t.id === selectedWorkSession.taskId) : undefined}
         />
       )}
 

@@ -31,6 +31,50 @@ const NewEventModal: React.FC<NewEventModalProps> = ({
   const [tags, setTags] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  
+  // Recurring event fields
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [recurrencePattern, setRecurrencePattern] = useState<'daily' | 'weekly' | 'biweekly' | 'monthly'>('weekly');
+  const [recurrenceEndType, setRecurrenceEndType] = useState<'date' | 'count'>('count');
+  const [recurrenceEndDate, setRecurrenceEndDate] = useState('');
+  const [recurrenceCount, setRecurrenceCount] = useState(4);
+
+  // Helper function to generate recurring dates
+  const generateRecurringDates = (startDate: Date, pattern: string, endType: string, endDate?: Date, count?: number): Date[] => {
+    const dates: Date[] = [new Date(startDate)];
+    const maxOccurrences = endType === 'count' ? (count || 4) : 100; // Safety limit
+    const endDateTime = endDate ? new Date(endDate) : null;
+    
+    let currentDate = new Date(startDate);
+    let occurrences = 1;
+    
+    while (occurrences < maxOccurrences) {
+      switch (pattern) {
+        case 'daily':
+          currentDate.setDate(currentDate.getDate() + 1);
+          break;
+        case 'weekly':
+          currentDate.setDate(currentDate.getDate() + 7);
+          break;
+        case 'biweekly':
+          currentDate.setDate(currentDate.getDate() + 14);
+          break;
+        case 'monthly':
+          currentDate.setMonth(currentDate.getMonth() + 1);
+          break;
+      }
+      
+      // Check if we've reached the end date
+      if (endDateTime && currentDate > endDateTime) {
+        break;
+      }
+      
+      dates.push(new Date(currentDate));
+      occurrences++;
+    }
+    
+    return dates;
+  };
 
   const resetForm = () => {
     setTitle('');
@@ -46,6 +90,11 @@ const NewEventModal: React.FC<NewEventModalProps> = ({
     setBlocksWorkTime(true);
     setTags('');
     setErrorMessage('');
+    setIsRecurring(false);
+    setRecurrencePattern('weekly');
+    setRecurrenceEndType('count');
+    setRecurrenceEndDate('');
+    setRecurrenceCount(4);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -83,7 +132,7 @@ const NewEventModal: React.FC<NewEventModalProps> = ({
                      `${startDate}T${startTime}`;
       }
 
-      const newEventData: Omit<CalendarEvent, 'id' | 'created_at' | 'updated_at'> = {
+      const baseEventData: Omit<CalendarEvent, 'id' | 'created_at' | 'updated_at'> = {
         title: title.trim(),
         context: context.trim() || undefined,
         start_date: startDateTime,
@@ -91,12 +140,57 @@ const NewEventModal: React.FC<NewEventModalProps> = ({
         all_day: allDay,
         event_type: eventType,
         location: location.trim() || undefined,
-        task_id: projectId || undefined, // Using task_id field
+        task_id: undefined, // Events are not directly linked to tasks in this form
         blocks_work_time: blocksWorkTime,
-        tags: tags.split(',').map(tag => tag.trim()).filter(tag => tag),
+        tags: [
+          ...tags.split(',').map(tag => tag.trim()).filter(tag => tag),
+          ...(projectId ? [`project:${projectId}`] : [])
+        ],
       };
 
-      await onAddEvent(newEventData);
+      if (isRecurring) {
+        // Generate recurring dates
+        const startDateObj = new Date(startDate);
+        const endDateObj = recurrenceEndType === 'date' && recurrenceEndDate ? new Date(recurrenceEndDate) : undefined;
+        const recurringDates = generateRecurringDates(
+          startDateObj, 
+          recurrencePattern, 
+          recurrenceEndType, 
+          endDateObj, 
+          recurrenceCount
+        );
+
+        // Create events for each recurring date
+        for (let i = 0; i < recurringDates.length; i++) {
+          const currentDate = recurringDates[i];
+          const currentStartDate = currentDate.toISOString().split('T')[0];
+          
+          let currentStartDateTime: string;
+          let currentEndDateTime: string;
+          
+          if (allDay) {
+            currentStartDateTime = currentStartDate;
+            currentEndDateTime = currentStartDate;
+          } else {
+            currentStartDateTime = `${currentStartDate}T${startTime}`;
+            currentEndDateTime = endTime ? `${currentStartDate}T${endTime}` : `${currentStartDate}T${startTime}`;
+          }
+
+          const recurringEventData = {
+            ...baseEventData,
+            title: `${title.trim()}${recurringDates.length > 1 ? ` (${i + 1}/${recurringDates.length})` : ''}`,
+            start_date: currentStartDateTime,
+            end_date: currentEndDateTime,
+            tags: [...baseEventData.tags, 'recurring']
+          };
+
+          await onAddEvent(recurringEventData);
+        }
+      } else {
+        // Single event
+        await onAddEvent(baseEventData);
+      }
+
       resetForm();
       onClose();
     } catch (error: any) {
@@ -322,6 +416,106 @@ const NewEventModal: React.FC<NewEventModalProps> = ({
               className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
               disabled={isSubmitting}
             />
+          </div>
+
+          {/* Recurring Event Options */}
+          <div className="border-t border-slate-600 pt-4">
+            <div className="flex items-center space-x-2 mb-4">
+              <input
+                type="checkbox"
+                id="isRecurring"
+                checked={isRecurring}
+                onChange={(e) => setIsRecurring(e.target.checked)}
+                className="w-4 h-4 text-sky-600 bg-slate-700 border-slate-600 rounded focus:ring-sky-500"
+                disabled={isSubmitting}
+              />
+              <label htmlFor="isRecurring" className="text-sm font-medium text-slate-300">
+                🔄 Make this a recurring event
+              </label>
+            </div>
+
+            {isRecurring && (
+              <div className="space-y-4 pl-6 border-l-2 border-sky-600 bg-sky-900/10 p-4 rounded-lg">
+                <div>
+                  <label htmlFor="recurrencePattern" className="block text-sm font-medium text-slate-300 mb-2">
+                    Repeat every:
+                  </label>
+                  <select
+                    id="recurrencePattern"
+                    value={recurrencePattern}
+                    onChange={(e) => setRecurrencePattern(e.target.value as any)}
+                    className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
+                    disabled={isSubmitting}
+                  >
+                    <option value="daily">Day</option>
+                    <option value="weekly">Week</option>
+                    <option value="biweekly">2 Weeks</option>
+                    <option value="monthly">Month</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    End recurrence:
+                  </label>
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="radio"
+                        id="endByCount"
+                        name="recurrenceEnd"
+                        checked={recurrenceEndType === 'count'}
+                        onChange={() => setRecurrenceEndType('count')}
+                        className="w-4 h-4 text-sky-600 bg-slate-700 border-slate-600 focus:ring-sky-500"
+                        disabled={isSubmitting}
+                      />
+                      <label htmlFor="endByCount" className="text-sm text-slate-300">After</label>
+                      <input
+                        type="number"
+                        value={recurrenceCount}
+                        onChange={(e) => setRecurrenceCount(Math.max(1, parseInt(e.target.value) || 1))}
+                        min="1"
+                        max="52"
+                        className="w-20 bg-slate-700 border-slate-600 text-slate-100 rounded-md p-1 text-sm focus:ring-sky-500 focus:border-sky-500"
+                        disabled={isSubmitting || recurrenceEndType !== 'count'}
+                      />
+                      <span className="text-sm text-slate-300">occurrences</span>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="radio"
+                        id="endByDate"
+                        name="recurrenceEnd"
+                        checked={recurrenceEndType === 'date'}
+                        onChange={() => setRecurrenceEndType('date')}
+                        className="w-4 h-4 text-sky-600 bg-slate-700 border-slate-600 focus:ring-sky-500"
+                        disabled={isSubmitting}
+                      />
+                      <label htmlFor="endByDate" className="text-sm text-slate-300">On</label>
+                      <input
+                        type="date"
+                        value={recurrenceEndDate}
+                        onChange={(e) => setRecurrenceEndDate(e.target.value)}
+                        className="bg-slate-700 border-slate-600 text-slate-100 rounded-md p-1 text-sm focus:ring-sky-500 focus:border-sky-500"
+                        disabled={isSubmitting || recurrenceEndType !== 'date'}
+                        min={startDate}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Preview */}
+                <div className="text-xs text-slate-400 bg-slate-800 p-2 rounded">
+                  <strong>Preview:</strong> {recurrencePattern === 'daily' ? 'Daily' : 
+                    recurrencePattern === 'weekly' ? 'Every Wednesday' :
+                    recurrencePattern === 'biweekly' ? 'Every other Wednesday' :
+                    'Monthly on the 2nd Wednesday'} 
+                  {recurrenceEndType === 'count' ? ` for ${recurrenceCount} occurrences` : 
+                   recurrenceEndDate ? ` until ${new Date(recurrenceEndDate).toLocaleDateString()}` : ''}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end space-x-3 pt-2">

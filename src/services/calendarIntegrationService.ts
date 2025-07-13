@@ -59,6 +59,15 @@ export class CalendarIntegrationService {
   }
 
   /**
+   * Get all calendar data for a date range with fresh AI suggestions
+   */
+  async getCalendarDataWithReset(startDate: Date, endDate: Date): Promise<CalendarViewData> {
+    console.log('🤖 Getting calendar data with fresh AI suggestions reset');
+    await this.resetAISuggestions();
+    return this.getCalendarData(startDate, endDate);
+  }
+
+  /**
    * Get all calendar data for a date range
    */
   async getCalendarData(startDate: Date, endDate: Date): Promise<CalendarViewData> {
@@ -164,6 +173,28 @@ export class CalendarIntegrationService {
             energyLevel: task.energy_level,
             progress: task.progress,
             aiSuggested: task.ai_suggested || false
+          }
+        });
+      }
+
+      // Add scheduled task event if task has scheduled time
+      if (task.is_time_blocked && task.scheduled_start && task.scheduled_end) {
+        events.push({
+          id: `scheduled-${task.id}`,
+          title: `🔴 ${task.title}`,
+          start: new Date(task.scheduled_start),
+          end: new Date(task.scheduled_end),
+          type: 'work_session',
+          source: 'manual',
+          editable: false, // User-scheduled tasks cannot be changed by AI
+          priority: task.priority,
+          taskId: task.id,
+          projectId: task.project_id,
+          metadata: {
+            estimatedHours: task.estimated_hours,
+            energyLevel: task.energy_level,
+            progress: task.progress,
+            timeBlocked: true
           }
         });
       }
@@ -492,43 +523,50 @@ export class CalendarIntegrationService {
   }
 
   /**
-   * Check if a task is a progress note that should not be scheduled before its counseling session
+   * Check if this is a progress note task that needs special handling
    */
-  private isProgressNoteBeforeCounseling(task: Task, existingEvents: CalendarEvent[]): boolean {
-    // Check if this is a progress note task
-    const isProgressNote = task.tags?.includes('progress-note') ||
-                          task.tags?.includes('therapy') ||
-                          task.tags?.includes('documentation') ||
-                          task.title.toLowerCase().includes('progress note') ||
-                          task.title.toLowerCase().includes('clinical') ||
-                          task.title.toLowerCase().includes('therapy note');
+  private isProgressNote(task: Task): boolean {
+    return task.tags?.includes('progress-note') ||
+           task.tags?.includes('therapy') ||
+           task.tags?.includes('documentation') ||
+           task.title.toLowerCase().includes('progress note') ||
+           task.title.toLowerCase().includes('clinical') ||
+           task.title.toLowerCase().includes('therapy note');
+  }
+
+  /**
+   * Reset/clear all AI suggestions for a fresh start
+   */
+  async resetAISuggestions(): Promise<void> {
+    console.log('🤖 Resetting AI suggestions - clearing all pending and old suggestions');
     
-    if (!isProgressNote) return false;
-    
-    // Extract date from progress note title (format: "Progress Note - YYYY-MM-DD")
-    const dateMatch = task.title.match(/Progress Note.*(\d{4}-\d{2}-\d{2})/);
-    if (!dateMatch) return false;
-    
-    const progressNoteDate = new Date(dateMatch[1]);
-    
-    // Find counseling sessions on the same date
-    const counselingSessions = existingEvents.filter(event => 
-      event.type === 'counseling_session' &&
-      event.start.toDateString() === progressNoteDate.toDateString()
-    );
-    
-    // If there's a counseling session on the same date, don't suggest progress note before it
-    if (counselingSessions.length > 0) {
-      const earliestCounseling = counselingSessions.reduce((earliest, session) => 
-        session.start < earliest.start ? session : earliest
-      );
-      
-      // Progress notes should only be suggested after counseling sessions
-      const now = new Date();
-      return now < earliestCounseling.start;
+    try {
+      const user = getCustomAuthUser();
+      if (!user?.id) {
+        console.error('🤖 Cannot reset - user not authenticated');
+        return;
+      }
+
+      // Get all tasks to clear their work session scheduling
+      const tasks = await tasksService.getAll();
+      console.log(`🤖 Found ${tasks.length} tasks to potentially reset`);
+
+      // Clear work_session_scheduled_start for all tasks that have it
+      const tasksToReset = tasks.filter(task => !!task.work_session_scheduled_start);
+      console.log(`🤖 Resetting work sessions for ${tasksToReset.length} tasks`);
+
+      for (const task of tasksToReset) {
+        console.log(`🤖 Clearing work session for task: "${task.title}"`);
+        await tasksService.update(task.id, {
+          work_session_scheduled_start: null,
+          work_session_scheduled_end: null
+        });
+      }
+
+      console.log('🤖 ✅ Reset complete - all work sessions cleared');
+    } catch (error) {
+      console.error('🤖 Error during reset:', error);
     }
-    
-    return false;
   }
 
   /**
@@ -538,25 +576,176 @@ export class CalendarIntegrationService {
     const suggestions: AIScheduleSuggestion[] = [];
     const now = new Date();
     
+    console.log('🤖 AI SUGGESTIONS DEBUG - Starting fresh generation with:', {
+      totalTasks: tasks.length,
+      totalEvents: existingEvents.length
+    });
+    
     // Find tasks that need work sessions scheduled
-    const unscheduledTasks = tasks.filter(task => 
-      !task.work_session_scheduled_start && 
-      task.status !== 'completed' && 
-      task.estimated_hours > 0 &&
-      !this.isProgressNoteBeforeCounseling(task, existingEvents)
-    );
+    const unscheduledTasks = tasks.filter(task => {
+      const hasWorkSession = !!task.work_session_scheduled_start;
+      const isCompleted = task.status === 'completed';
+      const hasEstimatedHours = task.estimated_hours > 0;
+      
+      const shouldInclude = !hasWorkSession && !isCompleted && hasEstimatedHours;
+      
+      // Debug all tasks to see what's happening
+      console.log(`🤖 Task "${task.title}": ${shouldInclude ? 'INCLUDED' : 'EXCLUDED'}`, {
+        hasWorkSession,
+        isCompleted,
+        hasEstimatedHours,
+        estimatedHours: task.estimated_hours,
+        isProgressNote: this.isProgressNote(task),
+        status: task.status,
+        workSessionStart: task.work_session_scheduled_start
+      });
+      
+      return shouldInclude;
+    });
+    
+    console.log('🤖 AI SUGGESTIONS DEBUG - Found unscheduled tasks:', unscheduledTasks.length);
 
     for (const task of unscheduledTasks) {
-      const suggestion = await this.generateTaskScheduleSuggestion(task, existingEvents);
-      if (suggestion) {
-        // Only include suggestions that are in the future (cleanup old suggestions)
-        if (suggestion.suggestedStart > now) {
+      console.log(`🤖 Generating suggestion for task: "${task.title}"`);
+      
+      // Check if this is a progress note with a corresponding counseling session
+      if (this.isProgressNote(task)) {
+        const suggestion = await this.generateProgressNoteScheduleSuggestion(task, existingEvents);
+        if (suggestion && suggestion.suggestedStart > now) {
           suggestions.push(suggestion);
+        }
+      } else {
+        const suggestion = await this.generateTaskScheduleSuggestion(task, existingEvents);
+        if (suggestion) {
+          console.log(`🤖 Generated suggestion:`, {
+            taskTitle: suggestion.taskTitle,
+            suggestedStart: suggestion.suggestedStart,
+            isFuture: suggestion.suggestedStart > now
+          });
+          // Only include suggestions that are in the future (cleanup old suggestions)
+          if (suggestion.suggestedStart > now) {
+            suggestions.push(suggestion);
+          }
+        } else {
+          console.log(`🤖 No suggestion generated for task: "${task.title}"`);
         }
       }
     }
 
+    console.log('🤖 AI SUGGESTIONS DEBUG - Final suggestions count:', suggestions.length);
     return suggestions;
+  }
+
+  /**
+   * Generate a schedule suggestion specifically for progress notes (must be after counseling session)
+   */
+  private async generateProgressNoteScheduleSuggestion(task: Task, existingEvents: CalendarEvent[]): Promise<AIScheduleSuggestion | null> {
+    try {
+      console.log(`🤖 Scheduling progress note: "${task.title}"`);
+      
+      // Extract date from progress note title (format: "Progress Note - YYYY-MM-DD")
+      const dateMatch = task.title.match(/Progress Note.*(\d{4}-\d{2}-\d{2})/);
+      if (!dateMatch) {
+        console.log(`🤖 Could not extract date from progress note title`);
+        return null;
+      }
+      
+      const progressNoteDate = new Date(dateMatch[1]);
+      
+      // Find counseling sessions on the same date
+      const counselingSessions = existingEvents.filter(event => 
+        (event.type === 'counseling_session' || event.type === 'event') &&
+        event.title.toLowerCase().includes('counseling') &&
+        event.start.toDateString() === progressNoteDate.toDateString()
+      );
+      
+      if (counselingSessions.length === 0) {
+        console.log(`🤖 No counseling session found for progress note date: ${progressNoteDate.toDateString()}`);
+        return null;
+      }
+      
+      // Find the latest counseling session on that day
+      const latestCounseling = counselingSessions.reduce((latest, session) => 
+        session.end > latest.end ? session : latest
+      );
+      
+      console.log(`🤖 Counseling session ends at: ${latestCounseling.end.toLocaleString()}`);
+      
+      // Schedule progress note for 30 minutes after the counseling session ends
+      const suggestedStart = new Date(latestCounseling.end.getTime() + 30 * 60 * 1000);
+      const sessionDuration = Math.min(task.estimated_hours || 0.5, 1) * 60 * 60 * 1000; // Max 1 hour for progress notes
+      const suggestedEnd = new Date(suggestedStart.getTime() + sessionDuration);
+      
+      // Check if this time slot conflicts with other events
+      const conflictingEvents = existingEvents.filter(event => 
+        (suggestedStart < event.end && suggestedEnd > event.start)
+      );
+      
+      if (conflictingEvents.length > 0) {
+        console.log(`🤖 Progress note slot conflicts with existing events, looking for next available time`);
+        // Try to find next available slot after the counseling session
+        return this.findNextAvailableSlotAfter(task, suggestedStart, existingEvents);
+      }
+      
+      console.log(`🤖 ✅ Progress note scheduled: ${suggestedStart.toLocaleString()}`);
+      
+      return {
+        id: `suggestion-${task.id}-${Date.now()}`,
+        taskId: task.id,
+        taskTitle: task.title,
+        taskPriority: task.priority,
+        taskProject: task.project_id,
+        suggestedStart,
+        suggestedEnd,
+        confidence: 0.95, // High confidence for post-session progress notes
+        reasoning: `Scheduled after counseling session on ${progressNoteDate.toLocaleDateString()} (${latestCounseling.end.toLocaleTimeString()} + 30 min buffer)`,
+        status: 'pending'
+      };
+      
+    } catch (error) {
+      console.error('Error generating progress note suggestion:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Find next available time slot after a given time
+   */
+  private async findNextAvailableSlotAfter(task: Task, afterTime: Date, existingEvents: CalendarEvent[]): Promise<AIScheduleSuggestion | null> {
+    const sessionDuration = Math.min(task.estimated_hours || 0.5, 1) * 60 * 60 * 1000;
+    
+    // Try every 30 minutes for the next 4 hours
+    for (let offset = 0; offset < 4 * 60; offset += 30) {
+      const slotStart = new Date(afterTime.getTime() + offset * 60 * 1000);
+      const slotEnd = new Date(slotStart.getTime() + sessionDuration);
+      
+      // Don't schedule too late in the evening
+      if (slotStart.getHours() >= 18) {
+        break;
+      }
+      
+      const conflicts = existingEvents.filter(event => 
+        (slotStart < event.end && slotEnd > event.start)
+      );
+      
+      if (conflicts.length === 0) {
+        console.log(`🤖 ✅ Found alternative slot: ${slotStart.toLocaleString()}`);
+        return {
+          id: `suggestion-${task.id}-${Date.now()}`,
+          taskId: task.id,
+          taskTitle: task.title,
+          taskPriority: task.priority,
+          taskProject: task.project_id,
+          suggestedStart: slotStart,
+          suggestedEnd: slotEnd,
+          confidence: 0.8,
+          reasoning: `Scheduled after counseling session with buffer time`,
+          status: 'pending'
+        };
+      }
+    }
+    
+    return null;
   }
 
   /**
@@ -570,10 +759,35 @@ export class CalendarIntegrationService {
       const workingHoursEnd = 17; // 5 PM
       const sessionDuration = Math.min(task.estimated_hours, 4) * 60 * 60 * 1000; // Max 4 hours per session
 
-      // Start looking from tomorrow if task is due soon, or from today if not urgent
-      const startLookingFrom = task.due_date && new Date(task.due_date) <= new Date(Date.now() + 2 * 24 * 60 * 60 * 1000) 
-        ? now 
-        : new Date(now.getTime() + 24 * 60 * 60 * 1000);
+      console.log(`🤖 Scheduling "${task.title}" (${task.estimated_hours}h, due: ${task.due_date})`);
+
+      // Start looking from the next available time (either now if it's during work hours, or tomorrow morning)
+      let startLookingFrom = new Date(now);
+      
+      // If it's currently outside work hours or weekend, start from next business day at 8 AM
+      const currentHour = now.getHours();
+      const isCurrentlyWeekend = now.getDay() === 0 || now.getDay() === 6;
+      const isAfterHours = currentHour < workingHoursStart || currentHour >= workingHoursEnd;
+      
+      if (isCurrentlyWeekend || isAfterHours) {
+        // Find next business day
+        startLookingFrom = new Date(now);
+        startLookingFrom.setDate(startLookingFrom.getDate() + 1);
+        
+        // If it's weekend, advance to Monday
+        while (startLookingFrom.getDay() === 0 || startLookingFrom.getDay() === 6) {
+          startLookingFrom.setDate(startLookingFrom.getDate() + 1);
+        }
+        
+        // Set to 8 AM
+        startLookingFrom.setHours(workingHoursStart, 0, 0, 0);
+      } else {
+        // Start from current time but round up to next hour
+        startLookingFrom.setMinutes(0, 0, 0);
+        startLookingFrom.setHours(startLookingFrom.getHours() + 1);
+      }
+      
+      console.log(`🤖 Looking for slots from: ${startLookingFrom.toLocaleString()}`);
 
       // Find available slot within the next 7 days
       for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
@@ -583,7 +797,9 @@ export class CalendarIntegrationService {
         // Enhanced context-aware scheduling with strict business/personal separation
         const isCheckDateWeekend = checkDate.getDay() === 0 || checkDate.getDay() === 6;
         
+        
         // Strict context separation: never mix business and personal inappropriately
+        // Handle 'inherited' context by treating it as flexible (can be scheduled anytime)
         if (task.task_context === 'business') {
           // Business tasks should only be suggested for:
           // 1. Weekdays during business hours
@@ -600,6 +816,8 @@ export class CalendarIntegrationService {
             // On weekdays, we'll filter by hour in the inner loop
             // This allows us to check each specific time slot
           }
+        } else {
+          // 'inherited' or undefined context - flexible scheduling
         }
 
         // Check each hour slot during working hours
@@ -607,6 +825,7 @@ export class CalendarIntegrationService {
           const slotStart = new Date(checkDate);
           slotStart.setHours(hour, 0, 0, 0);
           const slotEnd = new Date(slotStart.getTime() + sessionDuration);
+
 
           // Apply hour-based context filtering
           if (task.task_context === 'business') {
@@ -620,13 +839,16 @@ export class CalendarIntegrationService {
               continue; // Don't suggest personal tasks during business hours
             }
           }
+          // 'inherited' or undefined context - no hour restrictions
 
           // Check if slot conflicts with existing events
-          const hasConflict = existingEvents.some(event => 
+          const conflictingEvents = existingEvents.filter(event => 
             (slotStart < event.end && slotEnd > event.start)
           );
+          const hasConflict = conflictingEvents.length > 0;
 
           if (!hasConflict) {
+            console.log(`🤖 ✅ Found slot: ${slotStart.toLocaleString()}`);
             // Calculate confidence based on various factors
             const confidence = this.calculateScheduleConfidence(task, slotStart, existingEvents);
             
@@ -646,6 +868,7 @@ export class CalendarIntegrationService {
         }
       }
 
+      console.log(`🤖 No available slots found for task "${task.title}" in next 7 days`);
       return null; // No available slot found
     } catch (error) {
       console.error('Error generating schedule suggestion for task:', task.id, error);

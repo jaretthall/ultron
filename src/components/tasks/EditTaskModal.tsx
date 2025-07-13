@@ -26,6 +26,13 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
   const [estimatedHours, setEstimatedHours] = useState(task.estimated_hours || 0);
   const [tags, setTags] = useState(task.tags?.join(', ') || '');
   const [progress, setProgress] = useState(task.progress || 0);
+  const [dueTime, setDueTime] = useState(task.due_date ? task.due_date.split('T')[1]?.substring(0, 5) || '' : '');
+
+  // Time scheduling fields
+  const [isTimeBlocked, setIsTimeBlocked] = useState(task.is_time_blocked || false);
+  const [scheduledDate, setScheduledDate] = useState(task.scheduled_start ? task.scheduled_start.split('T')[0] : '');
+  const [scheduledStartTime, setScheduledStartTime] = useState(task.scheduled_start ? task.scheduled_start.split('T')[1]?.substring(0, 5) || '' : '');
+  const [scheduledEndTime, setScheduledEndTime] = useState(task.scheduled_end ? task.scheduled_end.split('T')[1]?.substring(0, 5) || '' : '');
 
   // Flow-based fields
   const [microGoals, setMicroGoals] = useState('');
@@ -49,6 +56,13 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
     setEstimatedHours(task.estimated_hours || 0);
     setTags(task.tags?.join(', ') || '');
     setProgress(task.progress || 0);
+    setDueTime(task.due_date ? task.due_date.split('T')[1]?.substring(0, 5) || '' : '');
+    
+    // Reset time scheduling fields
+    setIsTimeBlocked(task.is_time_blocked || false);
+    setScheduledDate(task.scheduled_start ? task.scheduled_start.split('T')[0] : '');
+    setScheduledStartTime(task.scheduled_start ? task.scheduled_start.split('T')[1]?.substring(0, 5) || '' : '');
+    setScheduledEndTime(task.scheduled_end ? task.scheduled_end.split('T')[1]?.substring(0, 5) || '' : '');
     
     // Reset flow-based fields when task changes
     setMicroGoals('');
@@ -93,6 +107,24 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Handle due date with time
+    let formattedDueDate = undefined;
+    if (dueDate) {
+      if (dueTime) {
+        formattedDueDate = `${dueDate}T${dueTime}:00`;
+      } else {
+        formattedDueDate = `${dueDate}T23:59:59`;
+      }
+    }
+
+    // Handle scheduled time
+    let formattedScheduledStart = undefined;
+    let formattedScheduledEnd = undefined;
+    if (isTimeBlocked && scheduledDate && scheduledStartTime && scheduledEndTime) {
+      formattedScheduledStart = `${scheduledDate}T${scheduledStartTime}:00`;
+      formattedScheduledEnd = `${scheduledDate}T${scheduledEndTime}:00`;
+    }
+
     const updatedTask: Task = {
       ...task,
       title,
@@ -100,10 +132,13 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
       priority,
       status,
       project_id: projectId || undefined,
-      due_date: dueDate || undefined,
+      due_date: formattedDueDate,
       estimated_hours: Number(estimatedHours) || 0,
       tags: tags.split(',').map(tag => tag.trim()).filter(tag => tag),
-      progress: progress
+      progress: progress,
+      is_time_blocked: isTimeBlocked,
+      scheduled_start: formattedScheduledStart,
+      scheduled_end: formattedScheduledEnd
     };
 
     await onUpdateTask(updatedTask);
@@ -306,12 +341,21 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
               <label className="block text-slate-300 text-sm font-medium mb-1">
                 Due Date
               </label>
-              <input
-                type="date"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-                className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 text-white"
-              />
+              <div className="grid grid-cols-2 gap-3">
+                <input
+                  type="date"
+                  value={dueDate}
+                  onChange={(e) => setDueDate(e.target.value)}
+                  className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 text-white"
+                />
+                <input
+                  type="time"
+                  value={dueTime}
+                  onChange={(e) => setDueTime(e.target.value)}
+                  className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 text-white"
+                  placeholder="Due time"
+                />
+              </div>
             </div>
 
             <div>
@@ -382,6 +426,71 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
               <div className="text-xs text-slate-400 mt-1">
                 {getEngagementTip(engagementStrategy)}
               </div>
+            </div>
+            
+            {/* Time Scheduling Section */}
+            <div className="space-y-3">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="timeBlocked"
+                  checked={isTimeBlocked}
+                  onChange={(e) => setIsTimeBlocked(e.target.checked)}
+                  className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                />
+                <label htmlFor="timeBlocked" className="text-slate-300 text-sm font-medium">
+                  Schedule this task at a specific time
+                </label>
+              </div>
+              
+              {isTimeBlocked && (
+                <div className="space-y-3 pl-6 border-l-2 border-purple-500">
+                  <div>
+                    <label className="block text-slate-300 text-sm font-medium mb-1">
+                      Scheduled Date
+                    </label>
+                    <input
+                      type="date"
+                      value={scheduledDate}
+                      onChange={(e) => setScheduledDate(e.target.value)}
+                      className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 text-white"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-slate-300 text-sm font-medium mb-1">
+                        Start Time
+                      </label>
+                      <input
+                        type="time"
+                        value={scheduledStartTime}
+                        onChange={(e) => setScheduledStartTime(e.target.value)}
+                        className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 text-white"
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-slate-300 text-sm font-medium mb-1">
+                        End Time
+                      </label>
+                      <input
+                        type="time"
+                        value={scheduledEndTime}
+                        onChange={(e) => setScheduledEndTime(e.target.value)}
+                        className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 text-white"
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="text-xs text-slate-400">
+                    ⏰ <strong>Time Blocking:</strong> This task will appear as a red bar in your calendar during the scheduled time
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

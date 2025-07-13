@@ -37,6 +37,13 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
     defaultProjectId && projects.find(p => p.id === defaultProjectId) ? defaultProjectId : 'standalone'
   );
   const [dueDate, setDueDate] = useState('');
+  const [dueTime, setDueTime] = useState('');
+  
+  // Task scheduling fields
+  const [isTimeBlocked, setIsTimeBlocked] = useState(false);
+  const [scheduledDate, setScheduledDate] = useState('');
+  const [scheduledStartTime, setScheduledStartTime] = useState('');
+  const [scheduledEndTime, setScheduledEndTime] = useState('');
   const [tags, setTags] = useState('');
   const [estimatedHours, setEstimatedHours] = useState<number | string>(0);
   const [progress, setProgress] = useState(0);
@@ -213,6 +220,11 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
         defaultProjectId && availableProjects.find(p => p.id === defaultProjectId) ? defaultProjectId : 'standalone'
     );
     setDueDate(defaultDueDate || '');
+    setDueTime('');
+    setIsTimeBlocked(false);
+    setScheduledDate('');
+    setScheduledStartTime('');
+    setScheduledEndTime('');
     setTags('');
     setProgress(0);
     setSelectedTemplate('');
@@ -265,6 +277,33 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
         .map(tag => InputValidator.sanitizeInput(tag.trim()))
         .filter(tag => tag);
 
+      // Combine date and time for due_date
+      let combinedDueDate: string | undefined = undefined;
+      if (dueDate) {
+        if (dueTime) {
+          // Combine date and time
+          combinedDueDate = `${dueDate}T${dueTime}:00`;
+        } else {
+          // Default to end of day if no time specified
+          combinedDueDate = `${dueDate}T23:59:59`;
+        }
+      }
+
+      // Combine scheduled date and times
+      let combinedScheduledStart: string | undefined = undefined;
+      let combinedScheduledEnd: string | undefined = undefined;
+      if (isTimeBlocked && scheduledDate && scheduledStartTime) {
+        combinedScheduledStart = `${scheduledDate}T${scheduledStartTime}:00`;
+        if (scheduledEndTime) {
+          combinedScheduledEnd = `${scheduledDate}T${scheduledEndTime}:00`;
+        } else {
+          // Default to 1 hour duration if no end time specified
+          const startTime = new Date(combinedScheduledStart);
+          startTime.setHours(startTime.getHours() + 1);
+          combinedScheduledEnd = startTime.toISOString();
+        }
+      }
+
       const newTaskData: Omit<Task, 'id' | 'created_at' | 'updated_at'> = {
         title: sanitizedTitle,
         context: sanitizedContext,
@@ -273,7 +312,10 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
         estimated_hours: estimatedHoursNum,
         dependencies: [],
         project_id: selectedProjectIdState === 'standalone' ? undefined : selectedProjectIdState,
-        due_date: dueDate || undefined,
+        due_date: combinedDueDate,
+        scheduled_start: combinedScheduledStart,
+        scheduled_end: combinedScheduledEnd,
+        is_time_blocked: isTimeBlocked,
         tags: sanitizedTags,
         progress: progress,
       };
@@ -607,20 +649,113 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
                 </div>
               </div>
 
-              <div>
-                <label htmlFor="taskDueDate" className="block text-sm font-medium text-slate-300 mb-1">
-                  Due Date (optional)
-                </label>
-                <input
-                  type="date"
-                  id="taskDueDate"
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
-                  className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-purple-500 focus:border-purple-500"
-                  disabled={isSubmitting}
-                />
-                {formErrors.due_date && (
-                  <p className="mt-1 text-sm text-red-400">{formErrors.due_date}</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="taskDueDate" className="block text-sm font-medium text-slate-300 mb-1">
+                    Due Date (optional)
+                  </label>
+                  <input
+                    type="date"
+                    id="taskDueDate"
+                    value={dueDate}
+                    onChange={(e) => setDueDate(e.target.value)}
+                    className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-purple-500 focus:border-purple-500"
+                    disabled={isSubmitting}
+                  />
+                  {formErrors.due_date && (
+                    <p className="mt-1 text-sm text-red-400">{formErrors.due_date}</p>
+                  )}
+                </div>
+                
+                <div>
+                  <label htmlFor="taskDueTime" className="block text-sm font-medium text-slate-300 mb-1">
+                    Due Time (optional)
+                  </label>
+                  <input
+                    type="time"
+                    id="taskDueTime"
+                    value={dueTime}
+                    onChange={(e) => setDueTime(e.target.value)}
+                    className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-purple-500 focus:border-purple-500"
+                    disabled={isSubmitting || !dueDate}
+                  />
+                  <p className="mt-1 text-xs text-slate-400">
+                    {dueDate && !dueTime ? 'Defaults to end of day (11:59 PM)' : dueTime ? 'Deadline will be set for this specific time' : 'Select a date first'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Time Blocking Section */}
+              <div className="bg-slate-800 p-4 rounded-lg border border-slate-600">
+                <div className="flex items-center gap-3 mb-4">
+                  <input
+                    type="checkbox"
+                    id="taskTimeBlocked"
+                    checked={isTimeBlocked}
+                    onChange={(e) => setIsTimeBlocked(e.target.checked)}
+                    className="w-4 h-4 text-purple-600 bg-slate-700 border-slate-600 rounded focus:ring-purple-500"
+                    disabled={isSubmitting}
+                  />
+                  <label htmlFor="taskTimeBlocked" className="text-sm font-medium text-slate-300">
+                    Schedule this task at a specific time
+                  </label>
+                </div>
+                
+                {isTimeBlocked && (
+                  <div className="space-y-4">
+                    <p className="text-xs text-slate-400">
+                      This will block time on your calendar and show as a red bar in the week view. AI will schedule around this time.
+                    </p>
+                    
+                    <div>
+                      <label htmlFor="taskScheduledDate" className="block text-sm font-medium text-slate-300 mb-1">
+                        Scheduled Date
+                      </label>
+                      <input
+                        type="date"
+                        id="taskScheduledDate"
+                        value={scheduledDate}
+                        onChange={(e) => setScheduledDate(e.target.value)}
+                        className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-purple-500 focus:border-purple-500"
+                        disabled={isSubmitting}
+                        required
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label htmlFor="taskScheduledStartTime" className="block text-sm font-medium text-slate-300 mb-1">
+                          Start Time
+                        </label>
+                        <input
+                          type="time"
+                          id="taskScheduledStartTime"
+                          value={scheduledStartTime}
+                          onChange={(e) => setScheduledStartTime(e.target.value)}
+                          className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-purple-500 focus:border-purple-500"
+                          disabled={isSubmitting || !scheduledDate}
+                          required
+                        />
+                      </div>
+                      
+                      <div>
+                        <label htmlFor="taskScheduledEndTime" className="block text-sm font-medium text-slate-300 mb-1">
+                          End Time (optional)
+                        </label>
+                        <input
+                          type="time"
+                          id="taskScheduledEndTime"
+                          value={scheduledEndTime}
+                          onChange={(e) => setScheduledEndTime(e.target.value)}
+                          className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-purple-500 focus:border-purple-500"
+                          disabled={isSubmitting || !scheduledDate || !scheduledStartTime}
+                        />
+                        <p className="mt-1 text-xs text-slate-400">
+                          {scheduledStartTime && !scheduledEndTime ? 'Defaults to 1 hour duration' : ''}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
 

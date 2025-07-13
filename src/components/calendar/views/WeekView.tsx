@@ -48,7 +48,7 @@ const WeekView: React.FC<WeekViewProps> = ({
     return days;
   }, [currentDate]);
 
-  // Generate time slots (8 AM to 10 PM)
+  // Generate time slots (8 AM to 10 PM) with larger spacing
   const timeSlots = useMemo(() => {
     const slots = [];
     for (let hour = 8; hour <= 22; hour++) {
@@ -85,17 +85,18 @@ const WeekView: React.FC<WeekViewProps> = ({
     return grouped;
   }, [weekDays, events]);
 
-  // Calculate event positioning
+  // Calculate event positioning with larger blocks
   const getEventStyle = (event: CalendarEvent) => {
     const startHour = event.start.getHours();
     const startMinutes = event.start.getMinutes();
     const endHour = event.end.getHours();
     const endMinutes = event.end.getMinutes();
 
-    // Calculate position within the time grid (8 AM = 0, 10 PM = 14)
-    const topPosition = ((startHour - 8) + (startMinutes / 60)) * 60; // 60px per hour
+    // Calculate position within the time grid (8 AM = 0, 10 PM = 14) with larger spacing
+    const hourHeight = 80; // Increased from 60px to 80px for better visibility
+    const topPosition = ((startHour - 8) + (startMinutes / 60)) * hourHeight;
     const duration = ((endHour - startHour) + ((endMinutes - startMinutes) / 60));
-    const height = Math.max(duration * 60, 30); // Minimum 30px height
+    const height = Math.max(duration * hourHeight, 50); // Minimum 50px height (increased from 30px)
 
     return {
       top: `${topPosition}px`,
@@ -103,22 +104,28 @@ const WeekView: React.FC<WeekViewProps> = ({
     };
   };
 
-  // Get event color based on type and priority
+  // Get event color based on type and priority - using sidebar-like styling
   const getEventColor = (event: CalendarEvent) => {
     switch (event.type) {
       case 'deadline':
-        return 'bg-red-500 border-red-600 text-white';
+        return 'bg-red-600 border-red-700 text-white shadow-lg';
       case 'work_session':
-        if (event.source === 'ai_generated') {
-          return 'bg-purple-500 border-purple-600 text-white';
+        if (event.metadata?.timeBlocked) {
+          return 'bg-red-600 border-red-700 text-white shadow-lg';
         }
-        return 'bg-blue-500 border-blue-600 text-white';
+        if (event.source === 'ai_generated') {
+          return 'bg-purple-600 border-purple-700 text-white shadow-lg';
+        }
+        return 'bg-blue-600 border-blue-700 text-white shadow-lg';
       case 'counseling_session':
-        return 'bg-teal-500 border-teal-600 text-white';
+        return 'bg-teal-600 border-teal-700 text-white shadow-lg';
       case 'event':
-        return 'bg-green-500 border-green-600 text-white';
+        if (event.title.toLowerCase().includes('counseling')) {
+          return 'bg-teal-600 border-teal-700 text-white shadow-lg';
+        }
+        return 'bg-green-600 border-green-700 text-white shadow-lg';
       default:
-        return 'bg-gray-500 border-gray-600 text-white';
+        return 'bg-gray-600 border-gray-700 text-white shadow-lg';
     }
   };
 
@@ -128,6 +135,9 @@ const WeekView: React.FC<WeekViewProps> = ({
       case 'deadline':
         return '⏰';
       case 'work_session':
+        if (event.metadata?.timeBlocked) {
+          return '🔴';
+        }
         return event.source === 'ai_generated' ? '🤖' : '🔨';
       case 'counseling_session':
         return '💬';
@@ -230,23 +240,26 @@ const WeekView: React.FC<WeekViewProps> = ({
           {weekDays.map((day) => {
             const dayKey = day.toISOString().split('T')[0];
             const dayTasksAndEvents = (eventsByDay[dayKey] || []).filter(event => {
-              // Show deadlines and all-day events at the top
-              return event.type === 'deadline' || 
+              // Show deadlines and all-day events at the top, but NOT time-blocked tasks
+              return (event.type === 'deadline' || 
                      event.end.getTime() - event.start.getTime() >= 24 * 60 * 60 * 1000 || // 24+ hours
-                     (event.start.getHours() === 0 && event.end.getHours() === 23); // All day
+                     (event.start.getHours() === 0 && event.end.getHours() === 23)) && // All day
+                     !event.metadata?.timeBlocked; // Exclude time-blocked tasks from top section
             });
 
             return (
-              <div key={dayKey} className="p-1 border-r border-gray-200 dark:border-gray-700 last:border-r-0 min-h-[3rem]">
+              <div key={dayKey} className="p-2 border-r border-gray-200 dark:border-gray-700 last:border-r-0 min-h-[4rem]">
                 {dayTasksAndEvents.map((event) => (
                   <div
                     key={event.id}
-                    className={`text-xs rounded px-2 py-1 mb-1 cursor-pointer ${getEventColor(event)} hover:shadow-sm transition-shadow`}
+                    className={`text-sm rounded-lg px-3 py-2 mb-2 cursor-pointer ${getEventColor(event)} hover:shadow-lg hover:scale-105 transition-all duration-200`}
                     onClick={() => onEventClick(event)}
                     title={event.title}
                   >
-                    <span className="mr-1">{getEventIcon(event)}</span>
-                    <span className="truncate">{event.title}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm">{getEventIcon(event)}</span>
+                      <span className="truncate font-medium">{event.title}</span>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -261,7 +274,7 @@ const WeekView: React.FC<WeekViewProps> = ({
           {/* Time column */}
           <div className="border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
             {timeSlots.map((slot) => (
-              <div key={slot.time} className="h-15 border-b border-gray-100 dark:border-gray-700 p-2 text-xs text-gray-500 dark:text-gray-400">
+              <div key={slot.time} className="h-20 border-b border-gray-100 dark:border-gray-700 p-3 text-sm font-medium text-gray-600 dark:text-gray-400">
                 {slot.label}
               </div>
             ))}
@@ -271,10 +284,11 @@ const WeekView: React.FC<WeekViewProps> = ({
           {weekDays.map((day) => {
             const dayKey = day.toISOString().split('T')[0];
             const dayEvents = (eventsByDay[dayKey] || []).filter(event => {
-              // Only show timed events here (not deadlines or all-day events)
-              return event.type !== 'deadline' && 
+              // Show timed events here: work sessions, counseling sessions, and time-blocked tasks
+              return (event.type !== 'deadline' && 
                      event.end.getTime() - event.start.getTime() < 24 * 60 * 60 * 1000 && // Less than 24 hours
-                     !(event.start.getHours() === 0 && event.end.getHours() === 23); // Not all day
+                     !(event.start.getHours() === 0 && event.end.getHours() === 23)) || // Not all day
+                     event.metadata?.timeBlocked; // Always show time-blocked tasks in the grid
             });
 
             return (
@@ -283,7 +297,7 @@ const WeekView: React.FC<WeekViewProps> = ({
                 {timeSlots.map((slot) => (
                   <div
                     key={slot.time}
-                    className={`h-15 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer ${
+                    className={`h-20 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors ${
                       dragOverSlot && dragOverSlot.day.toDateString() === day.toDateString() && dragOverSlot.hour === slot.time
                         ? 'bg-blue-100 dark:bg-blue-900/50 border-blue-300 dark:border-blue-600'
                         : ''
@@ -305,7 +319,7 @@ const WeekView: React.FC<WeekViewProps> = ({
                     return (
                       <div
                         key={event.id}
-                        className={`absolute left-1 right-1 rounded-md border-l-4 p-2 cursor-pointer pointer-events-auto shadow-sm ${colorClass} hover:shadow-md transition-shadow ${
+                        className={`absolute left-2 right-2 rounded-lg border-2 p-2 cursor-pointer pointer-events-auto ${colorClass} hover:shadow-xl hover:scale-105 transition-all duration-200 overflow-hidden ${
                           draggedEvent?.id === event.id ? 'opacity-50' : ''
                         }`}
                         style={style}
@@ -313,23 +327,34 @@ const WeekView: React.FC<WeekViewProps> = ({
                         onClick={() => onEventClick(event)}
                         onDragStart={(e) => handleDragStart(e, event)}
                         onDragEnd={handleDragEnd}
-                        title={`${event.title}\n${event.start.toLocaleTimeString()} - ${event.end.toLocaleTimeString()}`}
+                        title={`${event.title}\n${event.start.toLocaleTimeString()} - ${event.end.toLocaleTimeString()}\n\nClick to edit this ${
+                          event.metadata?.timeBlocked ? 'time-blocked task' :
+                          event.source === 'ai_generated' ? 'AI suggested work session' :
+                          event.type === 'work_session' ? 'work session' :
+                          event.type === 'deadline' ? 'deadline' : 'event'
+                        }`}
                       >
-                        <div className="flex items-start gap-1">
-                          <span className="text-xs">{icon}</span>
-                          <div className="flex-1 min-w-0">
-                            <div className="text-xs font-medium truncate">
-                              {event.title}
+                        <div className="flex items-start gap-1 h-full overflow-hidden">
+                          <span className="text-xs flex-shrink-0">{icon}</span>
+                          <div className="flex-1 min-w-0 overflow-hidden">
+                            <div className="text-xs font-semibold leading-tight" title={event.title}>
+                              <div className="truncate">
+                                {event.title}
+                              </div>
                             </div>
-                            <div className="text-xs opacity-90">
+                            <div className="text-xs opacity-90 truncate">
                               {event.start.toLocaleTimeString('en-US', { 
+                                hour: 'numeric', 
+                                minute: '2-digit',
+                                hour12: true 
+                              })} - {event.end.toLocaleTimeString('en-US', { 
                                 hour: 'numeric', 
                                 minute: '2-digit',
                                 hour12: true 
                               })}
                             </div>
                             {event.metadata?.estimatedHours && (
-                              <div className="text-xs opacity-75">
+                              <div className="text-xs opacity-75 bg-white/20 rounded px-1 py-0.5 inline-block truncate max-w-full">
                                 {event.metadata.estimatedHours}h
                               </div>
                             )}

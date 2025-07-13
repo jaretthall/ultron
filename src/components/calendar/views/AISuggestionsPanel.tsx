@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { AIScheduleSuggestion } from '../../../services/calendarIntegrationService';
+import ModifyTimeModal from '../ModifyTimeModal';
 
 interface AISuggestionsPanelProps {
   suggestions: AIScheduleSuggestion[];
@@ -8,9 +9,9 @@ interface AISuggestionsPanelProps {
   onApproveAndEdit: (suggestions: AIScheduleSuggestion[], feedback: string) => void;
   onProvideFeedback: (feedback: string, commonIssues: string[]) => void;
   onDeny: (suggestionId: string) => void;
-  onModify?: (suggestion: AIScheduleSuggestion) => void;
   onClose: () => void;
   onRefresh?: () => void;
+  onReset?: () => void;
   onAddLunchBreak?: (time: string) => void;
   onAddBufferTime?: (minutes: number) => void;
   onShiftAllBack?: (minutes: number) => void;
@@ -23,9 +24,9 @@ const AISuggestionsPanel: React.FC<AISuggestionsPanelProps> = ({
   onApproveAndEdit,
   onProvideFeedback,
   onDeny,
-  onModify,
   onClose,
   onRefresh,
+  onReset,
   onAddLunchBreak,
   onAddBufferTime,
   onShiftAllBack
@@ -35,6 +36,8 @@ const AISuggestionsPanel: React.FC<AISuggestionsPanelProps> = ({
   const [feedbackText, setFeedbackText] = useState('');
   const [selectedCommonIssues, setSelectedCommonIssues] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<'individual' | 'chronological'>('chronological');
+  const [showModifyTimeModal, setShowModifyTimeModal] = useState(false);
+  const [selectedSuggestion, setSelectedSuggestion] = useState<AIScheduleSuggestion | null>(null);
 
   // Common feedback issues
   const commonIssues = [
@@ -132,6 +135,27 @@ const AISuggestionsPanel: React.FC<AISuggestionsPanelProps> = ({
     setFeedbackText('');
     setSelectedCommonIssues([]);
     setShowFeedbackForm(false);
+  };
+
+  // Handle modify time
+  const handleModifyTime = (suggestion: AIScheduleSuggestion) => {
+    setSelectedSuggestion(suggestion);
+    setShowModifyTimeModal(true);
+  };
+
+  const handleSaveModifiedTime = (suggestion: AIScheduleSuggestion, newStart: Date, newEnd: Date) => {
+    // Create a modified suggestion
+    const modifiedSuggestion: AIScheduleSuggestion = {
+      ...suggestion,
+      suggestedStart: newStart,
+      suggestedEnd: newEnd,
+      reasoning: `${suggestion.reasoning} (Modified by user to ${newStart.toLocaleDateString()} at ${newStart.toLocaleTimeString()})`
+    };
+    
+    // Approve the modified suggestion
+    onApprove(modifiedSuggestion);
+    setShowModifyTimeModal(false);
+    setSelectedSuggestion(null);
   };
 
   // Get confidence color
@@ -322,17 +346,15 @@ const AISuggestionsPanel: React.FC<AISuggestionsPanelProps> = ({
                 </button>
               </div>
               
-              {onModify && (
-                <button
-                  onClick={() => onModify(suggestion)}
-                  className="w-full px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-1"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                  Modify Time
-                </button>
-              )}
+              <button
+                onClick={() => handleModifyTime(suggestion)}
+                className="w-full px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-1"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                Modify Time
+              </button>
             </div>
           )}
         </div>
@@ -367,6 +389,19 @@ const AISuggestionsPanel: React.FC<AISuggestionsPanelProps> = ({
               >
                 <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              </button>
+            )}
+            
+            {onReset && (
+              <button
+                onClick={onReset}
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                aria-label="Reset AI suggestions"
+                title="Clear all suggestions and generate fresh ones"
+              >
+                <svg className="w-5 h-5 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
               </button>
             )}
@@ -644,6 +679,17 @@ const AISuggestionsPanel: React.FC<AISuggestionsPanelProps> = ({
             </div>
           </div>
         )}
+
+        {/* Modify Time Modal */}
+        <ModifyTimeModal
+          isOpen={showModifyTimeModal}
+          onClose={() => {
+            setShowModifyTimeModal(false);
+            setSelectedSuggestion(null);
+          }}
+          onSave={handleSaveModifiedTime}
+          suggestion={selectedSuggestion}
+        />
       </div>
     </div>
   );

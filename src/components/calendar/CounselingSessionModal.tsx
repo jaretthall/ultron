@@ -29,6 +29,13 @@ const CounselingSessionModal: React.FC<CounselingSessionModalProps> = ({
   const [location, setLocation] = useState('Office');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  
+  // Recurring session fields
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [recurrencePattern, setRecurrencePattern] = useState<'weekly' | 'biweekly' | 'monthly'>('weekly');
+  const [recurrenceEndType, setRecurrenceEndType] = useState<'date' | 'count'>('count');
+  const [recurrenceEndDate, setRecurrenceEndDate] = useState('');
+  const [recurrenceCount, setRecurrenceCount] = useState(8); // Default 8 sessions
 
   const resetForm = () => {
     setTitle('Counseling Session');

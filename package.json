@@ -1,6 +1,6 @@
 {
   "name": "ultron",
-  "version": "3.1.6",
+  "version": "3.2.0-task-scheduling-20250713-2000",
   "private": true,
   "type": "module",
   "homepage": "https://ultron-productivity.vercel.app/",
