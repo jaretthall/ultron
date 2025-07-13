@@ -7,7 +7,8 @@ import EditTaskModal from '../tasks/EditTaskModal';
 import OverallProgressIndicator from './OverallProgressIndicator';
 import CriticalAlertsPanel from './CriticalAlertsPanel';
 import ClinicalNotesAlert from './ClinicalNotesAlert';
-import ManualScheduleDisplay from './ManualScheduleDisplay';
+import DayAtAGlanceTimeline from './DayAtAGlanceTimeline';
+import SmartSummaryCards from './SmartSummaryCards';
 import HealthScoreWidget from './HealthScoreWidget';
 import EnhancedHomeStats from './EnhancedHomeStats';
 
@@ -99,22 +100,43 @@ const HomePage: React.FC<HomePageProps> = () => {
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 mb-6">
-          {/* Left Column - Manual Schedule (Takes 2 columns on lg+ screens) */}
+          {/* Left Column - Day at a Glance Timeline */}
           <div className="lg:col-span-2">
-            <ManualScheduleDisplay onEditTaskRequest={handleEditTaskRequest} />
+            <DayAtAGlanceTimeline 
+              tasks={tasks}
+              onEventClick={(event) => {
+                if (event.taskId) {
+                  const task = tasks.find(t => t.id === event.taskId);
+                  if (task) {
+                    handleEditTaskRequest(task);
+                  }
+                }
+              }}
+            />
           </div>
           
-          {/* Right Column - Critical Alerts */}
+          {/* Right Column - Smart Summary Cards */}
           <div className="lg:col-span-1">
-            <CriticalAlertsPanel projects={projects} tasks={tasks} />
+            <SmartSummaryCards 
+              tasks={tasks}
+              onTaskClick={handleEditTaskRequest}
+              onEventClick={(event) => {
+                if (event.taskId) {
+                  const task = tasks.find(t => t.id === event.taskId);
+                  if (task) {
+                    handleEditTaskRequest(task);
+                  }
+                }
+              }}
+            />
           </div>
         </div>
 
-        {/* Secondary Row */}
+        {/* Secondary Row - Critical Alerts and Quick Stats */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mb-6">
-          <HealthScoreWidget projects={projects} tasks={tasks} />
+          <CriticalAlertsPanel projects={projects} tasks={tasks} />
           
-          {/* Legacy Quick Stats for comparison */}
+          {/* Quick Stats Overview */}
           <div className="bg-slate-800 rounded-lg p-4 lg:p-6">
             <h2 className="text-xl font-semibold text-white mb-4">Quick Overview</h2>
             <div className="space-y-3">
@@ -150,6 +172,11 @@ const HomePage: React.FC<HomePageProps> = () => {
               </div>
             )}
           </div>
+        </div>
+
+        {/* Third Row - Health Score */}
+        <div className="mb-6">
+          <HealthScoreWidget projects={projects} tasks={tasks} />
         </div>
 
         {/* Enhanced Stats Section */}

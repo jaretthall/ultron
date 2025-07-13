@@ -201,8 +201,6 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
 
   // Event handlers
   const handleEventClick = useCallback((event: CalendarEvent) => {
-    console.log('Event clicked:', event);
-    
     if (event.source === 'schedule' && event.scheduleId) {
       const schedule = schedules.find(s => s.id === event.scheduleId);
       if (schedule) {
@@ -379,7 +377,7 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
           </div>
 
           {/* Controls */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4 overflow-x-auto">
             {/* Navigation */}
             <div className="flex items-center gap-2">
               <button
@@ -454,8 +452,8 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
               {!isMobile && <span>Day Details</span>}
             </button>
 
-            {/* Add Button */}
-            <div className="flex gap-2">
+            {/* Add Buttons */}
+            <div className="flex gap-1 md:gap-2">
               <button
                 onClick={() => setShowNewTaskModal(true)}
                 className="px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors flex items-center gap-2"
@@ -471,13 +469,22 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
                 <PlusIcon className="w-4 h-4" />
                 {!isMobile && <span>Event</span>}
               </button>
+              
+              <button
+                onClick={() => setShowCounselingModal(true)}
+                className="px-3 py-2 rounded-lg bg-teal-600 text-white hover:bg-teal-700 transition-colors flex items-center gap-2"
+                title="Schedule counseling session with automatic progress note"
+              >
+                <PlusIcon className="w-4 h-4" />
+                {!isMobile && <span>Counseling</span>}
+              </button>
             </div>
           </div>
         </div>
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden relative">
         {/* Main Calendar View */}
         <div className="flex-1 overflow-auto">
           {isLoading && (
@@ -513,33 +520,65 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
           )}
         </div>
 
-        {/* Day Details Sidebar */}
+        {/* Day Details Sidebar - Responsive */}
         {showDayDetails && (
-          <DayDetailsSidebar
-            selectedDate={selectedDate}
-            events={calendarEvents}
-            suggestions={aiSuggestions}
-            onEventClick={handleEventClick}
-            onTaskClick={onTaskClick}
-            onSuggestionApprove={handleAISuggestionApprove}
-            onSuggestionDeny={handleAISuggestionDeny}
-            onClose={() => setShowDayDetails(false)}
-          />
+          <>
+            {/* Mobile Overlay */}
+            {isMobile && (
+              <div 
+                className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+                onClick={() => setShowDayDetails(false)}
+              />
+            )}
+            <div className={`
+              ${isMobile 
+                ? 'fixed right-0 top-0 h-full w-full max-w-sm z-50 md:relative md:w-80' 
+                : 'w-80 xl:w-96'
+              }
+            `}>
+              <DayDetailsSidebar
+                selectedDate={selectedDate}
+                events={calendarEvents}
+                suggestions={aiSuggestions}
+                onEventClick={handleEventClick}
+                onTaskClick={onTaskClick}
+                onSuggestionApprove={handleAISuggestionApprove}
+                onSuggestionDeny={handleAISuggestionDeny}
+                onClose={() => setShowDayDetails(false)}
+              />
+            </div>
+          </>
         )}
 
-        {/* AI Suggestions Sidebar */}
+        {/* AI Suggestions Sidebar - Responsive */}
         {showAISuggestions && !showDayDetails && (
-          <div className="w-80 bg-white border-l border-gray-200 overflow-auto">
-            <AISuggestionsPanel
-              suggestions={aiSuggestions}
-              onApprove={handleAISuggestionApprove}
-              onApproveAll={handleAISuggestionApproveAll}
-              onApproveAndEdit={handleAISuggestionApproveAndEdit}
-              onProvideFeedback={handleAISuggestionProvideFeedback}
-              onDeny={handleAISuggestionDeny}
-              onClose={() => setShowAISuggestions(false)}
-            />
-          </div>
+          <>
+            {/* Mobile Overlay */}
+            {isMobile && (
+              <div 
+                className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+                onClick={() => setShowAISuggestions(false)}
+              />
+            )}
+            <div className={`
+              bg-white border-l border-gray-200 overflow-auto
+              ${isMobile 
+                ? 'fixed right-0 top-0 h-full w-full max-w-sm z-50 md:relative md:w-80' 
+                : 'w-80 xl:w-96'
+              }
+            `}>
+              <AISuggestionsPanel
+                suggestions={aiSuggestions}
+                onApprove={handleAISuggestionApprove}
+                onApproveAll={handleAISuggestionApproveAll}
+                onApproveAndEdit={handleAISuggestionApproveAndEdit}
+                onProvideFeedback={handleAISuggestionProvideFeedback}
+                onDeny={handleAISuggestionDeny}
+                onRefresh={loadCalendarData}
+                onClose={() => setShowAISuggestions(false)}
+              />
+            </div>
+          </>
         )}
       </div>
 

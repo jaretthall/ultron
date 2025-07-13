@@ -106,7 +106,20 @@ const MonthView: React.FC<MonthViewProps> = ({
   // Get events for a specific date
   const getEventsForDate = (date: Date): CalendarEvent[] => {
     const dateKey = date.toISOString().split('T')[0];
-    return eventsByDate[dateKey] || [];
+    const dayEvents = eventsByDate[dateKey] || [];
+    
+    // Debug July 14th specifically
+    if (date.getDate() === 14 && date.getMonth() === 6) { // July = month 6
+      console.log('📅 MonthView July 14th events:', {
+        dateKey,
+        eventsFound: dayEvents.length,
+        deadlines: dayEvents.filter(e => e.type === 'deadline').length,
+        deadlineEvents: dayEvents.filter(e => e.type === 'deadline').map(d => ({ id: d.id, title: d.title, start: d.start })),
+        allEventTypes: dayEvents.map(e => ({ type: e.type, title: e.title }))
+      });
+    }
+    
+    return dayEvents;
   };
 
   // Check if date is today

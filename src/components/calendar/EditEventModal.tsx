@@ -35,6 +35,7 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
   const [isDeleting, setIsDeleting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   // Populate form when event changes
   useEffect(() => {
@@ -87,7 +88,10 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!event) return;
+    if (!event) {
+      console.error('❌ No event provided to handleSubmit');
+      return;
+    }
     
     if (!title.trim()) {
       setErrorMessage('Event title is required.');
@@ -135,9 +139,15 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
       };
 
       await onUpdateEvent(event.id, updates);
-      onClose();
+      
+      // Show success notification
+      setShowSuccess(true);
+      setTimeout(() => {
+        setShowSuccess(false);
+        onClose();
+      }, 2000); // Increased from 1000ms to 2000ms for better visibility
     } catch (error: any) {
-      console.error('Error updating event:', error);
+      console.error('❌ Error updating event:', error);
       setErrorMessage(error.message || 'Failed to update event. Please try again.');
     } finally {
       setIsSubmitting(false);
@@ -193,6 +203,17 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
         {errorMessage && (
           <div className="mb-4 p-3 bg-red-800/20 border border-red-600 rounded-lg">
             <p className="text-red-400 text-sm">{errorMessage}</p>
+          </div>
+        )}
+
+        {showSuccess && (
+          <div className="mb-4 p-3 bg-green-800/20 border border-green-600 rounded-lg">
+            <p className="text-green-400 text-sm flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              Event updated successfully!
+            </p>
           </div>
         )}
 

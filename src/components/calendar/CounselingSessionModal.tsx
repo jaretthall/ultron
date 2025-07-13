@@ -67,8 +67,19 @@ const CounselingSessionModal: React.FC<CounselingSessionModalProps> = ({
     setErrorMessage('');
 
     try {
-      const startDateTime = `${date}T${startTime}`;
-      const endDateTime = `${date}T${endTime}`;
+      // Create timezone-aware datetime strings with explicit local timezone
+      // This ensures the time is interpreted as local time, not UTC
+      const startDateTime = new Date(`${date}T${startTime}:00`).toISOString();
+      const endDateTime = new Date(`${date}T${endTime}:00`).toISOString();
+      
+      console.log('🕐 COUNSELING CREATION - Input date:', date);
+      console.log('🕐 COUNSELING CREATION - Input start time:', startTime);
+      console.log('🕐 COUNSELING CREATION - Input end time:', endTime);
+      console.log('🕐 COUNSELING CREATION - Created start datetime string:', startDateTime);
+      console.log('🕐 COUNSELING CREATION - Created end datetime string:', endDateTime);
+      console.log('🕐 COUNSELING CREATION - Parsed start as JS Date:', new Date(startDateTime).toString());
+      console.log('🕐 COUNSELING CREATION - Parsed end as JS Date:', new Date(endDateTime).toString());
+      console.log('🕐 COUNSELING CREATION - User timezone:', Intl.DateTimeFormat().resolvedOptions().timeZone);
 
       const counselingSession: Omit<Schedule, 'id' | 'created_at' | 'updated_at'> = {
         title: title.trim(),

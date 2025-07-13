@@ -3,13 +3,14 @@
 import { Task, Schedule, DailySchedule } from '../../types';
 import { tasksService, schedulesService } from '../../services/databaseService';
 import { getCustomAuthUser } from '../contexts/CustomAuthContext';
+import { HealthBreakPreferences, DEFAULT_HEALTH_BREAK_PREFERENCES } from '../types/userPreferences';
 
 export interface CalendarEvent {
   id: string;
   title: string;
   start: Date;
   end: Date;
-  type: 'deadline' | 'work_session' | 'event' | 'counseling_session';
+  type: 'deadline' | 'work_session' | 'event' | 'counseling_session' | 'health_break' | 'meal_break';
   source: 'task' | 'schedule' | 'ai_generated' | 'manual';
   editable: boolean; // AI can only edit AI-generated items
   priority?: 'low' | 'medium' | 'high' | 'urgent';
@@ -48,7 +49,15 @@ export interface CalendarViewData {
 }
 
 export class CalendarIntegrationService {
-  
+  private healthBreakPreferences: HealthBreakPreferences = DEFAULT_HEALTH_BREAK_PREFERENCES;
+
+  /**
+   * Update health break preferences
+   */
+  updateHealthBreakPreferences(preferences: Partial<HealthBreakPreferences>) {
+    this.healthBreakPreferences = { ...this.healthBreakPreferences, ...preferences };
+  }
+
   /**
    * Get all calendar data for a date range
    */
@@ -78,6 +87,10 @@ export class CalendarIntegrationService {
         ...this.convertSchedulesToEvents(filteredSchedules),
         ...await this.convertDailySchedulesToEvents(dailySchedules)
       ];
+
+      // Add automatic health breaks
+      const healthBreaks = this.generateHealthBreaks(startDate, endDate, events);
+      events.push(...healthBreaks);
 
       // Separate by type
       const workSessions = events.filter(e => e.type === 'work_session');
@@ -163,20 +176,35 @@ export class CalendarIntegrationService {
    * Convert schedule entries to calendar events
    */
   private convertSchedulesToEvents(schedules: Schedule[]): CalendarEvent[] {
-    return schedules.map(schedule => ({
-      id: `schedule-${schedule.id}`,
-      title: schedule.title,
-      start: new Date(schedule.start_date),
-      end: new Date(schedule.end_date),
-      type: schedule.event_type?.includes('counseling') ? 'counseling_session' : 'event',
-      source: 'schedule',
-      editable: false, // User-created events cannot be modified by AI
-      scheduleId: schedule.id,
-      taskId: schedule.task_id,
-      metadata: {
-        aiSuggested: false
+    return schedules.map(schedule => {
+      const startDate = new Date(schedule.start_date);
+      const endDate = new Date(schedule.end_date);
+      
+      // Debug counseling session times
+      if (schedule.event_type?.includes('counseling')) {
+        console.log('🩺 COUNSELING DISPLAY - Raw start from DB:', schedule.start_date);
+        console.log('🩺 COUNSELING DISPLAY - Raw end from DB:', schedule.end_date);
+        console.log('🩺 COUNSELING DISPLAY - Parsed start (local time):', startDate.toLocaleString());
+        console.log('🩺 COUNSELING DISPLAY - Parsed end (local time):', endDate.toLocaleString());
+        console.log('🩺 COUNSELING DISPLAY - Parsed start (ISO):', startDate.toISOString());
+        console.log('🩺 COUNSELING DISPLAY - User timezone:', Intl.DateTimeFormat().resolvedOptions().timeZone);
       }
-    }));
+      
+      return {
+        id: `schedule-${schedule.id}`,
+        title: schedule.title,
+        start: startDate,
+        end: endDate,
+        type: schedule.event_type?.includes('counseling') ? 'counseling_session' : 'event',
+        source: 'schedule' as const,
+        editable: true, // Allow user to edit schedule events
+        scheduleId: schedule.id,
+        taskId: schedule.task_id,
+        metadata: {
+          aiSuggested: false
+        }
+      };
+    });
   }
 
   /**
@@ -281,6 +309,189 @@ export class CalendarIntegrationService {
   }
 
   /**
+   * Generate automatic health breaks (lunch, short breaks, buffers)
+   */
+  private generateHealthBreaks(startDate: Date, endDate: Date, existingEvents: CalendarEvent[]): CalendarEvent[] {
+    const healthBreaks: CalendarEvent[] = [];
+    const currentDate = new Date(startDate);
+
+    while (currentDate <= endDate) {
+      // Skip weekends if this is a business context
+      const isWeekend = currentDate.getDay() === 0 || currentDate.getDay() === 6;
+      if (!isWeekend) {
+        // Generate lunch break
+        if (this.healthBreakPreferences.autoScheduleLunch) {
+          const lunchBreak = this.generateLunchBreak(currentDate, existingEvents);
+          if (lunchBreak) {
+            healthBreaks.push(lunchBreak);
+          }
+        }
+
+        // Generate meal breaks
+        if (this.healthBreakPreferences.autoScheduleBreakfast) {
+          const breakfast = this.generateMealBreak(currentDate, 'breakfast', this.healthBreakPreferences.breakfastTime);
+          if (breakfast) healthBreaks.push(breakfast);
+        }
+
+        if (this.healthBreakPreferences.autoScheduleDinner) {
+          const dinner = this.generateMealBreak(currentDate, 'dinner', this.healthBreakPreferences.dinnerTime);
+          if (dinner) healthBreaks.push(dinner);
+        }
+      }
+
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return healthBreaks;
+  }
+
+  /**
+   * Generate lunch break with smart conflict resolution
+   */
+  private generateLunchBreak(date: Date, existingEvents: CalendarEvent[]): CalendarEvent | null {
+    const preferences = this.healthBreakPreferences;
+    const [hours, minutes] = preferences.lunchStartTime.split(':').map(Number);
+    
+    // Try preferred time first
+    let lunchStart = new Date(date);
+    lunchStart.setHours(hours, minutes, 0, 0);
+    let lunchEnd = new Date(lunchStart);
+    lunchEnd.setMinutes(lunchEnd.getMinutes() + preferences.lunchDuration);
+
+    // Check for conflicts
+    const hasConflict = this.hasTimeConflict(lunchStart, lunchEnd, existingEvents);
+    
+    if (!hasConflict) {
+      return this.createHealthBreakEvent('lunch', lunchStart, lunchEnd, '🍽️ Lunch Break');
+    }
+
+    // Try alternative times within flexibility window
+    const flexibilityMinutes = preferences.lunchFlexibility;
+    for (let offset = 15; offset <= flexibilityMinutes; offset += 15) {
+      // Try earlier
+      const earlierStart = new Date(lunchStart.getTime() - offset * 60 * 1000);
+      const earlierEnd = new Date(earlierStart.getTime() + preferences.lunchDuration * 60 * 1000);
+      
+      if (!this.hasTimeConflict(earlierStart, earlierEnd, existingEvents)) {
+        return this.createHealthBreakEvent('lunch', earlierStart, earlierEnd, '🍽️ Lunch Break');
+      }
+
+      // Try later
+      const laterStart = new Date(lunchStart.getTime() + offset * 60 * 1000);
+      const laterEnd = new Date(laterStart.getTime() + preferences.lunchDuration * 60 * 1000);
+      
+      if (!this.hasTimeConflict(laterStart, laterEnd, existingEvents)) {
+        return this.createHealthBreakEvent('lunch', laterStart, laterEnd, '🍽️ Lunch Break');
+      }
+    }
+
+    // If no available time found, still create the break (user might need to resolve conflicts)
+    return this.createHealthBreakEvent('lunch', lunchStart, lunchEnd, '🍽️ Lunch Break (Conflict)');
+  }
+
+  /**
+   * Generate other meal breaks
+   */
+  private generateMealBreak(date: Date, mealType: string, timeString: string): CalendarEvent | null {
+    const [hours, minutes] = timeString.split(':').map(Number);
+    const start = new Date(date);
+    start.setHours(hours, minutes, 0, 0);
+    const end = new Date(start);
+    end.setMinutes(end.getMinutes() + 30); // 30 min for breakfast/dinner
+
+    const icon = mealType === 'breakfast' ? '🥐' : '🍽️';
+    const title = `${icon} ${mealType.charAt(0).toUpperCase() + mealType.slice(1)}`;
+
+    return this.createHealthBreakEvent(mealType, start, end, title);
+  }
+
+  /**
+   * Create a health break event
+   */
+  private createHealthBreakEvent(breakType: string, start: Date, end: Date, title: string): CalendarEvent {
+    return {
+      id: `health-break-${breakType}-${start.toISOString()}`,
+      title,
+      start,
+      end,
+      type: 'meal_break',
+      source: 'ai_generated',
+      editable: true,
+      priority: 'high', // Health breaks are high priority
+      metadata: {
+        aiSuggested: true,
+        confidence: 0.95,
+        energyLevel: 'medium'
+      }
+    };
+  }
+
+  /**
+   * Check if a time slot conflicts with existing events
+   */
+  private hasTimeConflict(start: Date, end: Date, events: CalendarEvent[]): boolean {
+    return events.some(event => 
+      // Skip other health breaks when checking conflicts
+      event.type !== 'meal_break' && event.type !== 'health_break' &&
+      (start < event.end && end > event.start)
+    );
+  }
+
+  /**
+   * Add buffer time between events
+   */
+  addBufferTime(events: CalendarEvent[], bufferMinutes: number = 15): CalendarEvent[] {
+    const bufferedEvents: CalendarEvent[] = [];
+    const sortedEvents = [...events].sort((a, b) => a.start.getTime() - b.start.getTime());
+
+    for (let i = 0; i < sortedEvents.length; i++) {
+      const event = sortedEvents[i];
+      const nextEvent = sortedEvents[i + 1];
+
+      bufferedEvents.push(event);
+
+      // Add buffer between consecutive events
+      if (nextEvent && event.type !== 'meal_break' && nextEvent.type !== 'meal_break') {
+        const timeBetween = (nextEvent.start.getTime() - event.end.getTime()) / (1000 * 60);
+        
+        if (timeBetween < bufferMinutes) {
+          const bufferStart = new Date(event.end);
+          const bufferEnd = new Date(nextEvent.start);
+          
+          bufferedEvents.push({
+            id: `buffer-${event.id}-${nextEvent.id}`,
+            title: `⏰ Buffer Time`,
+            start: bufferStart,
+            end: bufferEnd,
+            type: 'health_break',
+            source: 'ai_generated',
+            editable: true,
+            metadata: { aiSuggested: true }
+          });
+        }
+      }
+    }
+
+    return bufferedEvents;
+  }
+
+  /**
+   * Shift all events after a certain time
+   */
+  shiftEventsAfterTime(events: CalendarEvent[], afterTime: Date, shiftMinutes: number): CalendarEvent[] {
+    return events.map(event => {
+      if (event.start >= afterTime && event.source === 'ai_generated' && event.editable) {
+        return {
+          ...event,
+          start: new Date(event.start.getTime() + shiftMinutes * 60 * 1000),
+          end: new Date(event.end.getTime() + shiftMinutes * 60 * 1000)
+        };
+      }
+      return event;
+    });
+  }
+
+  /**
    * Generate AI suggestions for scheduling unscheduled tasks
    */
   private async generateAIScheduleSuggestions(tasks: Task[], existingEvents: CalendarEvent[]): Promise<AIScheduleSuggestion[]> {
@@ -324,25 +535,38 @@ export class CalendarIntegrationService {
         const checkDate = new Date(startLookingFrom);
         checkDate.setDate(checkDate.getDate() + dayOffset);
         
-        // Context-aware scheduling based on current day
+        // Enhanced context-aware scheduling with strict business/personal separation
         const currentDay = new Date().getDay();
-        const isWeekend = currentDay === 0 || currentDay === 6;
+        const currentHour = new Date().getHours();
+        const isCurrentlyWeekend = currentDay === 0 || currentDay === 6;
         const isCheckDateWeekend = checkDate.getDay() === 0 || checkDate.getDay() === 6;
         
-        // If it's currently weekend, suggest personal tasks for weekend and business for Monday
-        if (isWeekend) {
-          // On weekends, suggest personal tasks for today/tomorrow, business for Monday+
-          if (task.task_context === 'business' && isCheckDateWeekend) {
-            continue; // Skip business tasks on weekends when user is in personal time
+        // Determine if we're currently in business hours (9 AM - 5 PM on weekdays)
+        const isCurrentlyBusinessHours = !isCurrentlyWeekend && currentHour >= 9 && currentHour < 17;
+        
+        // Strict context separation: never mix business and personal inappropriately
+        if (task.task_context === 'business') {
+          // Business tasks should only be suggested for:
+          // 1. Weekdays during business hours
+          // 2. Future weekdays (can suggest Monday tasks on weekend, but for Monday morning)
+          if (isCheckDateWeekend) {
+            continue; // Never suggest business tasks for weekends
           }
-          if (task.task_context === 'personal' && !isCheckDateWeekend) {
-            // Lower priority for personal tasks on weekdays when suggested from weekend
-            continue;
+          
+          // Don't suggest business tasks for evening slots (after 5 PM) 
+          if (hour >= 17) {
+            continue; // Business tasks shouldn't be suggested for evenings
           }
-        } else {
-          // On weekdays, suggest business tasks for weekdays, personal for evenings/weekends
-          if (task.task_context === 'business' && isCheckDateWeekend) {
-            continue; // Business tasks shouldn't be suggested for weekends
+        } else if (task.task_context === 'personal') {
+          // Personal tasks should only be suggested for:
+          // 1. Weekends (any time)
+          // 2. Weekday evenings (after business hours)
+          // 3. Early mornings before business hours
+          if (!isCheckDateWeekend) {
+            // On weekdays, only suggest personal tasks outside business hours
+            if (hour >= 9 && hour < 17) {
+              continue; // Don't suggest personal tasks during business hours
+            }
           }
         }
 
@@ -431,12 +655,17 @@ export class CalendarIntegrationService {
     const reasons: string[] = [];
     
     const hour = suggestedStart.getHours();
-    const dayName = suggestedStart.toLocaleDateString('en-US', { weekday: 'long' });
+    const fullDate = suggestedStart.toLocaleDateString('en-US', { 
+      weekday: 'long', 
+      month: 'short', 
+      day: 'numeric',
+      year: suggestedStart.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined
+    });
     const currentDay = new Date().getDay();
     const isCurrentlyWeekend = currentDay === 0 || currentDay === 6;
     const isSuggestedWeekend = suggestedStart.getDay() === 0 || suggestedStart.getDay() === 6;
     
-    reasons.push(`Scheduled for ${dayName} at ${suggestedStart.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`);
+    reasons.push(`Scheduled for ${fullDate} at ${suggestedStart.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`);
     
     // Context-aware reasoning
     if (isCurrentlyWeekend && task.task_context === 'personal') {

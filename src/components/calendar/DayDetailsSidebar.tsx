@@ -23,19 +23,19 @@ const DayDetailsSidebar: React.FC<DayDetailsSidebarProps> = ({
   onSuggestionDeny,
   onClose
 }) => {
-  // Filter events for the selected date
+  // Filter events for the selected date using the same logic as MonthView
   const dayEvents = useMemo(() => {
     if (!selectedDate) return [];
     
-    const dayStart = new Date(selectedDate);
-    dayStart.setHours(0, 0, 0, 0);
+    // Use the same date key logic as MonthView for consistency
+    const selectedDateKey = selectedDate.toISOString().split('T')[0];
     
-    const dayEnd = new Date(selectedDate);
-    dayEnd.setHours(23, 59, 59, 999);
+    const filteredEvents = events.filter(event => {
+      const eventDateKey = event.start.toISOString().split('T')[0];
+      return eventDateKey === selectedDateKey;
+    });
     
-    return events.filter(event => 
-      event.start >= dayStart && event.start <= dayEnd
-    ).sort((a, b) => a.start.getTime() - b.start.getTime());
+    return filteredEvents.sort((a, b) => a.start.getTime() - b.start.getTime());
   }, [selectedDate, events]);
 
   // Filter suggestions for the selected date
@@ -58,9 +58,39 @@ const DayDetailsSidebar: React.FC<DayDetailsSidebarProps> = ({
     const deadlines = dayEvents.filter(e => e.type === 'deadline');
     const workSessions = dayEvents.filter(e => e.type === 'work_session');
     const meetings = dayEvents.filter(e => e.type === 'event' || e.type === 'counseling_session');
+    const healthBreaks = dayEvents.filter(e => e.type === 'health_break' || e.type === 'meal_break');
     
-    return { deadlines, workSessions, meetings };
-  }, [dayEvents]);
+    // Debug logging for all event types
+    if (selectedDate && selectedDate.getDate() === 14) {
+      console.log('🔍 SIDEBAR DEBUG - Total events received:', events.length);
+      console.log('🔍 SIDEBAR DEBUG - Events after filtering:', dayEvents.length);
+      console.log('🔍 SIDEBAR DEBUG - Event breakdown:', {
+        deadlines: deadlines.length,
+        workSessions: workSessions.length,
+        meetings: meetings.length,
+        healthBreaks: healthBreaks.length
+      });
+      
+      // Show raw events received for July 14th
+      const july14Events = events.filter(e => {
+        const eventDate = new Date(e.start);
+        return eventDate.getDate() === 14;
+      });
+      
+      console.log('🔍 SIDEBAR DEBUG - Raw July 14th events found:', july14Events.length);
+      july14Events.forEach((event, index) => {
+        console.log(`Event ${index + 1}:`, {
+          id: event.id,
+          title: event.title,
+          type: event.type,
+          start: event.start.toString(),
+          passedFilter: dayEvents.some(d => d.id === event.id)
+        });
+      });
+    }
+    
+    return { deadlines, workSessions, meetings, healthBreaks };
+  }, [dayEvents, selectedDate]);
 
   // Get event color
   const getEventColor = (event: CalendarEvent) => {
@@ -73,6 +103,9 @@ const DayDetailsSidebar: React.FC<DayDetailsSidebarProps> = ({
         return 'bg-teal-500 border-teal-600 text-white';
       case 'event':
         return 'bg-green-500 border-green-600 text-white';
+      case 'health_break':
+      case 'meal_break':
+        return 'bg-orange-500 border-orange-600 text-white';
       default:
         return 'bg-gray-500 border-gray-600 text-white';
     }
@@ -89,6 +122,10 @@ const DayDetailsSidebar: React.FC<DayDetailsSidebarProps> = ({
         return '💬';
       case 'event':
         return '📅';
+      case 'health_break':
+        return '⏰';
+      case 'meal_break':
+        return '🍽️';
       default:
         return '•';
     }
@@ -113,7 +150,7 @@ const DayDetailsSidebar: React.FC<DayDetailsSidebarProps> = ({
 
   if (!selectedDate) {
     return (
-      <div className="w-80 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 flex items-center justify-center">
+      <div className="w-full h-full bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 flex items-center justify-center">
         <div className="text-center text-gray-500 dark:text-gray-400 p-6">
           <div className="text-4xl mb-2">📅</div>
           <p className="text-lg font-medium">Select a date</p>
@@ -126,7 +163,7 @@ const DayDetailsSidebar: React.FC<DayDetailsSidebarProps> = ({
   const isToday = selectedDate.toDateString() === new Date().toDateString();
 
   return (
-    <div className="w-80 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden">
+    <div className="w-full h-full bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden">
       {/* Header */}
       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between mb-2">
@@ -307,6 +344,43 @@ const DayDetailsSidebar: React.FC<DayDetailsSidebarProps> = ({
                           Priority: {event.priority}
                         </div>
                       )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Health Breaks */}
+        {groupedEvents.healthBreaks.length > 0 && (
+          <div>
+            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
+              <span>🍽️</span>
+              Health Breaks ({groupedEvents.healthBreaks.length})
+            </h3>
+            <div className="space-y-2">
+              {groupedEvents.healthBreaks.map(event => (
+                <div 
+                  key={event.id}
+                  className={`rounded-lg p-3 cursor-pointer hover:opacity-80 transition-opacity ${getEventColor(event)}`}
+                  onClick={() => onEventClick(event)}
+                >
+                  <div className="flex items-start gap-2">
+                    <span className="text-sm">{getEventIcon(event)}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-sm truncate">{event.title}</div>
+                      <div className="text-xs opacity-90">
+                        {event.start.toLocaleTimeString('en-US', { 
+                          hour: 'numeric', 
+                          minute: '2-digit',
+                          hour12: true 
+                        })} - {event.end.toLocaleTimeString('en-US', { 
+                          hour: 'numeric', 
+                          minute: '2-digit',
+                          hour12: true 
+                        })}
+                      </div>
                     </div>
                   </div>
                 </div>

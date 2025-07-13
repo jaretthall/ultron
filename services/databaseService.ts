@@ -1182,7 +1182,9 @@ export const schedulesService = {
     // Note: schedules table doesn't have project_id column based on actual schema
     // Removed project_id assignment since column doesn't exist
     
-    console.log('Attempting to insert schedule:', cleanSchedule);
+    console.log('💾 DATABASE INSERT - Schedule start_date:', cleanSchedule.start_date);
+    console.log('💾 DATABASE INSERT - Schedule end_date:', cleanSchedule.end_date);
+    console.log('💾 DATABASE INSERT - Full schedule object:', cleanSchedule);
     
     const { data, error } = await supabase
       .from('schedules')
@@ -1267,7 +1269,10 @@ export const schedulesService = {
       .select()
       .single();
     
-    if (error) handleError('updating schedule', error);
+    if (error) {
+      console.error('❌ Schedule update error:', error);
+      handleError('updating schedule', error);
+    }
     
     // Convert JSONB fields back to strings for the interface
     if (data) {

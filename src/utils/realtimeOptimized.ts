@@ -266,9 +266,19 @@ class OptimizedRealtimeManager {
 
       console.log(`Attempting to reconnect subscription: ${subscriptionId}`);
       
-      // Note: This would require storing original options and callback
-      // For now, mark as needing manual recreation
-      console.warn(`Subscription ${subscriptionId} needs manual recreation`);
+      // For critical subscriptions, try to recreate them automatically
+      if (subscriptionId.includes('projects') || subscriptionId.includes('tasks') || subscriptionId.includes('schedules')) {
+        console.log(`Auto-recreating critical subscription: ${subscriptionId}`);
+        
+        // Force a page refresh to recreate subscriptions
+        // This is a temporary fix - ideally we'd store the callback and options
+        setTimeout(() => {
+          console.log('Triggering page refresh to restore realtime subscriptions...');
+          window.location.reload();
+        }, 2000);
+      } else {
+        console.warn(`Subscription ${subscriptionId} needs manual recreation`);
+      }
 
     } catch (error) {
       console.error(`Failed to reconnect subscription ${subscriptionId}:`, error);

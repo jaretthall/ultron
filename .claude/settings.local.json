@@ -33,7 +33,8 @@
       "Bash(kill:*)",
       "Bash(curl:*)",
       "Bash(npx vite:*)",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "WebFetch(domain:localhost)"
     ],
     "deny": []
   },

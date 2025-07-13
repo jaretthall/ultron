@@ -9,6 +9,10 @@ interface AISuggestionsPanelProps {
   onProvideFeedback: (feedback: string, commonIssues: string[]) => void;
   onDeny: (suggestionId: string) => void;
   onClose: () => void;
+  onRefresh?: () => void;
+  onAddLunchBreak?: (time: string) => void;
+  onAddBufferTime?: (minutes: number) => void;
+  onShiftAllBack?: (minutes: number) => void;
 }
 
 const AISuggestionsPanel: React.FC<AISuggestionsPanelProps> = ({
@@ -18,7 +22,11 @@ const AISuggestionsPanel: React.FC<AISuggestionsPanelProps> = ({
   onApproveAndEdit,
   onProvideFeedback,
   onDeny,
-  onClose
+  onClose,
+  onRefresh,
+  onAddLunchBreak,
+  onAddBufferTime,
+  onShiftAllBack
 }) => {
   const [expandedSuggestions, setExpandedSuggestions] = useState<Set<string>>(new Set());
   const [showFeedbackForm, setShowFeedbackForm] = useState(false);
@@ -34,7 +42,10 @@ const AISuggestionsPanel: React.FC<AISuggestionsPanelProps> = ({
     'Prefer different times of day',
     'Wrong energy level matching',
     'Missing buffer time between meetings',
-    'Schedule conflicts with personal time',
+    'Business tasks suggested during personal time',
+    'Personal tasks suggested during business hours',
+    'Weekend scheduling should be personal only',
+    'Evening scheduling should be personal only',
     'Need time for breaks/meals'
   ];
 
@@ -330,15 +341,30 @@ const AISuggestionsPanel: React.FC<AISuggestionsPanelProps> = ({
             </p>
           </div>
           
-          <button
-            onClick={onClose}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-            aria-label="Close AI suggestions panel"
-          >
-            <svg className="w-5 h-5 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+          <div className="flex items-center gap-2">
+            {onRefresh && (
+              <button
+                onClick={onRefresh}
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                aria-label="Refresh AI suggestions"
+                title="Refresh suggestions based on current tasks and completed items"
+              >
+                <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              </button>
+            )}
+            
+            <button
+              onClick={onClose}
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              aria-label="Close AI suggestions panel"
+            >
+              <svg className="w-5 h-5 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         {/* View Mode Toggle */}
@@ -387,6 +413,73 @@ const AISuggestionsPanel: React.FC<AISuggestionsPanelProps> = ({
               </button>
             </div>
           )}
+        </div>
+
+        {/* Health & Schedule Actions */}
+        <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+          <h4 className="text-sm font-medium text-green-800 dark:text-green-300 mb-3 flex items-center gap-2">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+            Health & Timing Adjustments
+          </h4>
+          
+          <div className="grid grid-cols-2 gap-2 mb-3">
+            {onAddLunchBreak && (
+              <>
+                <button
+                  onClick={() => onAddLunchBreak('12:00')}
+                  className="text-xs bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded transition-colors flex items-center justify-center gap-1"
+                >
+                  🍽️ Lunch 12PM
+                </button>
+                <button
+                  onClick={() => onAddLunchBreak('12:30')}
+                  className="text-xs bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded transition-colors flex items-center justify-center gap-1"
+                >
+                  🍽️ Lunch 12:30PM
+                </button>
+              </>
+            )}
+            
+            {onAddBufferTime && (
+              <>
+                <button
+                  onClick={() => onAddBufferTime(15)}
+                  className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded transition-colors flex items-center justify-center gap-1"
+                >
+                  ⏰ +15min Buffer
+                </button>
+                <button
+                  onClick={() => onAddBufferTime(30)}
+                  className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded transition-colors flex items-center justify-center gap-1"
+                >
+                  ⏰ +30min Buffer
+                </button>
+              </>
+            )}
+          </div>
+
+          {onShiftAllBack && (
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => onShiftAllBack(30)}
+                className="text-xs bg-orange-600 hover:bg-orange-700 text-white px-3 py-2 rounded transition-colors flex items-center justify-center gap-1"
+              >
+                ⬅️ Shift Back 30m
+              </button>
+              <button
+                onClick={() => onShiftAllBack(60)}
+                className="text-xs bg-orange-600 hover:bg-orange-700 text-white px-3 py-2 rounded transition-colors flex items-center justify-center gap-1"
+              >
+                ⬅️ Shift Back 1h
+              </button>
+            </div>
+          )}
+
+          <p className="text-xs text-green-700 dark:text-green-400 mt-2">
+            💡 <strong>Health Tip:</strong> Regular meals and breaks improve focus and prevent burnout
+          </p>
         </div>
 
         {/* Feedback Form */}

@@ -664,7 +664,10 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
 
   const updateSchedule = useCallback(async (id: string, updates: Partial<Schedule>): Promise<void> => {
     const originalSchedule = state.schedules.find(s => s.id === id);
-    if (!originalSchedule) throw new Error('Schedule not found');
+    if (!originalSchedule) {
+      console.error('❌ Schedule not found:', id);
+      throw new Error('Schedule not found');
+    }
 
     const updatedSchedule = { ...originalSchedule, ...updates };
 
