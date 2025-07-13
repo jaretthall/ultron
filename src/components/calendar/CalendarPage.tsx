@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { Task, Schedule } from '../../../types';
 import { useAppState } from '../../contexts/AppStateContext';
 import { formatDateForInput, isSameDate } from '../../utils/dateUtils';
@@ -10,6 +10,7 @@ import CounselingSessionModal from './CounselingSessionModal';
 import TaskScheduler from './TaskScheduler';
 import WorkingHoursManager from './WorkingHoursManager';
 import FocusBlockManager from './FocusBlockManager';
+import MobileCalendarView from './MobileCalendarView';
 // import EditTaskModal from '../tasks/EditTaskModal';
 
 const PlusIcon: React.FC = () => (
@@ -43,6 +44,18 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ onTaskClick, onEditTask }) 
   const [isTaskSchedulerOpen, setIsTaskSchedulerOpen] = useState(false);
   const [isWorkingHoursOpen, setIsWorkingHoursOpen] = useState(false);
   const [isFocusBlockManagerOpen, setIsFocusBlockManagerOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Mobile detection
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Memoize static data
   const daysOfWeek = useMemo(() => ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], []);
@@ -223,6 +236,112 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ onTaskClick, onEditTask }) 
       throw error; // Re-throw to let the modal handle the error display
     }
   };
+
+  // Mobile view handlers
+  const handleMobileAddTask = useCallback(() => {
+    setShowNewTaskModal(true);
+  }, []);
+
+  const handleMobileAddEvent = useCallback(() => {
+    setShowNewEventModal(true);
+  }, []);
+
+  const handleMobileAddCounseling = useCallback(() => {
+    setShowCounselingModal(true);
+  }, []);
+
+  const handleMobileTaskClick = useCallback((task: Task) => {
+    if (onTaskClick) {
+      onTaskClick(task);
+    }
+  }, [onTaskClick]);
+
+  const handleMobileEventClick = useCallback((event: Schedule) => {
+    setSelectedEvent(event);
+    if (isCounselingSession(event)) {
+      setShowCounselingModal(true);
+    } else {
+      setShowEditEventModal(true);
+    }
+  }, [isCounselingSession]);
+
+  const handleMobileEditTask = useCallback((task: Task) => {
+    if (onEditTask) {
+      onEditTask(task);
+    }
+  }, [onEditTask]);
+
+  const handleMobileEditEvent = useCallback((event: Schedule) => {
+    setSelectedEvent(event);
+    setShowEditEventModal(true);
+  }, []);
+
+  // Mobile view
+  if (isMobile) {
+    return (
+      <div className="flex-1 overflow-hidden bg-slate-900 text-slate-100 flex flex-col">
+        <MobileCalendarView
+          tasks={tasks}
+          schedules={schedules}
+          projects={projects}
+          onAddTask={handleMobileAddTask}
+          onAddEvent={handleMobileAddEvent}
+          onAddCounseling={handleMobileAddCounseling}
+          onTaskClick={handleMobileTaskClick}
+          onEventClick={handleMobileEventClick}
+          onEditTask={handleMobileEditTask}
+          onEditEvent={handleMobileEditEvent}
+          currentDate={currentDate}
+          onCurrentDateChange={setCurrentDate}
+        />
+        
+        {/* Mobile Modals */}
+        {showNewTaskModal && (
+          <NewTaskModal
+            isOpen={showNewTaskModal}
+            onClose={() => setShowNewTaskModal(false)}
+            onAddTask={handleAddTask}
+            projects={projects}
+            defaultDueDate={formatDateForInput(selectedDate)}
+          />
+        )}
+        
+        {showNewEventModal && (
+          <NewEventModal
+            isOpen={showNewEventModal}
+            onClose={() => setShowNewEventModal(false)}
+            onAddEvent={handleAddEvent}
+            projects={projects}
+            defaultDate={selectedDate ? formatDateForInput(selectedDate) : undefined}
+          />
+        )}
+        
+        {showEditEventModal && (
+          <EditEventModal
+            isOpen={showEditEventModal}
+            onClose={() => {
+              setShowEditEventModal(false);
+              setSelectedEvent(null);
+            }}
+            onUpdateEvent={handleUpdateEvent}
+            onDeleteEvent={handleDeleteEvent}
+            event={selectedEvent}
+            projects={projects}
+          />
+        )}
+        
+        {showCounselingModal && (
+          <CounselingSessionModal
+            isOpen={showCounselingModal}
+            onClose={() => setShowCounselingModal(false)}
+            onAddCounselingSession={handleAddCounselingSession}
+            projects={projects}
+            defaultDate={selectedDate || undefined}
+          />
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 p-4 md:p-6 lg:p-8 overflow-hidden bg-slate-900 text-slate-100 flex flex-col lg:flex-row">
