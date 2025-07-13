@@ -308,22 +308,23 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
     }
   };
 
-  const handleAISuggestionModify = async (suggestion: AIScheduleSuggestion) => {
-    try {
-      // Apply the suggestion first to create the task
-      await calendarIntegrationService.applySuggestion(suggestion);
-      
-      // Find the created task and open it for editing
-      const task = tasks.find(t => t.id === suggestion.taskId);
-      if (task) {
-        setEditingTask(task);
-      }
-      
-      await loadCalendarData(); // Reload data to show the scheduled work session
-    } catch (error) {
-      console.error('Error modifying AI suggestion:', error);
-    }
-  };
+  // Commented out until the modify functionality is reimplemented
+  // const handleAISuggestionModify = async (suggestion: AIScheduleSuggestion) => {
+  //   try {
+  //     // Apply the suggestion first to create the task
+  //     await calendarIntegrationService.applySuggestion(suggestion);
+  //     
+  //     // Find the created task and open it for editing
+  //     const task = tasks.find(t => t.id === suggestion.taskId);
+  //     if (task) {
+  //       setEditingTask(task);
+  //     }
+  //     
+  //     await loadCalendarData(); // Reload data to show the scheduled work session
+  //   } catch (error) {
+  //     console.error('Error modifying AI suggestion:', error);
+  //   }
+  // };
 
   const handleUpdateTask = async (updatedTask: Task) => {
     try {
@@ -417,15 +418,15 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
           if (event.metadata?.timeBlocked) {
             // Clear scheduled_start/end for time-blocked tasks
             await updateTask(event.taskId, {
-              scheduled_start: null,
-              scheduled_end: null,
+              scheduled_start: undefined,
+              scheduled_end: undefined,
               is_time_blocked: false
             });
           } else {
             // Clear work_session_scheduled_start/end for AI/manual work sessions
             await updateTask(event.taskId, {
-              work_session_scheduled_start: null,
-              work_session_scheduled_end: null,
+              work_session_scheduled_start: undefined,
+              work_session_scheduled_end: undefined,
               ai_suggested: false
             });
           }
@@ -735,7 +736,6 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
                 onApproveAndEdit={handleAISuggestionApproveAndEdit}
                 onProvideFeedback={handleAISuggestionProvideFeedback}
                 onDeny={handleAISuggestionDeny}
-                onModify={handleAISuggestionModify}
                 onRefresh={loadCalendarData}
                 onReset={resetAndRefreshAISuggestions}
                 onClose={() => setShowAISuggestions(false)}

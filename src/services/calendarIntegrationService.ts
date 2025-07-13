@@ -23,6 +23,7 @@ export interface CalendarEvent {
     progress?: number;
     aiSuggested?: boolean;
     confidence?: number;
+    timeBlocked?: boolean;
   };
 }
 
@@ -558,8 +559,8 @@ export class CalendarIntegrationService {
       for (const task of tasksToReset) {
         console.log(`🤖 Clearing work session for task: "${task.title}"`);
         await tasksService.update(task.id, {
-          work_session_scheduled_start: null,
-          work_session_scheduled_end: null
+          work_session_scheduled_start: undefined,
+          work_session_scheduled_end: undefined
         });
       }
 
