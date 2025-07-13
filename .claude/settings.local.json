@@ -34,7 +34,8 @@
       "Bash(curl:*)",
       "Bash(npx vite:*)",
       "Bash(npx eslint:*)",
-      "WebFetch(domain:localhost)"
+      "WebFetch(domain:localhost)",
+      "Bash(npm test:*)"
     ],
     "deny": []
   },
