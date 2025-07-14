@@ -11,6 +11,8 @@ import DayAtAGlanceTimeline from './DayAtAGlanceTimeline';
 import SmartSummaryCards from './SmartSummaryCards';
 import HealthScoreWidget from './HealthScoreWidget';
 import EnhancedHomeStats from './EnhancedHomeStats';
+import NotesWidget from './NotesWidget';
+import ShoppingListsWidget from './ShoppingListsWidget';
 
 interface HomePageProps {
   onNavigate: (page: string) => void;
@@ -88,10 +90,6 @@ const HomePage: React.FC<HomePageProps> = () => {
           </div>
         </div>
 
-        {/* Top Row - Progress Overview */}
-        <div className="mb-6">
-          <OverallProgressIndicator projects={projects} tasks={tasks} />
-        </div>
 
         {/* Clinical Notes Alert - High Priority */}
         <div className="mb-6">
@@ -130,6 +128,16 @@ const HomePage: React.FC<HomePageProps> = () => {
               }}
             />
           </div>
+        </div>
+
+        {/* New Features Row - Notes (Full Width) */}
+        <div className="mb-6">
+          <NotesWidget />
+        </div>
+
+        {/* Shopping Lists (Full Width) */}
+        <div className="mb-6">
+          <ShoppingListsWidget />
         </div>
 
         {/* Secondary Row - Critical Alerts and Quick Stats */}
@@ -172,6 +180,11 @@ const HomePage: React.FC<HomePageProps> = () => {
               </div>
             )}
           </div>
+        </div>
+
+        {/* Progress Overview - Moved from top */}
+        <div className="mb-6">
+          <OverallProgressIndicator projects={projects} tasks={tasks} />
         </div>
 
         {/* Third Row - Health Score */}

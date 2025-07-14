@@ -13,11 +13,10 @@ import EditWorkSessionModal from './EditWorkSessionModal';
 import CounselingSessionModal from './CounselingSessionModal';
 
 // Import view components (we'll create these)
-import MonthView from './views/MonthView';
+import CompactMonthView from './views/CompactMonthView';
 // import WeekView from './views/WeekView'; // Removed week view
 // import DayView from './views/DayView';
 import AISuggestionsPanel from './views/AISuggestionsPanel';
-import ChronologicalDayView from './ChronologicalDayView';
 import EnhancedDayView from './EnhancedDayView';
 
 // Icons
@@ -76,7 +75,6 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
   const [aiSuggestions, setAISuggestions] = useState<AIScheduleSuggestion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showAISuggestions, setShowAISuggestions] = useState(false);
-  const [showDaySchedule, setShowDaySchedule] = useState(false);
 
   // Modal states
   const [showNewTaskModal, setShowNewTaskModal] = useState(false);
@@ -236,7 +234,6 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
 
   const handleDateSelect = useCallback((date: Date) => {
     setSelectedDate(date);
-    setShowDaySchedule(true); // Show day schedule sidebar when date is selected
   }, []);
 
   const handleAISuggestionApprove = async (suggestion: AIScheduleSuggestion) => {
@@ -620,20 +617,6 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
                 </button>
               </div>
 
-              {/* Day Schedule Toggle */}
-              <button
-                onClick={() => setShowDaySchedule(!showDaySchedule)}
-                className={`${isMobile ? 'px-2 py-1.5' : 'px-3 py-2'} rounded-lg transition-colors flex items-center gap-1 flex-shrink-0 ${
-                  showDaySchedule 
-                    ? 'bg-blue-600 text-white' 
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                }`}
-              >
-                <svg className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {!isMobile && <span>Schedule</span>}
-              </button>
 
               {/* Add Buttons */}
               <div className="flex gap-1 sm:gap-2">
@@ -681,7 +664,7 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
             <>
               {viewType === 'month' && (
                 <>
-                  <MonthView
+                  <CompactMonthView
                     currentDate={currentDate}
                     selectedDate={selectedDate}
                     events={filteredEvents}
@@ -709,37 +692,9 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
           )}
         </div>
 
-        {/* Day Schedule Sidebar - Responsive */}
-        {showDaySchedule && (
-          <>
-            {/* Mobile Overlay */}
-            {isMobile && (
-              <div 
-                className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
-                onClick={() => setShowDaySchedule(false)}
-              />
-            )}
-            <div className={`
-              ${isMobile 
-                ? 'fixed right-0 top-0 h-full w-full max-w-sm z-50 md:relative md:w-80' 
-                : 'w-80 xl:w-96'
-              }
-            `}>
-              <ChronologicalDayView
-                selectedDate={selectedDate}
-                events={calendarEvents}
-                suggestions={aiSuggestions}
-                onEventClick={handleEventClick}
-                onSuggestionApprove={handleAISuggestionApprove}
-                onSuggestionDeny={handleAISuggestionDeny}
-                onClose={() => setShowDaySchedule(false)}
-              />
-            </div>
-          </>
-        )}
 
         {/* AI Suggestions Sidebar - Responsive */}
-        {showAISuggestions && !showDaySchedule && (
+        {showAISuggestions && (
           <>
             {/* Mobile Overlay */}
             {isMobile && (
