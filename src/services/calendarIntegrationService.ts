@@ -901,7 +901,7 @@ export class CalendarIntegrationService {
     try {
       // Simple scheduling algorithm - find next available time slot
       const now = new Date();
-      const workingHoursStart = 8; // 8 AM
+      const workingHoursStart = 9; // 9 AM
       const workingHoursEnd = 17; // 5 PM
       const sessionDuration = Math.min(task.estimated_hours, 4) * 60 * 60 * 1000; // Max 4 hours per session
 
