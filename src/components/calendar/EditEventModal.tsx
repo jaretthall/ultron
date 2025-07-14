@@ -119,10 +119,22 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
         startDateTime = startDate;
         endDateTime = endDate || startDate;
       } else {
-        startDateTime = `${startDate}T${startTime}`;
-        endDateTime = endDate && endTime ? `${endDate}T${endTime}` : 
-                     endTime ? `${startDate}T${endTime}` :
-                     `${startDate}T${startTime}`;
+        // Create proper Date objects in local time, then convert to ISO strings
+        const localStartDateTime = new Date(`${startDate}T${startTime}:00`);
+        startDateTime = localStartDateTime.toISOString();
+        
+        if (endDate && endTime) {
+          const localEndDateTime = new Date(`${endDate}T${endTime}:00`);
+          endDateTime = localEndDateTime.toISOString();
+        } else if (endTime) {
+          const localEndDateTime = new Date(`${startDate}T${endTime}:00`);
+          endDateTime = localEndDateTime.toISOString();
+        } else {
+          // Default to 1 hour duration
+          const localEndDateTime = new Date(localStartDateTime);
+          localEndDateTime.setHours(localEndDateTime.getHours() + 1);
+          endDateTime = localEndDateTime.toISOString();
+        }
       }
 
       const updates: Partial<Schedule> = {
