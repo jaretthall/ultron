@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Task, Project } from '../../../types';
+import { Task, Project, TaskStatus } from '../../../types';
 
 interface EditTaskModalProps {
   task: Task;
@@ -593,7 +593,7 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
               </label>
               <select
                 value={status}
-                onChange={(e) => setStatus(e.target.value as Task['status'])}
+                onChange={(e) => setStatus(e.target.value as TaskStatus)}
                 className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 text-white"
               >
                 <option value="todo">To Do</option>
@@ -607,7 +607,7 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
               <button
                 type="button"
                 onClick={() => {
-                  setStatus('completed');
+                  setStatus(TaskStatus.COMPLETED);
                   setProgress(100);
                 }}
                 className="w-full mt-2 px-4 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
