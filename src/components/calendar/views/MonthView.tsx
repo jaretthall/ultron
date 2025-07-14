@@ -142,6 +142,11 @@ const MonthView: React.FC<MonthViewProps> = ({
         return event.source === 'ai_generated' ? 'bg-purple-500' : 'bg-blue-500';
       case 'counseling_session':
         return 'bg-teal-500';
+      case 'wellness_break':
+        return 'bg-blue-500';
+      case 'health_break':
+      case 'meal_break':
+        return 'bg-orange-500';
       case 'event':
         return 'bg-green-500';
       default:
@@ -158,6 +163,14 @@ const MonthView: React.FC<MonthViewProps> = ({
         return event.source === 'ai_generated' ? '🤖' : '🔨';
       case 'counseling_session':
         return '💬';
+      case 'wellness_break':
+        if (event.title.includes('Lunch')) return '🍽️';
+        if (event.title.includes('Walk')) return '🚶';
+        if (event.title.includes('Meditation')) return '🧘';
+        return '✨';
+      case 'health_break':
+      case 'meal_break':
+        return '🍽️';
       case 'event':
         return '📅';
       default:
@@ -383,7 +396,7 @@ const MonthView: React.FC<MonthViewProps> = ({
             </div>
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 rounded bg-blue-500"></div>
-              <span className="text-gray-600">Work Sessions</span>
+              <span className="text-gray-600">Work/Wellness</span>
             </div>
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 rounded bg-purple-500"></div>
@@ -396,6 +409,10 @@ const MonthView: React.FC<MonthViewProps> = ({
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 rounded bg-teal-500"></div>
               <span className="text-gray-600">Counseling</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 rounded bg-orange-500"></div>
+              <span className="text-gray-600">Health Breaks</span>
             </div>
           </div>
         </div>

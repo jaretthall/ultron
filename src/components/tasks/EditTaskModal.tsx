@@ -22,17 +22,47 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
   const [priority, setPriority] = useState(task.priority);
   const [status, setStatus] = useState(task.status);
   const [projectId, setProjectId] = useState(task.project_id || '');
-  const [dueDate, setDueDate] = useState(task.due_date ? task.due_date.split('T')[0] : '');
+  const [dueDate, setDueDate] = useState(() => {
+    if (task.due_date) {
+      const date = new Date(task.due_date);
+      return date.toISOString().split('T')[0];
+    }
+    return '';
+  });
   const [estimatedHours, setEstimatedHours] = useState(task.estimated_hours || 0);
   const [tags, setTags] = useState(task.tags?.join(', ') || '');
   const [progress, setProgress] = useState(task.progress || 0);
-  const [dueTime, setDueTime] = useState(task.due_date ? task.due_date.split('T')[1]?.substring(0, 5) || '' : '');
+  const [dueTime, setDueTime] = useState(() => {
+    if (task.due_date) {
+      const date = new Date(task.due_date);
+      return date.toTimeString().substring(0, 5);
+    }
+    return '';
+  });
 
   // Time scheduling fields
   const [isTimeBlocked, setIsTimeBlocked] = useState(task.is_time_blocked || false);
-  const [scheduledDate, setScheduledDate] = useState(task.scheduled_start ? task.scheduled_start.split('T')[0] : '');
-  const [scheduledStartTime, setScheduledStartTime] = useState(task.scheduled_start ? task.scheduled_start.split('T')[1]?.substring(0, 5) || '' : '');
-  const [scheduledEndTime, setScheduledEndTime] = useState(task.scheduled_end ? task.scheduled_end.split('T')[1]?.substring(0, 5) || '' : '');
+  const [scheduledDate, setScheduledDate] = useState(() => {
+    if (task.scheduled_start) {
+      const date = new Date(task.scheduled_start);
+      return date.toISOString().split('T')[0];
+    }
+    return '';
+  });
+  const [scheduledStartTime, setScheduledStartTime] = useState(() => {
+    if (task.scheduled_start) {
+      const date = new Date(task.scheduled_start);
+      return date.toTimeString().substring(0, 5);
+    }
+    return '';
+  });
+  const [scheduledEndTime, setScheduledEndTime] = useState(() => {
+    if (task.scheduled_end) {
+      const date = new Date(task.scheduled_end);
+      return date.toTimeString().substring(0, 5);
+    }
+    return '';
+  });
 
   // Flow-based fields
   const [microGoals, setMicroGoals] = useState('');
@@ -52,17 +82,34 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
     setPriority(task.priority);
     setStatus(task.status);
     setProjectId(task.project_id || '');
-    setDueDate(task.due_date ? task.due_date.split('T')[0] : '');
+    if (task.due_date) {
+      const date = new Date(task.due_date);
+      setDueDate(date.toISOString().split('T')[0]);
+      setDueTime(date.toTimeString().substring(0, 5));
+    } else {
+      setDueDate('');
+      setDueTime('');
+    }
     setEstimatedHours(task.estimated_hours || 0);
     setTags(task.tags?.join(', ') || '');
     setProgress(task.progress || 0);
-    setDueTime(task.due_date ? task.due_date.split('T')[1]?.substring(0, 5) || '' : '');
     
     // Reset time scheduling fields
     setIsTimeBlocked(task.is_time_blocked || false);
-    setScheduledDate(task.scheduled_start ? task.scheduled_start.split('T')[0] : '');
-    setScheduledStartTime(task.scheduled_start ? task.scheduled_start.split('T')[1]?.substring(0, 5) || '' : '');
-    setScheduledEndTime(task.scheduled_end ? task.scheduled_end.split('T')[1]?.substring(0, 5) || '' : '');
+    if (task.scheduled_start) {
+      const startDate = new Date(task.scheduled_start);
+      setScheduledDate(startDate.toISOString().split('T')[0]);
+      setScheduledStartTime(startDate.toTimeString().substring(0, 5));
+    } else {
+      setScheduledDate('');
+      setScheduledStartTime('');
+    }
+    if (task.scheduled_end) {
+      const endDate = new Date(task.scheduled_end);
+      setScheduledEndTime(endDate.toTimeString().substring(0, 5));
+    } else {
+      setScheduledEndTime('');
+    }
     
     // Reset flow-based fields when task changes
     setMicroGoals('');
@@ -107,22 +154,28 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Handle due date with time
+    // Handle due date with time (ensure timezone consistency)
     let formattedDueDate = undefined;
     if (dueDate) {
       if (dueTime) {
-        formattedDueDate = `${dueDate}T${dueTime}:00`;
+        // Create a Date object in local time, then convert to ISO string
+        const localDateTime = new Date(`${dueDate}T${dueTime}:00`);
+        formattedDueDate = localDateTime.toISOString();
       } else {
-        formattedDueDate = `${dueDate}T23:59:59`;
+        // End of day in local time
+        const localDateTime = new Date(`${dueDate}T23:59:59`);
+        formattedDueDate = localDateTime.toISOString();
       }
     }
 
-    // Handle scheduled time
+    // Handle scheduled time (ensure timezone consistency)
     let formattedScheduledStart = undefined;
     let formattedScheduledEnd = undefined;
     if (isTimeBlocked && scheduledDate && scheduledStartTime && scheduledEndTime) {
-      formattedScheduledStart = `${scheduledDate}T${scheduledStartTime}:00`;
-      formattedScheduledEnd = `${scheduledDate}T${scheduledEndTime}:00`;
+      const localStartDateTime = new Date(`${scheduledDate}T${scheduledStartTime}:00`);
+      const localEndDateTime = new Date(`${scheduledDate}T${scheduledEndTime}:00`);
+      formattedScheduledStart = localStartDateTime.toISOString();
+      formattedScheduledEnd = localEndDateTime.toISOString();
     }
 
     const updatedTask: Task = {

@@ -10,7 +10,7 @@ export interface CalendarEvent {
   title: string;
   start: Date;
   end: Date;
-  type: 'deadline' | 'work_session' | 'event' | 'counseling_session' | 'health_break' | 'meal_break';
+  type: 'deadline' | 'work_session' | 'event' | 'counseling_session' | 'health_break' | 'meal_break' | 'wellness_break';
   source: 'task' | 'schedule' | 'ai_generated' | 'manual';
   editable: boolean; // AI can only edit AI-generated items
   priority?: 'low' | 'medium' | 'high' | 'urgent';
@@ -102,6 +102,10 @@ export class CalendarIntegrationService {
       const healthBreaks = this.generateHealthBreaks(startDate, endDate, events);
       events.push(...healthBreaks);
 
+      // Add AI wellness suggestions (lunch, breaks, walks)
+      const wellnessBreaks = this.generateWellnessBreaks(startDate, endDate, events);
+      events.push(...wellnessBreaks);
+
       // Separate by type
       const workSessions = events.filter(e => e.type === 'work_session');
       const deadlines = events.filter(e => e.type === 'deadline');
@@ -139,10 +143,20 @@ export class CalendarIntegrationService {
         const dueDate = new Date(task.due_date);
         const endDate = new Date(dueDate);
         
+        // Debug logging for deadline time issues
+        console.log(`🐛 DEADLINE DEBUG - Task: "${task.title}"`);
+        console.log(`🐛 Raw due_date: ${task.due_date}`);
+        console.log(`🐛 Parsed dueDate: ${dueDate.toISOString()}`);
+        console.log(`🐛 Local time: ${dueDate.toLocaleString()}`);
+        console.log(`🐛 Hours: ${dueDate.getHours()}, Minutes: ${dueDate.getMinutes()}`);
+        
         // If the due date has a specific time, make it a 30-minute deadline block for visibility
         // If it's just a date (midnight), keep it as all-day
         if (dueDate.getHours() !== 0 || dueDate.getMinutes() !== 0) {
           endDate.setMinutes(endDate.getMinutes() + 30);
+          console.log(`🐛 Timed deadline: ${dueDate.toLocaleString()} - ${endDate.toLocaleString()}`);
+        } else {
+          console.log(`🐛 All-day deadline: ${dueDate.toLocaleString()}`);
         }
         
         events.push({
@@ -467,12 +481,135 @@ export class CalendarIntegrationService {
   }
 
   /**
+   * Generate AI wellness suggestions (lunch, walks, meditation breaks)
+   */
+  private generateWellnessBreaks(startDate: Date, endDate: Date, existingEvents: CalendarEvent[]): CalendarEvent[] {
+    const wellnessEvents: CalendarEvent[] = [];
+    const current = new Date(startDate);
+    
+    while (current <= endDate) {
+      // Only generate wellness breaks for weekdays (Monday-Friday)
+      const dayOfWeek = current.getDay();
+      if (dayOfWeek === 0 || dayOfWeek === 6) {
+        current.setDate(current.getDate() + 1);
+        continue;
+      }
+
+      const dayEvents = existingEvents.filter(event => {
+        const eventDate = event.start.toISOString().split('T')[0];
+        const currentDate = current.toISOString().split('T')[0];
+        return eventDate === currentDate;
+      });
+
+      // 1. Lunch break (12:00 PM - 1:00 PM)
+      const lunchStart = new Date(current);
+      lunchStart.setHours(12, 0, 0, 0);
+      const lunchEnd = new Date(lunchStart);
+      lunchEnd.setHours(13, 0, 0, 0);
+
+      if (!this.hasTimeConflict(lunchStart, lunchEnd, dayEvents)) {
+        wellnessEvents.push({
+          id: `wellness-lunch-${current.toISOString().split('T')[0]}`,
+          title: '🍽️ Lunch Break',
+          start: lunchStart,
+          end: lunchEnd,
+          type: 'wellness_break',
+          source: 'ai_generated',
+          editable: true,
+          priority: 'medium',
+          metadata: {
+            aiSuggested: true,
+            confidence: 0.9,
+            energyLevel: 'medium'
+          }
+        });
+      }
+
+      // 2. Morning walk (10:30 AM - 10:35 AM)
+      const morningWalkStart = new Date(current);
+      morningWalkStart.setHours(10, 30, 0, 0);
+      const morningWalkEnd = new Date(morningWalkStart);
+      morningWalkEnd.setMinutes(morningWalkEnd.getMinutes() + 5);
+
+      if (!this.hasTimeConflict(morningWalkStart, morningWalkEnd, dayEvents)) {
+        wellnessEvents.push({
+          id: `wellness-walk-morning-${current.toISOString().split('T')[0]}`,
+          title: '🚶 Morning Walk',
+          start: morningWalkStart,
+          end: morningWalkEnd,
+          type: 'wellness_break',
+          source: 'ai_generated',
+          editable: true,
+          priority: 'low',
+          metadata: {
+            aiSuggested: true,
+            confidence: 0.8,
+            energyLevel: 'high'
+          }
+        });
+      }
+
+      // 3. Afternoon walk (3:00 PM - 3:05 PM)
+      const afternoonWalkStart = new Date(current);
+      afternoonWalkStart.setHours(15, 0, 0, 0);
+      const afternoonWalkEnd = new Date(afternoonWalkStart);
+      afternoonWalkEnd.setMinutes(afternoonWalkEnd.getMinutes() + 5);
+
+      if (!this.hasTimeConflict(afternoonWalkStart, afternoonWalkEnd, dayEvents)) {
+        wellnessEvents.push({
+          id: `wellness-walk-afternoon-${current.toISOString().split('T')[0]}`,
+          title: '🚶 Afternoon Walk',
+          start: afternoonWalkStart,
+          end: afternoonWalkEnd,
+          type: 'wellness_break',
+          source: 'ai_generated',
+          editable: true,
+          priority: 'low',
+          metadata: {
+            aiSuggested: true,
+            confidence: 0.8,
+            energyLevel: 'high'
+          }
+        });
+      }
+
+      // 4. Meditation break (2:15 PM - 2:20 PM)
+      const meditationStart = new Date(current);
+      meditationStart.setHours(14, 15, 0, 0);
+      const meditationEnd = new Date(meditationStart);
+      meditationEnd.setMinutes(meditationEnd.getMinutes() + 5);
+
+      if (!this.hasTimeConflict(meditationStart, meditationEnd, dayEvents)) {
+        wellnessEvents.push({
+          id: `wellness-meditation-${current.toISOString().split('T')[0]}`,
+          title: '🧘 Meditation Break',
+          start: meditationStart,
+          end: meditationEnd,
+          type: 'wellness_break',
+          source: 'ai_generated',
+          editable: true,
+          priority: 'low',
+          metadata: {
+            aiSuggested: true,
+            confidence: 0.7,
+            energyLevel: 'low'
+          }
+        });
+      }
+
+      current.setDate(current.getDate() + 1);
+    }
+
+    return wellnessEvents;
+  }
+
+  /**
    * Check if a time slot conflicts with existing events
    */
   private hasTimeConflict(start: Date, end: Date, events: CalendarEvent[]): boolean {
     return events.some(event => 
       // Skip other health breaks when checking conflicts
-      event.type !== 'meal_break' && event.type !== 'health_break' &&
+      event.type !== 'meal_break' && event.type !== 'health_break' && event.type !== 'wellness_break' &&
       (start < event.end && end > event.start)
     );
   }

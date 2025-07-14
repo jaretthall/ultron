@@ -277,30 +277,34 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
         .map(tag => InputValidator.sanitizeInput(tag.trim()))
         .filter(tag => tag);
 
-      // Combine date and time for due_date
+      // Combine date and time for due_date (ensure timezone consistency)
       let combinedDueDate: string | undefined = undefined;
       if (dueDate) {
         if (dueTime) {
-          // Combine date and time
-          combinedDueDate = `${dueDate}T${dueTime}:00`;
+          // Create a Date object in local time, then convert to ISO string
+          const localDateTime = new Date(`${dueDate}T${dueTime}:00`);
+          combinedDueDate = localDateTime.toISOString();
         } else {
-          // Default to end of day if no time specified
-          combinedDueDate = `${dueDate}T23:59:59`;
+          // Default to end of day in local time
+          const localDateTime = new Date(`${dueDate}T23:59:59`);
+          combinedDueDate = localDateTime.toISOString();
         }
       }
 
-      // Combine scheduled date and times
+      // Combine scheduled date and times (ensure timezone consistency)
       let combinedScheduledStart: string | undefined = undefined;
       let combinedScheduledEnd: string | undefined = undefined;
       if (isTimeBlocked && scheduledDate && scheduledStartTime) {
-        combinedScheduledStart = `${scheduledDate}T${scheduledStartTime}:00`;
+        const localStartDateTime = new Date(`${scheduledDate}T${scheduledStartTime}:00`);
+        combinedScheduledStart = localStartDateTime.toISOString();
         if (scheduledEndTime) {
-          combinedScheduledEnd = `${scheduledDate}T${scheduledEndTime}:00`;
+          const localEndDateTime = new Date(`${scheduledDate}T${scheduledEndTime}:00`);
+          combinedScheduledEnd = localEndDateTime.toISOString();
         } else {
           // Default to 1 hour duration if no end time specified
-          const startTime = new Date(combinedScheduledStart);
-          startTime.setHours(startTime.getHours() + 1);
-          combinedScheduledEnd = startTime.toISOString();
+          const endTime = new Date(localStartDateTime);
+          endTime.setHours(endTime.getHours() + 1);
+          combinedScheduledEnd = endTime.toISOString();
         }
       }
 

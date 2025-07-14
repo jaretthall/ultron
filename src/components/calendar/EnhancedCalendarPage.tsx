@@ -14,10 +14,10 @@ import CounselingSessionModal from './CounselingSessionModal';
 
 // Import view components (we'll create these)
 import MonthView from './views/MonthView';
-import WeekView from './views/WeekView';
+// import WeekView from './views/WeekView'; // Removed week view
 // import DayView from './views/DayView';
 import AISuggestionsPanel from './views/AISuggestionsPanel';
-import DayDetailsSidebar from './DayDetailsSidebar';
+import ChronologicalDayView from './ChronologicalDayView';
 
 // Icons
 const CalendarIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5" }) => (
@@ -26,11 +26,7 @@ const CalendarIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5" 
   </svg>
 );
 
-const WeekIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5" }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
-  </svg>
-);
+// WeekIcon removed - no longer needed
 
 // Removed DayIcon as it's no longer needed without day view
 
@@ -58,7 +54,7 @@ const SparklesIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5" 
   </svg>
 );
 
-export type CalendarViewType = 'month' | 'week';
+export type CalendarViewType = 'month';
 
 interface EnhancedCalendarPageProps {
   onTaskClick?: (task: Task) => void;
@@ -72,14 +68,14 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
   // State for calendar navigation and view
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [viewType, setViewType] = useState<CalendarViewType>('month');
+  const [viewType] = useState<CalendarViewType>('month'); // setViewType removed - only month view now
   
   // Calendar data state
   const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>([]);
   const [aiSuggestions, setAISuggestions] = useState<AIScheduleSuggestion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showAISuggestions, setShowAISuggestions] = useState(false);
-  const [showDayDetails, setShowDayDetails] = useState(false);
+  const [showDaySchedule, setShowDaySchedule] = useState(false);
 
   // Modal states
   const [showNewTaskModal, setShowNewTaskModal] = useState(false);
@@ -175,12 +171,7 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
         endDate.setMonth(endDate.getMonth() + 1, 0);
         break;
       
-      case 'week':
-        // Start of week (Sunday) to end of week (Saturday)
-        const dayOfWeek = startDate.getDay();
-        startDate.setDate(startDate.getDate() - dayOfWeek);
-        endDate.setDate(startDate.getDate() + 6);
-        break;
+      // Week case removed
       
       // Day view removed - no longer needed
     }
@@ -196,14 +187,8 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
   const navigatePrevious = () => {
     const newDate = new Date(currentDate);
     
-    switch (viewType) {
-      case 'month':
-        newDate.setMonth(newDate.getMonth() - 1);
-        break;
-      case 'week':
-        newDate.setDate(newDate.getDate() - 7);
-        break;
-    }
+    // Only month view now
+    newDate.setMonth(newDate.getMonth() - 1);
     
     setCurrentDate(newDate);
   };
@@ -211,14 +196,8 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
   const navigateNext = () => {
     const newDate = new Date(currentDate);
     
-    switch (viewType) {
-      case 'month':
-        newDate.setMonth(newDate.getMonth() + 1);
-        break;
-      case 'week':
-        newDate.setDate(newDate.getDate() + 7);
-        break;
-    }
+    // Only month view now
+    newDate.setMonth(newDate.getMonth() + 1);
     
     setCurrentDate(newDate);
   };
@@ -256,7 +235,7 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
 
   const handleDateSelect = useCallback((date: Date) => {
     setSelectedDate(date);
-    setShowDayDetails(true); // Show day details sidebar when date is selected
+    setShowDaySchedule(true); // Show day schedule sidebar when date is selected
   }, []);
 
   const handleAISuggestionApprove = async (suggestion: AIScheduleSuggestion) => {
@@ -438,37 +417,13 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
     }
   };
 
-  // Format date for display
+  // Format date for display - only month view now
   const formatDateRange = useMemo(() => {
-    const options: Intl.DateTimeFormatOptions = { 
+    return currentDate.toLocaleDateString('en-US', { 
       month: 'long', 
       year: 'numeric' 
-    };
-    
-    switch (viewType) {
-      case 'month':
-        return currentDate.toLocaleDateString('en-US', options);
-      
-      case 'week':
-        const weekStart = new Date(currentDate);
-        const dayOfWeek = weekStart.getDay();
-        weekStart.setDate(weekStart.getDate() - dayOfWeek);
-        
-        const weekEnd = new Date(weekStart);
-        weekEnd.setDate(weekEnd.getDate() + 6);
-        
-        if (weekStart.getMonth() === weekEnd.getMonth()) {
-          return `${weekStart.toLocaleDateString('en-US', { month: 'long' })} ${weekStart.getDate()}-${weekEnd.getDate()}, ${weekStart.getFullYear()}`;
-        } else {
-          return `${weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${weekStart.getFullYear()}`;
-        }
-      
-      // Day view removed - no longer needed
-      
-      default:
-        return '';
-    }
-  }, [currentDate, viewType]);
+    });
+  }, [currentDate]);
 
   // Filtered events for current view
   const filteredEvents = useMemo(() => {
@@ -540,23 +495,10 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
                 </button>
               </div>
 
-              {/* View Type Selector */}
-              <div className="flex rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden">
-                {(['month', 'week'] as CalendarViewType[]).map((view) => (
-                  <button
-                    key={view}
-                    onClick={() => setViewType(view)}
-                    className={`${isMobile ? 'px-2 py-1.5' : 'px-3 py-2'} text-sm font-medium transition-colors flex items-center gap-1 ${
-                      viewType === view
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-                    }`}
-                  >
-                    {view === 'month' && <CalendarIcon className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />}
-                    {view === 'week' && <WeekIcon className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />}
-                    {!isMobile && <span className="capitalize">{view}</span>}
-                  </button>
-                ))}
+              {/* Month View Label - Week view removed */}
+              <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                <CalendarIcon className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
+                {!isMobile && <span className="text-sm font-medium">Month View</span>}
               </div>
             </div>
 
@@ -598,19 +540,19 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
                 </button>
               </div>
 
-              {/* Day Details Toggle */}
+              {/* Day Schedule Toggle */}
               <button
-                onClick={() => setShowDayDetails(!showDayDetails)}
+                onClick={() => setShowDaySchedule(!showDaySchedule)}
                 className={`${isMobile ? 'px-2 py-1.5' : 'px-3 py-2'} rounded-lg transition-colors flex items-center gap-1 flex-shrink-0 ${
-                  showDayDetails 
+                  showDaySchedule 
                     ? 'bg-blue-600 text-white' 
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                 }`}
               >
                 <svg className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                {!isMobile && <span>Details</span>}
+                {!isMobile && <span>Schedule</span>}
               </button>
 
               {/* Add Buttons */}
@@ -668,28 +610,19 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
                 />
               )}
 
-              {viewType === 'week' && (
-                <WeekView
-                  currentDate={currentDate}
-                  selectedDate={selectedDate}
-                  events={filteredEvents}
-                  onDateSelect={handleDateSelect}
-                  onEventClick={handleEventClick}
-                  onEventDrop={handleEventDrop}
-                />
-              )}
+              {/* Week view removed */}
             </>
           )}
         </div>
 
-        {/* Day Details Sidebar - Responsive */}
-        {showDayDetails && (
+        {/* Day Schedule Sidebar - Responsive */}
+        {showDaySchedule && (
           <>
             {/* Mobile Overlay */}
             {isMobile && (
               <div 
                 className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
-                onClick={() => setShowDayDetails(false)}
+                onClick={() => setShowDaySchedule(false)}
               />
             )}
             <div className={`
@@ -698,22 +631,21 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
                 : 'w-80 xl:w-96'
               }
             `}>
-              <DayDetailsSidebar
+              <ChronologicalDayView
                 selectedDate={selectedDate}
                 events={calendarEvents}
                 suggestions={aiSuggestions}
                 onEventClick={handleEventClick}
-                onTaskClick={onTaskClick}
                 onSuggestionApprove={handleAISuggestionApprove}
                 onSuggestionDeny={handleAISuggestionDeny}
-                onClose={() => setShowDayDetails(false)}
+                onClose={() => setShowDaySchedule(false)}
               />
             </div>
           </>
         )}
 
         {/* AI Suggestions Sidebar - Responsive */}
-        {showAISuggestions && !showDayDetails && (
+        {showAISuggestions && !showDaySchedule && (
           <>
             {/* Mobile Overlay */}
             {isMobile && (
