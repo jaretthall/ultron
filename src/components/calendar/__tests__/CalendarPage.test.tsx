@@ -2,13 +2,15 @@ import React from 'react';
 import { render } from '@testing-library/react';
 import CalendarPage from '../CalendarPage';
 import { AppStateProvider } from '../../../contexts/AppStateContext';
+import { CustomAuthProvider } from '../../../contexts/CustomAuthContext';
 // Import other providers as needed
 
-// If CalendarPage requires more providers, add them here
 const AllProviders = ({ children }: { children: React.ReactNode }) => (
-  <AppStateProvider>
-    {children}
-  </AppStateProvider>
+  <CustomAuthProvider>
+    <AppStateProvider>
+      {children}
+    </AppStateProvider>
+  </CustomAuthProvider>
 );
 
 describe('CalendarPage', () => {
