@@ -18,6 +18,7 @@ import MonthView from './views/MonthView';
 // import DayView from './views/DayView';
 import AISuggestionsPanel from './views/AISuggestionsPanel';
 import ChronologicalDayView from './ChronologicalDayView';
+import EnhancedDayView from './EnhancedDayView';
 
 // Icons
 const CalendarIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5" }) => (
@@ -277,6 +278,59 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
       console.error('Error providing feedback for new AI plan:', error);
     }
   };
+
+  const handleSuggestionPencilIn = useCallback(async (suggestionId: string, isPenciledIn: boolean) => {
+    try {
+      console.log(`${isPenciledIn ? 'Penciling in' : 'Unpenciling'} suggestion:`, suggestionId);
+      
+      if (isPenciledIn) {
+        // Mark as penciled in - AI should not move this suggestion
+        const suggestion = aiSuggestions.find(s => s.id === suggestionId);
+        if (suggestion) {
+          await calendarIntegrationService.pencilInSuggestion(suggestion);
+        }
+      } else {
+        // Unpencil - AI can move this suggestion again
+        await calendarIntegrationService.unpencilSuggestion(suggestionId);
+      }
+      
+      // Refresh calendar data to show updated penciled state
+      await loadCalendarData();
+    } catch (error) {
+      console.error('Error updating penciled suggestion:', error);
+    }
+  }, [aiSuggestions]);
+
+  const handleTimeBlockMove = useCallback(async (blockId: string, newStart: Date, newEnd: Date) => {
+    try {
+      console.log('Moving time block:', blockId, newStart, newEnd);
+      
+      if (blockId.startsWith('suggestion-')) {
+        const suggestionId = blockId.replace('suggestion-', '');
+        const suggestion = aiSuggestions.find(s => s.id === suggestionId);
+        if (suggestion) {
+          // Update suggestion time
+          suggestion.suggestedStart = newStart;
+          suggestion.suggestedEnd = newEnd;
+          await calendarIntegrationService.applySuggestion(suggestion);
+        }
+      } else if (blockId.startsWith('event-')) {
+        const eventId = blockId.replace('event-', '');
+        const event = calendarEvents.find(e => e.id === eventId);
+        if (event && event.scheduleId) {
+          // Update event time
+          await updateSchedule(event.scheduleId, {
+            start_date: newStart.toISOString(),
+            end_date: newEnd.toISOString()
+          });
+        }
+      }
+      
+      await loadCalendarData();
+    } catch (error) {
+      console.error('Error moving time block:', error);
+    }
+  }, [aiSuggestions, calendarEvents, updateSchedule]);
 
   const handleAISuggestionDeny = async (suggestionId: string) => {
     try {
@@ -539,7 +593,7 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
                   </svg>
                 </button>
 
-                {/* Debug Force AI Suggestions Button */}
+                {/* Debug Force AI Suggestions Button - RED BUTTON TEST */}
                 <button
                   onClick={async () => {
                     try {
@@ -557,7 +611,7 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
                     }
                   }}
                   className={`${isMobile ? 'px-1.5 py-1.5' : 'px-2 py-2'} rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors flex items-center justify-center flex-shrink-0`}
-                  title="DEBUG: Force regenerate AI suggestions"
+                  title="DEBUG: Force regenerate AI suggestions - CLICK TO TEST"
                   disabled={isLoading}
                 >
                   <svg className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -626,14 +680,28 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
           {!isLoading && (
             <>
               {viewType === 'month' && (
-                <MonthView
-                  currentDate={currentDate}
-                  selectedDate={selectedDate}
-                  events={filteredEvents}
-                  onDateSelect={handleDateSelect}
-                  onEventClick={handleEventClick}
-                  onEventDrop={handleEventDrop}
-                />
+                <>
+                  <MonthView
+                    currentDate={currentDate}
+                    selectedDate={selectedDate}
+                    events={filteredEvents}
+                    onDateSelect={handleDateSelect}
+                    onEventClick={handleEventClick}
+                    onEventDrop={handleEventDrop}
+                  />
+                  
+                  {/* Enhanced Day View underneath the calendar */}
+                  <EnhancedDayView
+                    selectedDate={selectedDate}
+                    events={calendarEvents}
+                    suggestions={aiSuggestions}
+                    onEventClick={handleEventClick}
+                    onSuggestionApprove={handleAISuggestionApprove}
+                    onSuggestionDeny={handleAISuggestionDeny}
+                    onSuggestionPencilIn={handleSuggestionPencilIn}
+                    onTimeBlockMove={handleTimeBlockMove}
+                  />
+                </>
               )}
 
               {/* Week view removed */}

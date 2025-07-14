@@ -1287,6 +1287,88 @@ export class CalendarIntegrationService {
   }
 
   /**
+   * Pencil in an AI suggestion (mark as fixed, AI won't move it)
+   */
+  async pencilInSuggestion(suggestion: AIScheduleSuggestion): Promise<void> {
+    try {
+      console.log('📌 Penciling in suggestion:', suggestion.taskTitle);
+      
+      // Store penciled in suggestion in localStorage for now
+      const penciledSuggestions = this.getPenciledSuggestions();
+      penciledSuggestions.set(suggestion.id, {
+        suggestionId: suggestion.id,
+        taskId: suggestion.taskId,
+        timeSlot: {
+          start: suggestion.suggestedStart,
+          end: suggestion.suggestedEnd
+        },
+        penciledAt: new Date(),
+        confidence: 'locked'
+      });
+      
+      this.savePenciledSuggestions(penciledSuggestions);
+      console.log('📌 Suggestion penciled in successfully');
+    } catch (error) {
+      console.error('Error penciling in suggestion:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Unpencil a suggestion (allow AI to move it again)
+   */
+  async unpencilSuggestion(suggestionId: string): Promise<void> {
+    try {
+      console.log('📌 Unpenciling suggestion:', suggestionId);
+      
+      const penciledSuggestions = this.getPenciledSuggestions();
+      penciledSuggestions.delete(suggestionId);
+      this.savePenciledSuggestions(penciledSuggestions);
+      
+      console.log('📌 Suggestion unpenciled successfully');
+    } catch (error) {
+      console.error('Error unpenciling suggestion:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Check if a suggestion is penciled in
+   */
+  isSuggestionPenciledIn(suggestionId: string): boolean {
+    const penciledSuggestions = this.getPenciledSuggestions();
+    return penciledSuggestions.has(suggestionId);
+  }
+
+  /**
+   * Get penciled suggestions from localStorage
+   */
+  private getPenciledSuggestions(): Map<string, any> {
+    try {
+      const stored = localStorage.getItem('penciledSuggestions');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        return new Map(Object.entries(parsed));
+      }
+    } catch (error) {
+      console.warn('Error loading penciled suggestions:', error);
+    }
+    return new Map();
+  }
+
+  /**
+   * Save penciled suggestions to localStorage
+   */
+  private savePenciledSuggestions(penciledSuggestions: Map<string, any>): void {
+    try {
+      const obj = Object.fromEntries(penciledSuggestions);
+      localStorage.setItem('penciledSuggestions', JSON.stringify(obj));
+    } catch (error) {
+      console.warn('Error saving penciled suggestions:', error);
+    }
+  }
+
+  /**
    * Apply suggestions with feedback for modification
    */
   async applySuggestionsWithFeedback(suggestions: AIScheduleSuggestion[], feedback: string): Promise<void> {
