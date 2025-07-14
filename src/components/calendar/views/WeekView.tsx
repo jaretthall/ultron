@@ -43,7 +43,7 @@ const WeekView: React.FC<WeekViewProps> = ({
 
     const days = [];
     for (let i = 0; i < 7; i++) {
-      const day = new Date(startOfWeek);
+      const day = new Date(startOfWeek.getTime()); // clone the date
       day.setDate(startOfWeek.getDate() + i);
       days.push(day);
     }
