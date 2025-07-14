@@ -203,9 +203,19 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 overflow-y-auto">
       <div className="bg-white dark:bg-slate-800 rounded-2xl overflow-hidden w-full max-w-2xl mx-4 my-4 sm:my-8 min-h-fit max-h-[95vh] shadow-2xl">
-        <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-6">
+        <div className={`${status === 'completed' ? 'bg-gradient-to-r from-green-600 to-emerald-600' : 'bg-gradient-to-r from-purple-600 to-indigo-600'} text-white p-6`}>
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold">Edit Task</h2>
+            <div className="flex items-center gap-3">
+              <h2 className="text-xl font-semibold">Edit Task</h2>
+              {status === 'completed' && (
+                <span className="inline-flex items-center gap-1 px-2 py-1 bg-white/20 rounded-full text-xs font-medium">
+                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Completed
+                </span>
+              )}
+            </div>
             <button
               type="button"
               onClick={onClose}
@@ -591,6 +601,33 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
                 <option value="completed">Completed</option>
               </select>
             </div>
+
+            {/* Quick Complete Button */}
+            {status !== 'completed' && (
+              <button
+                type="button"
+                onClick={() => {
+                  setStatus('completed');
+                  setProgress(100);
+                }}
+                className="w-full mt-2 px-4 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Mark as Complete
+              </button>
+            )}
+
+            {/* Completed Status Indicator */}
+            {status === 'completed' && (
+              <div className="w-full mt-2 px-4 py-3 bg-green-900/30 border border-green-600 text-green-400 font-medium rounded-lg flex items-center justify-center gap-2">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Task Completed
+              </div>
+            )}
           </div>
 
           {/* Organization Section */}
