@@ -1,6 +1,6 @@
 // Calendar Integration Service
 // Merges tasks, events, schedules, and AI suggestions into unified calendar views
-import { Task, Schedule, DailySchedule } from '../../types';
+import { Task, Schedule, DailySchedule, TaskStatus } from '../../types';
 import { tasksService, schedulesService } from '../../services/databaseService';
 import { getCustomAuthUser } from '../contexts/CustomAuthContext';
 import { HealthBreakPreferences, DEFAULT_HEALTH_BREAK_PREFERENCES } from '../types/userPreferences';
@@ -66,6 +66,65 @@ export class CalendarIntegrationService {
     console.log('🤖 Getting calendar data with fresh AI suggestions reset');
     await this.resetAISuggestions();
     return this.getCalendarData(startDate, endDate);
+  }
+
+  /**
+   * Force regenerate AI suggestions ignoring existing work sessions (for debugging)
+   */
+  async forceRegenerateAISuggestions(startDate: Date, endDate: Date): Promise<CalendarViewData> {
+    console.log('🤖 FORCE REGENERATING AI suggestions - ignoring existing work sessions');
+    try {
+      const user = getCustomAuthUser();
+      if (!user?.id) throw new Error('User not authenticated');
+
+      // Fetch all data sources
+      const [tasks, schedules] = await Promise.all([
+        tasksService.getAll(),
+        schedulesService.getAll()
+      ]);
+      
+      const dailySchedules: DailySchedule[] = [];
+      const filteredTasks = this.filterTasksByDateRange(tasks, startDate, endDate);
+      const filteredSchedules = this.filterSchedulesByDateRange(schedules, startDate, endDate);
+
+      // Convert to calendar events
+      const events: CalendarEvent[] = [
+        ...this.convertTasksToEvents(filteredTasks),
+        ...this.convertSchedulesToEvents(filteredSchedules),
+        ...await this.convertDailySchedulesToEvents(dailySchedules)
+      ];
+
+      // Add health/wellness breaks
+      const healthBreaks = this.generateHealthBreaks(startDate, endDate, events);
+      events.push(...healthBreaks);
+      const wellnessBreaks = this.generateWellnessBreaks(startDate, endDate, events);
+      events.push(...wellnessBreaks);
+
+      // FORCE generate suggestions by temporarily clearing work session data
+      const forcedTasks = tasks.map(task => ({
+        ...task,
+        work_session_scheduled_start: undefined,
+        work_session_scheduled_end: undefined
+      }));
+
+      const suggestions = await this.generateAIScheduleSuggestions(forcedTasks, events);
+
+      const workSessions = events.filter(e => e.type === 'work_session');
+      const deadlines = events.filter(e => e.type === 'deadline');
+      const fixedEvents = events.filter(e => !e.editable);
+
+      return {
+        events,
+        suggestions,
+        workSessions,
+        deadlines,
+        fixedEvents
+      };
+
+    } catch (error) {
+      console.error('Error force generating AI suggestions:', error);
+      throw error;
+    }
   }
 
   /**
@@ -727,10 +786,19 @@ export class CalendarIntegrationService {
       totalEvents: existingEvents.length
     });
     
+    // Debug all tasks to understand filtering
+    console.log('🤖 DEBUG - All tasks received:', tasks.map(t => ({
+      title: t.title,
+      status: t.status,
+      estimated_hours: t.estimated_hours,
+      work_session_scheduled_start: t.work_session_scheduled_start,
+      id: t.id
+    })));
+    
     // Find tasks that need work sessions scheduled
     const unscheduledTasks = tasks.filter(task => {
       const hasWorkSession = !!task.work_session_scheduled_start;
-      const isCompleted = task.status === 'completed';
+      const isCompleted = task.status === TaskStatus.COMPLETED;
       const hasEstimatedHours = task.estimated_hours > 0;
       
       const shouldInclude = !hasWorkSession && !isCompleted && hasEstimatedHours;

@@ -511,8 +511,8 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
                     if (pendingSuggestions > 0) {
                       setShowAISuggestions(!showAISuggestions);
                     } else {
-                      // Generate new AI suggestions
-                      loadCalendarData();
+                      // Generate new AI suggestions with reset
+                      resetAndRefreshAISuggestions();
                     }
                   }}
                   className={`relative ${isMobile ? 'px-2 py-1.5' : 'px-3 py-2'} rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition-colors flex items-center gap-1 sm:gap-2 flex-shrink-0`}
@@ -536,6 +536,32 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
                 >
                   <svg className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} ${isLoading ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                </button>
+
+                {/* Debug Force AI Suggestions Button */}
+                <button
+                  onClick={async () => {
+                    try {
+                      setIsLoading(true);
+                      const { startDate, endDate } = getDateRangeForView(currentDate, viewType);
+                      console.log('🔧 DEBUG: Force regenerating AI suggestions');
+                      const calendarData = await calendarIntegrationService.forceRegenerateAISuggestions(startDate, endDate);
+                      setCalendarEvents(calendarData.events);
+                      setAISuggestions(calendarData.suggestions);
+                      console.log('🔧 DEBUG: Force regenerated suggestions:', calendarData.suggestions.length);
+                    } catch (error) {
+                      console.error('🔧 DEBUG: Error force generating:', error);
+                    } finally {
+                      setIsLoading(false);
+                    }
+                  }}
+                  className={`${isMobile ? 'px-1.5 py-1.5' : 'px-2 py-2'} rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors flex items-center justify-center flex-shrink-0`}
+                  title="DEBUG: Force regenerate AI suggestions"
+                  disabled={isLoading}
+                >
+                  <svg className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </button>
               </div>
