@@ -137,11 +137,19 @@ export class CalendarIntegrationService {
       // Add deadline event if task has due_date
       if (task.due_date) {
         const dueDate = new Date(task.due_date);
+        const endDate = new Date(dueDate);
+        
+        // If the due date has a specific time, make it a 30-minute deadline block for visibility
+        // If it's just a date (midnight), keep it as all-day
+        if (dueDate.getHours() !== 0 || dueDate.getMinutes() !== 0) {
+          endDate.setMinutes(endDate.getMinutes() + 30);
+        }
+        
         events.push({
           id: `deadline-${task.id}`,
-          title: `📅 ${task.title} (Due)`,
+          title: `⏰ ${task.title} (Due)`,
           start: dueDate,
-          end: dueDate,
+          end: endDate,
           type: 'deadline',
           source: 'task',
           editable: false, // Deadlines set by user cannot be changed by AI

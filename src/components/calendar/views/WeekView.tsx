@@ -36,7 +36,9 @@ const WeekView: React.FC<WeekViewProps> = ({
   // Generate week days
   const weekDays = useMemo(() => {
     const startOfWeek = new Date(currentDate);
-    const dayOfWeek = startOfWeek.getDay();
+    let dayOfWeek = startOfWeek.getDay();
+    // Adjust so Monday is 0, Sunday is 6
+    dayOfWeek = (dayOfWeek + 6) % 7;
     startOfWeek.setDate(startOfWeek.getDate() - dayOfWeek);
 
     const days = [];
@@ -240,11 +242,18 @@ const WeekView: React.FC<WeekViewProps> = ({
           {weekDays.map((day) => {
             const dayKey = day.toISOString().split('T')[0];
             const dayTasksAndEvents = (eventsByDay[dayKey] || []).filter(event => {
-              // Show deadlines and all-day events at the top, but NOT time-blocked tasks
-              return (event.type === 'deadline' || 
-                     event.end.getTime() - event.start.getTime() >= 24 * 60 * 60 * 1000 || // 24+ hours
-                     (event.start.getHours() === 0 && event.end.getHours() === 23)) && // All day
-                     !event.metadata?.timeBlocked; // Exclude time-blocked tasks from top section
+              // Show all-day events and deadlines WITHOUT specific times at the top, but NOT time-blocked tasks
+              if (event.metadata?.timeBlocked) return false; // Exclude time-blocked tasks from top section
+              
+              if (event.type === 'deadline') {
+                // Show deadlines at top only if they don't have a specific time (all-day deadlines)
+                return event.start.getHours() === 0 && event.start.getMinutes() === 0 && 
+                       event.end.getHours() === 0 && event.end.getMinutes() === 0;
+              }
+              
+              // Show other all-day events
+              return event.end.getTime() - event.start.getTime() >= 24 * 60 * 60 * 1000 || // 24+ hours
+                     (event.start.getHours() === 0 && event.end.getHours() === 23); // All day
             });
 
             return (
@@ -284,11 +293,20 @@ const WeekView: React.FC<WeekViewProps> = ({
           {weekDays.map((day) => {
             const dayKey = day.toISOString().split('T')[0];
             const dayEvents = (eventsByDay[dayKey] || []).filter(event => {
-              // Show timed events here: work sessions, counseling sessions, and time-blocked tasks
-              return (event.type !== 'deadline' && 
-                     event.end.getTime() - event.start.getTime() < 24 * 60 * 60 * 1000 && // Less than 24 hours
-                     !(event.start.getHours() === 0 && event.end.getHours() === 23)) || // Not all day
-                     event.metadata?.timeBlocked; // Always show time-blocked tasks in the grid
+              // Show timed events here: work sessions, counseling sessions, time-blocked tasks, and timed deadlines
+              
+              // Always show time-blocked tasks in the grid
+              if (event.metadata?.timeBlocked) return true;
+              
+              // Show deadlines that have specific times
+              if (event.type === 'deadline') {
+                return !(event.start.getHours() === 0 && event.start.getMinutes() === 0 && 
+                        event.end.getHours() === 0 && event.end.getMinutes() === 0);
+              }
+              
+              // Show other timed events (not all-day)
+              return event.end.getTime() - event.start.getTime() < 24 * 60 * 60 * 1000 && // Less than 24 hours
+                     !(event.start.getHours() === 0 && event.end.getHours() === 23); // Not all day
             });
 
             return (
