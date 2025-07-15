@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { shoppingListsService } from '../../../services/databaseService';
 
 interface ShoppingItem {
   id: string;
   text: string;
   completed: boolean;
-  created_at: Date;
+  position: number;
+  list_id: string;
+  created_at: string;
 }
 
 interface ShoppingList {
@@ -12,8 +15,9 @@ interface ShoppingList {
   name: string;
   category: 'grocery' | 'hardware' | 'general' | 'amazon' | 'custom';
   items: ShoppingItem[];
-  created_at: Date;
-  updated_at: Date;
+  created_at: string;
+  updated_at: string;
+  user_id?: string;
 }
 
 interface ShoppingListsWidgetProps {
@@ -75,129 +79,143 @@ const ShoppingListsWidget: React.FC<ShoppingListsWidgetProps> = ({ className = '
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
-  // Load shopping lists from localStorage on component mount
+  // Load shopping lists from database on component mount
   useEffect(() => {
-    const savedLists = localStorage.getItem('ultron-shopping-lists');
-    if (savedLists) {
-      try {
-        const parsedLists = JSON.parse(savedLists).map((list: any) => ({
-          ...list,
-          created_at: new Date(list.created_at),
-          updated_at: new Date(list.updated_at),
-          items: list.items.map((item: any) => ({
-            ...item,
-            created_at: new Date(item.created_at)
-          }))
-        }));
-        setLists(parsedLists);
-        if (parsedLists.length > 0) {
-          setSelectedList(parsedLists[0]);
-        }
-      } catch (error) {
-        console.error('Error loading shopping lists:', error);
-      }
-    }
+    loadLists();
   }, []);
 
-  // Save shopping lists to localStorage whenever lists change
-  useEffect(() => {
-    localStorage.setItem('ultron-shopping-lists', JSON.stringify(lists));
-  }, [lists]);
-
-  const createNewList = () => {
-    if (!newListName.trim()) return;
-
-    const newList: ShoppingList = {
-      id: `list-${Date.now()}`,
-      name: newListName.trim(),
-      category: newListCategory,
-      items: [],
-      created_at: new Date(),
-      updated_at: new Date()
-    };
-
-    setLists(prev => [newList, ...prev]);
-    setSelectedList(newList);
-    setNewListName('');
-    setShowCreateForm(false);
-  };
-
-  const deleteList = (listId: string) => {
-    setLists(prev => prev.filter(list => list.id !== listId));
-    if (selectedList?.id === listId) {
-      const remainingLists = lists.filter(list => list.id !== listId);
-      setSelectedList(remainingLists.length > 0 ? remainingLists[0] : null);
+  const loadLists = async () => {
+    try {
+      const loadedLists = await shoppingListsService.getAll();
+      setLists(loadedLists);
+      if (loadedLists.length > 0) {
+        setSelectedList(loadedLists[0]);
+      }
+    } catch (error) {
+      console.error('Error loading shopping lists:', error);
     }
   };
 
-  const addItem = () => {
+  // Removed localStorage saving - now using database
+
+  const createNewList = async () => {
+    if (!newListName.trim()) return;
+
+    try {
+      const newList = await shoppingListsService.create({
+        name: newListName.trim(),
+        category: newListCategory
+      });
+
+      setLists(prev => [newList, ...prev]);
+      setSelectedList(newList);
+      setNewListName('');
+      setShowCreateForm(false);
+    } catch (error) {
+      console.error('Error creating list:', error);
+    }
+  };
+
+  const deleteList = async (listId: string) => {
+    try {
+      await shoppingListsService.delete(listId);
+      setLists(prev => prev.filter(list => list.id !== listId));
+      if (selectedList?.id === listId) {
+        const remainingLists = lists.filter(list => list.id !== listId);
+        setSelectedList(remainingLists.length > 0 ? remainingLists[0] : null);
+      }
+    } catch (error) {
+      console.error('Error deleting list:', error);
+    }
+  };
+
+  const addItem = async () => {
     if (!selectedList || !newItemText.trim()) return;
 
-    const newItem: ShoppingItem = {
-      id: `item-${Date.now()}`,
-      text: newItemText.trim(),
-      completed: false,
-      created_at: new Date()
-    };
+    try {
+      const newItem = await shoppingListsService.addItem(
+        selectedList.id,
+        newItemText.trim()
+      );
 
-    const updatedList = {
-      ...selectedList,
-      items: [...selectedList.items, newItem],
-      updated_at: new Date()
-    };
+      const updatedList = {
+        ...selectedList,
+        items: [...selectedList.items, newItem]
+      };
 
-    setLists(prev => prev.map(list => 
-      list.id === selectedList.id ? updatedList : list
-    ));
-    setSelectedList(updatedList);
-    setNewItemText('');
+      setLists(prev => prev.map(list => 
+        list.id === selectedList.id ? updatedList : list
+      ));
+      setSelectedList(updatedList);
+      setNewItemText('');
+    } catch (error) {
+      console.error('Error adding item:', error);
+    }
   };
 
-  const toggleItem = (itemId: string) => {
+  const toggleItem = async (itemId: string) => {
     if (!selectedList) return;
 
-    const updatedList = {
-      ...selectedList,
-      items: selectedList.items.map(item =>
-        item.id === itemId ? { ...item, completed: !item.completed } : item
-      ),
-      updated_at: new Date()
-    };
+    const item = selectedList.items.find(i => i.id === itemId);
+    if (!item) return;
 
-    setLists(prev => prev.map(list => 
-      list.id === selectedList.id ? updatedList : list
-    ));
-    setSelectedList(updatedList);
+    try {
+      await shoppingListsService.toggleItem(itemId, !item.completed);
+
+      const updatedList = {
+        ...selectedList,
+        items: selectedList.items.map(i =>
+          i.id === itemId ? { ...i, completed: !i.completed } : i
+        )
+      };
+
+      setLists(prev => prev.map(list => 
+        list.id === selectedList.id ? updatedList : list
+      ));
+      setSelectedList(updatedList);
+    } catch (error) {
+      console.error('Error toggling item:', error);
+    }
   };
 
-  const deleteItem = (itemId: string) => {
+  const deleteItem = async (itemId: string) => {
     if (!selectedList) return;
 
-    const updatedList = {
-      ...selectedList,
-      items: selectedList.items.filter(item => item.id !== itemId),
-      updated_at: new Date()
-    };
+    try {
+      await shoppingListsService.deleteItem(itemId);
 
-    setLists(prev => prev.map(list => 
-      list.id === selectedList.id ? updatedList : list
-    ));
-    setSelectedList(updatedList);
+      const updatedList = {
+        ...selectedList,
+        items: selectedList.items.filter(item => item.id !== itemId)
+      };
+
+      setLists(prev => prev.map(list => 
+        list.id === selectedList.id ? updatedList : list
+      ));
+      setSelectedList(updatedList);
+    } catch (error) {
+      console.error('Error deleting item:', error);
+    }
   };
 
-  const clearCompleted = () => {
+  const clearCompleted = async () => {
     if (!selectedList) return;
 
-    const updatedList = {
-      ...selectedList,
-      items: selectedList.items.filter(item => !item.completed),
-      updated_at: new Date()
-    };
+    try {
+      await shoppingListsService.clearCompleted(selectedList.id);
 
-    setLists(prev => prev.map(list => 
-      list.id === selectedList.id ? updatedList : list
-    ));
-    setSelectedList(updatedList);
+      const updatedList = {
+        ...selectedList,
+        items: selectedList.items.filter(item => !item.completed)
+      };
+
+      setLists(prev => prev.map(list => 
+        list.id === selectedList.id ? updatedList : list
+      ));
+      setSelectedList(updatedList);
+    } catch (error) {
+      console.error('Error clearing completed items:', error);
+    }
   };
 
   const getListStats = (list: ShoppingList) => {
@@ -279,7 +297,7 @@ const ShoppingListsWidget: React.FC<ShoppingListsWidgetProps> = ({ className = '
 
       {/* Data Persistence Notice */}
       <div className="mb-3 p-2 bg-green-900/30 border border-green-500/30 rounded text-xs text-green-300">
-        📭 Lists are saved locally on this device/browser. For cross-device access, consider using a shared notes app.
+        ✅ Shopping lists are saved in the cloud and sync across all your devices!
       </div>
 
       <div className={`grid gap-4 ${

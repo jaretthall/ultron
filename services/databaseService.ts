@@ -2443,4 +2443,291 @@ export const authService = {
   }
 };
 
+// Notes Service
+export const notesService = {
+  async getAll(): Promise<any[]> {
+    if (!supabase) throw enhanceError(new Error('Supabase client not initialized'), 'notesService.getAll');
+    
+    const user = getCustomAuthUser();
+    if (!user?.id) throw enhanceError(new Error('User not authenticated'), 'notesService.getAll');
+    
+    return RetryableOperations.databaseRead(async () => {
+      const { data, error } = await supabase!
+        .from('notes')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('updated_at', { ascending: false });
+      
+      if (error) handleError('fetching notes', error);
+      return data || [];
+    }, 'notesService.getAll');
+  },
+
+  async create(note: { title: string; content: string }): Promise<any> {
+    if (!supabase) throw enhanceError(new Error('Supabase client not initialized'), 'notesService.create');
+    
+    const user = getCustomAuthUser();
+    if (!user?.id) throw enhanceError(new Error('User not authenticated'), 'notesService.create');
+    
+    return RetryableOperations.databaseWrite(async () => {
+      const { data, error } = await supabase!
+        .from('notes')
+        .insert({
+          user_id: user.id,
+          title: note.title,
+          content: note.content
+        })
+        .select()
+        .single();
+      
+      if (error) handleError('creating note', error);
+      return data;
+    }, 'notesService.create');
+  },
+
+  async update(id: string, updates: { title?: string; content?: string }): Promise<any> {
+    if (!supabase) throw enhanceError(new Error('Supabase client not initialized'), 'notesService.update');
+    
+    const user = getCustomAuthUser();
+    if (!user?.id) throw enhanceError(new Error('User not authenticated'), 'notesService.update');
+    
+    return RetryableOperations.databaseWrite(async () => {
+      const { data, error } = await supabase!
+        .from('notes')
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .select()
+        .single();
+      
+      if (error) handleError('updating note', error);
+      return data;
+    }, 'notesService.update');
+  },
+
+  async delete(id: string): Promise<void> {
+    if (!supabase) throw enhanceError(new Error('Supabase client not initialized'), 'notesService.delete');
+    
+    const user = getCustomAuthUser();
+    if (!user?.id) throw enhanceError(new Error('User not authenticated'), 'notesService.delete');
+    
+    return RetryableOperations.databaseWrite(async () => {
+      const { error } = await supabase!
+        .from('notes')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.id);
+      
+      if (error) handleError('deleting note', error);
+    }, 'notesService.delete');
+  }
+};
+
+// Shopping Lists Service
+export const shoppingListsService = {
+  async getAll(): Promise<any[]> {
+    if (!supabase) throw enhanceError(new Error('Supabase client not initialized'), 'shoppingListsService.getAll');
+    
+    const user = getCustomAuthUser();
+    if (!user?.id) throw enhanceError(new Error('User not authenticated'), 'shoppingListsService.getAll');
+    
+    return RetryableOperations.databaseRead(async () => {
+      const { data, error } = await supabase!
+        .from('shopping_lists')
+        .select(`
+          *,
+          items:shopping_list_items(*)
+        `)
+        .eq('user_id', user.id)
+        .order('updated_at', { ascending: false });
+      
+      if (error) handleError('fetching shopping lists', error);
+      
+      // Sort items by position
+      return (data || []).map(list => ({
+        ...list,
+        items: (list.items || []).sort((a: any, b: any) => a.position - b.position)
+      }));
+    }, 'shoppingListsService.getAll');
+  },
+
+  async create(list: { name: string; category: string }): Promise<any> {
+    if (!supabase) throw enhanceError(new Error('Supabase client not initialized'), 'shoppingListsService.create');
+    
+    const user = getCustomAuthUser();
+    if (!user?.id) throw enhanceError(new Error('User not authenticated'), 'shoppingListsService.create');
+    
+    return RetryableOperations.databaseWrite(async () => {
+      const { data, error } = await supabase!
+        .from('shopping_lists')
+        .insert({
+          user_id: user.id,
+          name: list.name,
+          category: list.category
+        })
+        .select()
+        .single();
+      
+      if (error) handleError('creating shopping list', error);
+      return { ...data, items: [] };
+    }, 'shoppingListsService.create');
+  },
+
+  async update(id: string, updates: { name?: string; category?: string }): Promise<any> {
+    if (!supabase) throw enhanceError(new Error('Supabase client not initialized'), 'shoppingListsService.update');
+    
+    const user = getCustomAuthUser();
+    if (!user?.id) throw enhanceError(new Error('User not authenticated'), 'shoppingListsService.update');
+    
+    return RetryableOperations.databaseWrite(async () => {
+      const { data, error } = await supabase!
+        .from('shopping_lists')
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .select()
+        .single();
+      
+      if (error) handleError('updating shopping list', error);
+      return data;
+    }, 'shoppingListsService.update');
+  },
+
+  async delete(id: string): Promise<void> {
+    if (!supabase) throw enhanceError(new Error('Supabase client not initialized'), 'shoppingListsService.delete');
+    
+    const user = getCustomAuthUser();
+    if (!user?.id) throw enhanceError(new Error('User not authenticated'), 'shoppingListsService.delete');
+    
+    return RetryableOperations.databaseWrite(async () => {
+      const { error } = await supabase!
+        .from('shopping_lists')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.id);
+      
+      if (error) handleError('deleting shopping list', error);
+    }, 'shoppingListsService.delete');
+  },
+
+  // Shopping List Items methods
+  async addItem(listId: string, text: string): Promise<any> {
+    if (!supabase) throw enhanceError(new Error('Supabase client not initialized'), 'shoppingListsService.addItem');
+    
+    const user = getCustomAuthUser();
+    if (!user?.id) throw enhanceError(new Error('User not authenticated'), 'shoppingListsService.addItem');
+    
+    return RetryableOperations.databaseWrite(async () => {
+      // Get current max position
+      const { data: items } = await supabase!
+        .from('shopping_list_items')
+        .select('position')
+        .eq('list_id', listId)
+        .order('position', { ascending: false })
+        .limit(1);
+      
+      const maxPosition = items?.[0]?.position || 0;
+      
+      const { data, error } = await supabase!
+        .from('shopping_list_items')
+        .insert({
+          list_id: listId,
+          text,
+          position: maxPosition + 1
+        })
+        .select()
+        .single();
+      
+      if (error) handleError('adding shopping list item', error);
+      
+      // Update list's updated_at
+      await supabase!
+        .from('shopping_lists')
+        .update({ updated_at: new Date().toISOString() })
+        .eq('id', listId);
+      
+      return data;
+    }, 'shoppingListsService.addItem');
+  },
+
+  async toggleItem(itemId: string, completed: boolean): Promise<any> {
+    if (!supabase) throw enhanceError(new Error('Supabase client not initialized'), 'shoppingListsService.toggleItem');
+    
+    return RetryableOperations.databaseWrite(async () => {
+      const { data, error } = await supabase!
+        .from('shopping_list_items')
+        .update({ completed })
+        .eq('id', itemId)
+        .select('list_id')
+        .single();
+      
+      if (error) handleError('toggling shopping list item', error);
+      
+      // Update list's updated_at
+      if (data?.list_id) {
+        await supabase!
+          .from('shopping_lists')
+          .update({ updated_at: new Date().toISOString() })
+          .eq('id', data.list_id);
+      }
+      
+      return data;
+    }, 'shoppingListsService.toggleItem');
+  },
+
+  async deleteItem(itemId: string): Promise<void> {
+    if (!supabase) throw enhanceError(new Error('Supabase client not initialized'), 'shoppingListsService.deleteItem');
+    
+    return RetryableOperations.databaseWrite(async () => {
+      // Get the list_id before deletion
+      const { data: item } = await supabase!
+        .from('shopping_list_items')
+        .select('list_id')
+        .eq('id', itemId)
+        .single();
+      
+      const { error } = await supabase!
+        .from('shopping_list_items')
+        .delete()
+        .eq('id', itemId);
+      
+      if (error) handleError('deleting shopping list item', error);
+      
+      // Update list's updated_at
+      if (item?.list_id) {
+        await supabase!
+          .from('shopping_lists')
+          .update({ updated_at: new Date().toISOString() })
+          .eq('id', item.list_id);
+      }
+    }, 'shoppingListsService.deleteItem');
+  },
+
+  async clearCompleted(listId: string): Promise<void> {
+    if (!supabase) throw enhanceError(new Error('Supabase client not initialized'), 'shoppingListsService.clearCompleted');
+    
+    return RetryableOperations.databaseWrite(async () => {
+      const { error } = await supabase!
+        .from('shopping_list_items')
+        .delete()
+        .eq('list_id', listId)
+        .eq('completed', true);
+      
+      if (error) handleError('clearing completed items', error);
+      
+      // Update list's updated_at
+      await supabase!
+        .from('shopping_lists')
+        .update({ updated_at: new Date().toISOString() })
+        .eq('id', listId);
+    }, 'shoppingListsService.clearCompleted');
+  }
+};
+
 export { DatabaseServiceError }; 

@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { notesService } from '../../../services/databaseService';
 
 interface Note {
   id: string;
   title: string;
   content: string;
-  created_at: Date;
-  updated_at: Date;
+  created_at: string;
+  updated_at: string;
+  user_id?: string;
 }
 
 interface NotesWidgetProps {
@@ -34,27 +36,21 @@ const NotesWidget: React.FC<NotesWidgetProps> = ({ className = '' }) => {
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
-  // Load notes from localStorage on component mount
+  // Load notes from database on component mount
   useEffect(() => {
-    const savedNotes = localStorage.getItem('ultron-notes');
-    if (savedNotes) {
-      try {
-        const parsedNotes = JSON.parse(savedNotes).map((note: any) => ({
-          ...note,
-          created_at: new Date(note.created_at),
-          updated_at: new Date(note.updated_at)
-        }));
-        setNotes(parsedNotes);
-      } catch (error) {
-        console.error('Error loading notes:', error);
-      }
-    }
+    loadNotes();
   }, []);
 
-  // Save notes to localStorage whenever notes change
-  useEffect(() => {
-    localStorage.setItem('ultron-notes', JSON.stringify(notes));
-  }, [notes]);
+  const loadNotes = async () => {
+    try {
+      const loadedNotes = await notesService.getAll();
+      setNotes(loadedNotes);
+    } catch (error) {
+      console.error('Error loading notes:', error);
+    }
+  };
+
+  // Removed localStorage saving - now using database
 
   // Auto-resize textarea
   useEffect(() => {
@@ -64,43 +60,51 @@ const NotesWidget: React.FC<NotesWidgetProps> = ({ className = '' }) => {
     }
   }, [editContent]);
 
-  const createNewNote = () => {
-    const newNote: Note = {
-      id: `note-${Date.now()}`,
-      title: 'New Note',
-      content: '',
-      created_at: new Date(),
-      updated_at: new Date()
-    };
-    setNotes(prev => [newNote, ...prev]);
-    setSelectedNote(newNote);
-    setEditTitle(newNote.title);
-    setEditContent(newNote.content);
-    setIsEditing(true);
+  const createNewNote = async () => {
+    try {
+      const newNote = await notesService.create({
+        title: 'New Note',
+        content: ''
+      });
+      setNotes(prev => [newNote, ...prev]);
+      setSelectedNote(newNote);
+      setEditTitle(newNote.title);
+      setEditContent(newNote.content);
+      setIsEditing(true);
+    } catch (error) {
+      console.error('Error creating note:', error);
+    }
   };
 
-  const saveNote = () => {
+  const saveNote = async () => {
     if (!selectedNote) return;
 
-    const updatedNote = {
-      ...selectedNote,
-      title: editTitle.trim() || 'Untitled Note',
-      content: editContent,
-      updated_at: new Date()
-    };
+    try {
+      const updatedNote = await notesService.update(selectedNote.id, {
+        title: editTitle.trim() || 'Untitled Note',
+        content: editContent
+      });
 
-    setNotes(prev => prev.map(note => 
-      note.id === selectedNote.id ? updatedNote : note
-    ));
-    setSelectedNote(updatedNote);
-    setIsEditing(false);
+      setNotes(prev => prev.map(note => 
+        note.id === selectedNote.id ? updatedNote : note
+      ));
+      setSelectedNote(updatedNote);
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error saving note:', error);
+    }
   };
 
-  const deleteNote = (noteId: string) => {
-    setNotes(prev => prev.filter(note => note.id !== noteId));
-    if (selectedNote?.id === noteId) {
-      setSelectedNote(null);
-      setIsEditing(false);
+  const deleteNote = async (noteId: string) => {
+    try {
+      await notesService.delete(noteId);
+      setNotes(prev => prev.filter(note => note.id !== noteId));
+      if (selectedNote?.id === noteId) {
+        setSelectedNote(null);
+        setIsEditing(false);
+      }
+    } catch (error) {
+      console.error('Error deleting note:', error);
     }
   };
 
@@ -128,7 +132,8 @@ const NotesWidget: React.FC<NotesWidgetProps> = ({ className = '' }) => {
     }
   };
 
-  const formatDate = (date: Date) => {
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
@@ -196,8 +201,8 @@ const NotesWidget: React.FC<NotesWidgetProps> = ({ className = '' }) => {
       </div>
 
       {/* Data Persistence Notice */}
-      <div className="mb-3 p-2 bg-blue-900/30 border border-blue-500/30 rounded text-xs text-blue-300">
-        📱 Notes are saved locally on this device/browser. For cross-device sync, consider using a cloud notes app.
+      <div className="mb-3 p-2 bg-green-900/30 border border-green-500/30 rounded text-xs text-green-300">
+        ✅ Notes are saved in the cloud and sync across all your devices!
       </div>
 
       <div className={`grid gap-4 ${
@@ -373,7 +378,7 @@ const NotesWidget: React.FC<NotesWidgetProps> = ({ className = '' }) => {
                     </div>
                     <div className="mt-4 pt-2 border-t border-slate-600 text-xs text-slate-500">
                       Created: {formatDate(selectedNote.created_at)}
-                      {selectedNote.updated_at.getTime() !== selectedNote.created_at.getTime() && (
+                      {selectedNote.updated_at !== selectedNote.created_at && (
                         <span className="ml-4">
                           Updated: {formatDate(selectedNote.updated_at)}
                         </span>
