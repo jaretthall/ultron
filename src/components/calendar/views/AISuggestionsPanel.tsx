@@ -65,8 +65,10 @@ const AISuggestionsPanel: React.FC<AISuggestionsPanelProps> = ({
 
   // Filter and sort suggestions
   const pendingSuggestions = useMemo(() => {
-    return suggestions
-      .filter(s => s.status === 'pending')
+    const filtered = suggestions.filter(s => s.status === 'pending');
+    console.log('🤖 AISuggestionsPanel - Pending suggestions:', filtered.length, 'of', suggestions.length, 'total');
+    
+    return filtered
       .sort((a, b) => {
         if (viewMode === 'chronological') {
           // Sort by suggested start time for chronological view
@@ -143,7 +145,7 @@ const AISuggestionsPanel: React.FC<AISuggestionsPanelProps> = ({
     setShowModifyTimeModal(true);
   };
 
-  const handleSaveModifiedTime = (suggestion: AIScheduleSuggestion, newStart: Date, newEnd: Date) => {
+  const handleSaveModifiedTime = async (suggestion: AIScheduleSuggestion, newStart: Date, newEnd: Date) => {
     // Create a modified suggestion
     const modifiedSuggestion: AIScheduleSuggestion = {
       ...suggestion,
@@ -153,9 +155,12 @@ const AISuggestionsPanel: React.FC<AISuggestionsPanelProps> = ({
     };
     
     // Approve the modified suggestion
-    onApprove(modifiedSuggestion);
+    await onApprove(modifiedSuggestion);
     setShowModifyTimeModal(false);
     setSelectedSuggestion(null);
+    
+    // Don't close the panel - let user see remaining suggestions
+    // The panel will close when all suggestions are processed or user clicks close
   };
 
   // Get confidence color

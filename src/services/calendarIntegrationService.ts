@@ -1002,6 +1002,14 @@ export class CalendarIntegrationService {
       }
       
       console.log(`🤖 Looking for slots from: ${startLookingFrom.toLocaleString()}`);
+      console.log(`🤖 Existing events to check conflicts against:`, existingEvents.map(e => ({
+        title: e.title,
+        start: e.start.toLocaleString(),
+        end: e.end.toLocaleString(),
+        source: e.source,
+        type: e.type,
+        editable: e.editable
+      })));
 
       // Find available slot within the next 7 days
       for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
@@ -1039,6 +1047,8 @@ export class CalendarIntegrationService {
           const slotStart = new Date(checkDate);
           slotStart.setHours(hour, 0, 0, 0);
           const slotEnd = new Date(slotStart.getTime() + sessionDuration);
+          
+          console.log(`🤖 Checking slot: ${slotStart.toLocaleString()} - ${slotEnd.toLocaleString()}`);
 
 
           // Apply hour-based context filtering
@@ -1056,10 +1066,28 @@ export class CalendarIntegrationService {
           // 'inherited' or undefined context - no hour restrictions
 
           // Check if slot conflicts with existing events
+          // AI can override its own suggestions but not user-created events
           const conflictingEvents = existingEvents.filter(event => 
             (slotStart < event.end && slotEnd > event.start)
           );
-          const hasConflict = conflictingEvents.length > 0;
+          
+          // Filter out AI-generated events that can be overridden
+          const nonOverridableConflicts = conflictingEvents.filter(event => {
+            // AI can override its own suggestions and wellness breaks
+            const canOverride = event.source === 'ai_generated' || 
+                               event.type === 'wellness_break' || 
+                               event.type === 'health_break' ||
+                               (event.source === 'manual' && event.editable);
+            
+            console.log(`🤖 Conflict check: "${event.title}" (${event.source}, ${event.type}) - Can override: ${canOverride}`);
+            return !canOverride;
+          });
+          
+          const hasConflict = nonOverridableConflicts.length > 0;
+          
+          if (conflictingEvents.length > 0 && !hasConflict) {
+            console.log(`🤖 ⚠️ Overriding AI suggestions: ${conflictingEvents.map(e => e.title).join(', ')}`);
+          }
 
           if (!hasConflict) {
             console.log(`🤖 ✅ Found slot: ${slotStart.toLocaleString()}`);

@@ -59,6 +59,7 @@ const TaskManagementPage: React.FC<TaskManagementPageProps> = ({
   const [projectFilter, setProjectFilter] = useState('All Projects');
   const [statusFilter, setStatusFilter] = useState<TaskStatus | 'All' | 'Active'>('Active');
   const [categoryFilter, setCategoryFilter] = useState('All Categories');
+  const [sortBy, setSortBy] = useState<'due_date' | 'priority' | 'title' | 'created_at'>('due_date');
   const [viewMode, setViewMode] = useState<'list' | 'grid' | 'graph'>('list');
   const [isModalOpen, setIsModalOpen] = useState(false);
   // const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -69,7 +70,7 @@ const TaskManagementPage: React.FC<TaskManagementPageProps> = ({
   }, [projects]);
 
   const filteredTasks = useMemo(() => {
-    return tasks.filter(task => {
+    const filtered = tasks.filter(task => {
       const searchMatch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           task.title.toLowerCase().includes(searchTerm.toLowerCase());
       const projectMatch = projectFilter === 'All Projects' ||
@@ -85,7 +86,35 @@ const TaskManagementPage: React.FC<TaskManagementPageProps> = ({
 
       return searchMatch && projectMatch && statusMatch;
     });
-  }, [tasks, searchTerm, projectFilter, statusFilter]);
+
+    // Sort the filtered tasks
+    return filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'due_date':
+          // Tasks with due dates first, sorted by urgency (earliest first)
+          // Tasks without due dates go to the end
+          if (!a.due_date && !b.due_date) return 0;
+          if (!a.due_date) return 1;
+          if (!b.due_date) return -1;
+          return new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
+        
+        case 'priority':
+          const priorityOrder = { 'urgent': 4, 'high': 3, 'medium': 2, 'low': 1 };
+          return (priorityOrder[b.priority] || 0) - (priorityOrder[a.priority] || 0);
+        
+        case 'title':
+          return a.title.localeCompare(b.title);
+        
+        case 'created_at':
+          const bDate = b.created_at ? new Date(b.created_at).getTime() : 0;
+          const aDate = a.created_at ? new Date(a.created_at).getTime() : 0;
+          return bDate - aDate;
+        
+        default:
+          return 0;
+      }
+    });
+  }, [tasks, searchTerm, projectFilter, statusFilter, sortBy]);
 
   const getProjectTitle = (pId?: string): string => {
     if (!pId) return "Standalone";
@@ -150,6 +179,17 @@ const TaskManagementPage: React.FC<TaskManagementPageProps> = ({
           <option value={TaskStatus.TODO}>Todo</option>
           <option value={TaskStatus.IN_PROGRESS}>In Progress</option>
           <option value={TaskStatus.COMPLETED}>Completed</option>
+        </select>
+        <select
+            value={sortBy}
+            onChange={e => setSortBy(e.target.value as 'due_date' | 'priority' | 'title' | 'created_at')}
+            className="bg-slate-700 border-slate-600 rounded-md text-sm py-2 px-3 focus:ring-sky-500 focus:border-sky-500"
+            aria-label="Sort tasks"
+        >
+          <option value="due_date">📅 Due Date (Earliest First)</option>
+          <option value="priority">🚨 Priority (Urgent First)</option>
+          <option value="title">📝 Title (A-Z)</option>
+          <option value="created_at">🕐 Created Date (Newest First)</option>
         </select>
         <select
             value={categoryFilter}
