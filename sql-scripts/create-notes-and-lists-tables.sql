@@ -42,29 +42,29 @@ ALTER TABLE shopping_list_items ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for notes
 CREATE POLICY "Users can view their own notes" ON notes
-    FOR SELECT USING (auth.uid() = user_id);
+    FOR SELECT USING (auth.uid()::uuid = user_id);
 
 CREATE POLICY "Users can create their own notes" ON notes
-    FOR INSERT WITH CHECK (auth.uid() = user_id);
+    FOR INSERT WITH CHECK (auth.uid()::uuid = user_id);
 
 CREATE POLICY "Users can update their own notes" ON notes
-    FOR UPDATE USING (auth.uid() = user_id);
+    FOR UPDATE USING (auth.uid()::uuid = user_id);
 
 CREATE POLICY "Users can delete their own notes" ON notes
-    FOR DELETE USING (auth.uid() = user_id);
+    FOR DELETE USING (auth.uid()::uuid = user_id);
 
 -- RLS Policies for shopping_lists
 CREATE POLICY "Users can view their own shopping lists" ON shopping_lists
-    FOR SELECT USING (auth.uid() = user_id);
+    FOR SELECT USING (auth.uid()::uuid = user_id);
 
 CREATE POLICY "Users can create their own shopping lists" ON shopping_lists
-    FOR INSERT WITH CHECK (auth.uid() = user_id);
+    FOR INSERT WITH CHECK (auth.uid()::uuid = user_id);
 
 CREATE POLICY "Users can update their own shopping lists" ON shopping_lists
-    FOR UPDATE USING (auth.uid() = user_id);
+    FOR UPDATE USING (auth.uid()::uuid = user_id);
 
 CREATE POLICY "Users can delete their own shopping lists" ON shopping_lists
-    FOR DELETE USING (auth.uid() = user_id);
+    FOR DELETE USING (auth.uid()::uuid = user_id);
 
 -- RLS Policies for shopping_list_items
 CREATE POLICY "Users can view items in their lists" ON shopping_list_items
@@ -72,7 +72,7 @@ CREATE POLICY "Users can view items in their lists" ON shopping_list_items
         EXISTS (
             SELECT 1 FROM shopping_lists 
             WHERE shopping_lists.id = shopping_list_items.list_id 
-            AND shopping_lists.user_id = auth.uid()
+            AND shopping_lists.user_id = auth.uid()::uuid
         )
     );
 
@@ -81,7 +81,7 @@ CREATE POLICY "Users can create items in their lists" ON shopping_list_items
         EXISTS (
             SELECT 1 FROM shopping_lists 
             WHERE shopping_lists.id = shopping_list_items.list_id 
-            AND shopping_lists.user_id = auth.uid()
+            AND shopping_lists.user_id = auth.uid()::uuid
         )
     );
 
@@ -90,7 +90,7 @@ CREATE POLICY "Users can update items in their lists" ON shopping_list_items
         EXISTS (
             SELECT 1 FROM shopping_lists 
             WHERE shopping_lists.id = shopping_list_items.list_id 
-            AND shopping_lists.user_id = auth.uid()
+            AND shopping_lists.user_id = auth.uid()::uuid
         )
     );
 
@@ -99,7 +99,7 @@ CREATE POLICY "Users can delete items from their lists" ON shopping_list_items
         EXISTS (
             SELECT 1 FROM shopping_lists 
             WHERE shopping_lists.id = shopping_list_items.list_id 
-            AND shopping_lists.user_id = auth.uid()
+            AND shopping_lists.user_id = auth.uid()::uuid
         )
     );
 

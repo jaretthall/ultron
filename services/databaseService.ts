@@ -2455,7 +2455,6 @@ export const notesService = {
       const { data, error } = await supabase!
         .from('notes')
         .select('*')
-        .eq('user_id', user.id)
         .order('updated_at', { ascending: false });
       
       if (error) handleError('fetching notes', error);
@@ -2541,7 +2540,6 @@ export const shoppingListsService = {
           *,
           items:shopping_list_items(*)
         `)
-        .eq('user_id', user.id)
         .order('updated_at', { ascending: false });
       
       if (error) handleError('fetching shopping lists', error);
