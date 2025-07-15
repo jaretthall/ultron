@@ -18,7 +18,21 @@ const NotesWidget: React.FC<NotesWidgetProps> = ({ className = '' }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
+  const [isMobile, setIsMobile] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Detect screen size
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 768);
+      setIsTablet(window.innerWidth >= 768 && window.innerWidth < 1024);
+    };
+    
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
 
   // Load notes from localStorage on component mount
   useEffect(() => {
@@ -181,13 +195,26 @@ const NotesWidget: React.FC<NotesWidgetProps> = ({ className = '' }) => {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-96">
+      {/* Data Persistence Notice */}
+      <div className="mb-3 p-2 bg-blue-900/30 border border-blue-500/30 rounded text-xs text-blue-300">
+        📱 Notes are saved locally on this device/browser. For cross-device sync, consider using a cloud notes app.
+      </div>
+
+      <div className={`grid gap-4 ${
+        isMobile 
+          ? 'grid-cols-1 h-auto' 
+          : isTablet 
+          ? 'grid-cols-1 h-auto' 
+          : 'grid-cols-2 h-96'
+      }`}>
         {/* Notes List */}
         <div className="border border-slate-600 rounded-lg overflow-hidden">
           <div className="bg-slate-700 px-3 py-2 border-b border-slate-600">
             <h3 className="text-sm font-medium text-slate-300">Notes ({notes.length})</h3>
           </div>
-          <div className="overflow-y-auto h-80">
+          <div className={`overflow-y-auto ${
+            isMobile || isTablet ? 'h-64' : 'h-80'
+          }`}>
             {notes.length === 0 ? (
               <div className="p-4 text-center text-slate-400">
                 <svg className="w-12 h-12 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -239,7 +266,9 @@ const NotesWidget: React.FC<NotesWidgetProps> = ({ className = '' }) => {
         </div>
 
         {/* Note Editor */}
-        <div className="border border-slate-600 rounded-lg overflow-hidden">
+        <div className={`border border-slate-600 rounded-lg overflow-hidden ${
+          isMobile || isTablet ? 'mt-4' : ''
+        }`}>
           <div className="bg-slate-700 px-3 py-2 border-b border-slate-600">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-medium text-slate-300">
@@ -275,7 +304,9 @@ const NotesWidget: React.FC<NotesWidgetProps> = ({ className = '' }) => {
             </div>
           </div>
 
-          <div className="h-80 overflow-y-auto">
+          <div className={`overflow-y-auto ${
+            isMobile || isTablet ? 'h-64' : 'h-80'
+          }`}>
             {selectedNote ? (
               <div className="p-3 h-full">
                 {isEditing ? (

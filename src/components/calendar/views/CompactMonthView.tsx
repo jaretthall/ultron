@@ -25,18 +25,20 @@ const CompactMonthView: React.FC<CompactMonthViewProps> = ({
   onEventClick
 }) => {
   const [isMobile, setIsMobile] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
   const [hoveredEvent, setHoveredEvent] = useState<CalendarEvent | null>(null);
   const [hoverPosition, setHoverPosition] = useState({ x: 0, y: 0 });
 
-  // Detect mobile screen size
+  // Detect screen size for responsive design
   useEffect(() => {
-    const checkMobile = () => {
+    const checkScreenSize = () => {
       setIsMobile(window.innerWidth < 768);
+      setIsTablet(window.innerWidth >= 768 && window.innerWidth < 1024);
     };
     
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
   const daysOfWeek = useMemo(() => ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], []);
@@ -257,7 +259,7 @@ const CompactMonthView: React.FC<CompactMonthViewProps> = ({
         {monthGrid.map((day) => {
           const dateKey = day.date.toISOString().split('T')[0];
           const dayIcons = iconsByDate[dateKey] || [];
-          const maxIconsToShow = isMobile ? 3 : 6;
+          const maxIconsToShow = isMobile ? 2 : isTablet ? 4 : 6;
           const visibleIcons = dayIcons.slice(0, maxIconsToShow);
           const overflowCount = dayIcons.length - maxIconsToShow;
 
@@ -265,7 +267,8 @@ const CompactMonthView: React.FC<CompactMonthViewProps> = ({
             <div
               key={`${day.date.getMonth()}-${day.date.getDate()}`}
               className={`
-                relative h-16 p-1 cursor-pointer transition-colors
+                relative cursor-pointer transition-colors
+                ${isMobile ? 'h-14 p-1' : isTablet ? 'h-18 p-2' : 'h-16 p-1'}
                 ${day.isCurrentMonth 
                   ? 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700' 
                   : 'bg-gray-50 dark:bg-gray-900 text-gray-400 dark:text-gray-500'

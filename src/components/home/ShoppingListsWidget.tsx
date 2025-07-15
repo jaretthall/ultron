@@ -60,6 +60,20 @@ const ShoppingListsWidget: React.FC<ShoppingListsWidgetProps> = ({ className = '
   const [newListName, setNewListName] = useState('');
   const [newListCategory, setNewListCategory] = useState<ShoppingList['category']>('grocery');
   const [newItemText, setNewItemText] = useState('');
+  const [isMobile, setIsMobile] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
+
+  // Detect screen size
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 768);
+      setIsTablet(window.innerWidth >= 768 && window.innerWidth < 1024);
+    };
+    
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
 
   // Load shopping lists from localStorage on component mount
   useEffect(() => {
@@ -263,13 +277,26 @@ const ShoppingListsWidget: React.FC<ShoppingListsWidgetProps> = ({ className = '
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-96">
+      {/* Data Persistence Notice */}
+      <div className="mb-3 p-2 bg-green-900/30 border border-green-500/30 rounded text-xs text-green-300">
+        📭 Lists are saved locally on this device/browser. For cross-device access, consider using a shared notes app.
+      </div>
+
+      <div className={`grid gap-4 ${
+        isMobile 
+          ? 'grid-cols-1 h-auto' 
+          : isTablet 
+          ? 'grid-cols-1 h-auto' 
+          : 'grid-cols-2 h-96'
+      }`}>
         {/* Lists Overview */}
         <div className="border border-slate-600 rounded-lg overflow-hidden">
           <div className="bg-slate-700 px-3 py-2 border-b border-slate-600">
             <h3 className="text-sm font-medium text-slate-300">Your Lists ({lists.length})</h3>
           </div>
-          <div className="overflow-y-auto h-80">
+          <div className={`overflow-y-auto ${
+            isMobile || isTablet ? 'h-64' : 'h-80'
+          }`}>
             {lists.length === 0 ? (
               <div className="p-4 text-center text-slate-400">
                 <svg className="w-12 h-12 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -341,7 +368,9 @@ const ShoppingListsWidget: React.FC<ShoppingListsWidgetProps> = ({ className = '
         </div>
 
         {/* Current List Items */}
-        <div className="border border-slate-600 rounded-lg overflow-hidden">
+        <div className={`border border-slate-600 rounded-lg overflow-hidden ${
+          isMobile || isTablet ? 'mt-4' : ''
+        }`}>
           <div className="bg-slate-700 px-3 py-2 border-b border-slate-600">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-medium text-slate-300">
@@ -365,7 +394,9 @@ const ShoppingListsWidget: React.FC<ShoppingListsWidgetProps> = ({ className = '
             </div>
           </div>
 
-          <div className="h-80 overflow-y-auto">
+          <div className={`overflow-y-auto ${
+            isMobile || isTablet ? 'h-64' : 'h-80'
+          }`}>
             {selectedList ? (
               <div className="p-3 h-full flex flex-col">
                 {/* Add Item Form */}
