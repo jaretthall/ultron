@@ -81,7 +81,7 @@ export interface Task extends UniversalSyncFields {
   user_id?: string; // For RLS
 }
 
-export type AIProvider = 'gemini' | 'claude' | 'openai';
+export type AIProvider = 'claude' | 'openai' | 'gemini'; // gemini deprecated but kept for backward compatibility
 
 export interface UserPreferences {
   id: string; // CUID

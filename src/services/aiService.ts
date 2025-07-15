@@ -1,8 +1,9 @@
 // Unified AI Service Layer with Provider Selection and Failover
 import { Project, Task, UserPreferences } from '../../types';
-import { generateDailyPlan as generateGeminiDailyPlan, generateWorkloadAnalysis as generateGeminiWorkloadAnalysis, DailyPlan, WorkloadAnalysis } from './geminiService';
+// Gemini removed - no longer supported
 import { generateClaudeDailyPlan, generateClaudeWorkloadAnalysis } from './claudeService';
 import { generateOpenAIDailyPlan, generateOpenAIWorkloadAnalysis } from './openaiService';
+import { DailyPlan, WorkloadAnalysis } from './geminiService'; // Keep types only for backward compatibility
 
 export interface AIInsights {
   blocked_tasks: any[];
@@ -20,8 +21,8 @@ export interface AIServiceResult<T> {
   fallback_used?: boolean;
 }
 
-// AI Provider priority order for failover
-const PROVIDER_FAILOVER_ORDER: string[] = ['gemini', 'claude', 'openai'];
+// AI Provider priority order for failover (Gemini removed)
+const PROVIDER_FAILOVER_ORDER: string[] = ['claude', 'openai'];
 
 // Helper function to safely extract error message
 const getErrorMessage = (error: unknown): string => {
@@ -34,11 +35,6 @@ const getErrorMessage = (error: unknown): string => {
 // Provider availability check
 const checkProviderAvailability = (provider: string, userPreferences: UserPreferences): boolean => {
   switch (provider) {
-    case 'gemini':
-      // Check for environment variable (Vite prefixed) or user preference
-      const env = (import.meta as any).env;
-      const hasGeminiKey = env?.VITE_GEMINI_API_KEY || env?.VITE_API_KEY;
-      return !!(hasGeminiKey && userPreferences.selected_gemini_model);
     case 'claude':
       return !!(userPreferences.claude_api_key);
     case 'openai':
@@ -86,22 +82,6 @@ export const generateAIInsights = async (
       console.log(`Attempting to generate insights with provider: ${currentProvider}`);
       
       switch (currentProvider) {
-        case 'gemini':
-          const geminiAnalysis = await generateGeminiWorkloadAnalysis(projects, tasks, userPreferences);
-          result = {
-            data: {
-              blocked_tasks: geminiAnalysis.bottleneck_detection.resource_bottlenecks || [],
-              projects_needing_attention: geminiAnalysis.bottleneck_detection.dependency_bottlenecks || [],
-              recommendations: geminiAnalysis.strategic_recommendations || [],
-              focus_recommendations: geminiAnalysis.strategic_recommendations || [],
-              priority_balance_score: geminiAnalysis.work_life_balance.balance_score
-            },
-            provider_used: 'gemini',
-            success: true,
-            fallback_used: currentProvider !== primaryProvider
-          };
-          break;
-          
         case 'claude':
           const claudeAnalysis = await generateClaudeWorkloadAnalysis(projects, tasks, userPreferences);
           result = {
@@ -405,8 +385,6 @@ const callDailyPlanProvider = async (
 ): Promise<DailyPlan> => {
   try {
     switch (provider) {
-      case 'gemini':
-        return await generateGeminiDailyPlan(date, projects, tasks, userPreferences, focusBlockData);
       case 'claude':
         return await generateClaudeDailyPlan(date, projects, tasks, userPreferences, focusBlockData);
       case 'openai':
@@ -439,8 +417,6 @@ const callWorkloadAnalysisProvider = async (
   schedulingData?: any
 ): Promise<WorkloadAnalysis> => {
   switch (provider) {
-    case 'gemini':
-      return await generateGeminiWorkloadAnalysis(projects, tasks, userPreferences, schedulingData);
     case 'claude':
       return await generateClaudeWorkloadAnalysis(projects, tasks, userPreferences, schedulingData);
     case 'openai':

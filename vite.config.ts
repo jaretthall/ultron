@@ -10,14 +10,6 @@ export default defineConfig(({ mode }) => {
     return {
       plugins: [
         react(),
-        {
-          name: 'html-env-inject',
-          transformIndexHtml(html) {
-            // Replace API key placeholder with actual environment variable
-            const geminiApiKey = env.VITE_GEMINI_API_KEY || '';
-            return html.replace('__VITE_GEMINI_API_KEY__', geminiApiKey);
-          }
-        },
         // PWA Plugin for production - temporarily disabled due to version conflict
         // ...(isProduction ? [
         //   VitePWA({
@@ -79,8 +71,6 @@ export default defineConfig(({ mode }) => {
         // ] : [])
       ],
       define: {
-        'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
         'process.env.VITE_APP_VERSION': JSON.stringify(env.VITE_APP_VERSION || '2.6.0'),
         'process.env.VITE_BUILD_TIME': JSON.stringify(new Date().toISOString()),
       },
@@ -115,8 +105,6 @@ export default defineConfig(({ mode }) => {
               // Database and API chunks
               supabase: ['@supabase/supabase-js'],
               
-              // AI services chunk (large dependencies)
-              ai: ['@google/genai'],
               
               // Date utilities
               dates: ['date-fns'],

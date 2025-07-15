@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { UserPreferences, AIProvider } from '../../../types';
-import { AVAILABLE_GEMINI_MODELS, AVAILABLE_CLAUDE_MODELS, AVAILABLE_OPENAI_MODELS, APP_VERSION } from '../../constants';
+import { AVAILABLE_CLAUDE_MODELS, AVAILABLE_OPENAI_MODELS, APP_VERSION } from '../../constants';
 import { useAppState } from '../../contexts/AppStateContext';
 import TagManager from '../tags/TagManager';
 
@@ -10,7 +10,7 @@ const SettingsPage: React.FC = () => {
   const { userPreferences } = state;
 
   const [activeTab, setActiveTab] = useState('AI Provider');
-  const [currentAiProvider, setCurrentAiProvider] = useState<AIProvider>(userPreferences?.ai_provider || 'gemini');
+  const [currentAiProvider, setCurrentAiProvider] = useState<AIProvider>(userPreferences?.ai_provider === 'gemini' ? 'claude' : userPreferences?.ai_provider || 'claude');
   const [currentSelectedGeminiModel, setCurrentSelectedGeminiModel] = useState<string>(userPreferences?.selected_gemini_model || 'gemini-2.5-flash-preview-04-17');
   const [currentClaudeApiKey, setCurrentClaudeApiKey] = useState<string>(userPreferences?.claude_api_key || '');
   const [currentSelectedClaudeModel, setCurrentSelectedClaudeModel] = useState<string>(userPreferences?.selected_claude_model || 'claude-3-5-sonnet-20241022');
@@ -58,8 +58,6 @@ const SettingsPage: React.FC = () => {
 
 
   const tabs = ['AI Provider', 'Preferences', 'Sync', 'Security', 'Integrations', 'Advanced', 'Notes'];
-
-  const isGeminiClientInitialized = !(process.env.API_KEY === undefined || process.env.API_KEY === '');
 
   const handleSaveChanges = () => {
     const updatedPrefs: Partial<UserPreferences> = {
@@ -221,43 +219,11 @@ const SettingsPage: React.FC = () => {
                   onChange={(e) => setCurrentAiProvider(e.target.value as AIProvider)}
                   className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
                 >
-                  <option value="gemini">Google Gemini</option>
-                  <option value="claude">Anthropic Claude (Experimental)</option>
-                  <option value="openai">OpenAI GPT (Experimental)</option>
+                  <option value="claude">Anthropic Claude</option>
+                  <option value="openai">OpenAI GPT</option>
                 </select>
               </div>
 
-              {currentAiProvider === 'gemini' && (
-                <>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Google Gemini API Key</label>
-                    {isGeminiClientInitialized ? (
-                      <p className="text-sm text-emerald-400 p-3 bg-emerald-900/50 border border-emerald-700 rounded-md">
-                        Gemini API Key is configured via environment variable (`process.env.API_KEY`).
-                      </p>
-                    ) : (
-                      <p className="text-sm text-yellow-400 p-3 bg-yellow-900/50 border border-yellow-700 rounded-md">
-                        Google Gemini API Key is not configured. AI features for Gemini will be disabled. Set `API_KEY` in your environment.
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <label htmlFor="geminiModel" className="block text-sm font-medium text-slate-300 mb-1">Preferred Gemini Model</label>
-                    <select
-                      id="geminiModel"
-                      value={currentSelectedGeminiModel}
-                      onChange={(e) => setCurrentSelectedGeminiModel(e.target.value)}
-                      className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
-                      disabled={!isGeminiClientInitialized}
-                    >
-                      {AVAILABLE_GEMINI_MODELS.map(model => (
-                        <option key={model.id} value={model.id}>{model.name}</option>
-                      ))}
-                    </select>
-                    {!isGeminiClientInitialized && <p className="text-xs text-yellow-500 mt-1">Model selection disabled as Gemini API key is not configured.</p>}
-                  </div>
-                </>
-              )}
 
               {currentAiProvider === 'claude' && (
                 <>
