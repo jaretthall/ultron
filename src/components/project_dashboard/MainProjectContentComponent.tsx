@@ -5,6 +5,7 @@ import NewTaskModal from '../tasks/NewTaskModal';
 import StatCard from '../StatCard';
 import EditProjectModal from '../projects/EditProjectModal';
 import { calculateProjectCompletion, calculateUrgencyScore } from '../../utils/projectUtils';
+import { useScreenSize } from '../ResponsiveLayout';
 
 // Icons
 const CompletedIcon: React.FC = () => (
@@ -72,6 +73,7 @@ const MainProjectContentComponent: React.FC<MainProjectContentComponentProps> = 
 }) => {
   const [isNewTaskModalOpen, setIsNewTaskModalOpen] = useState(false);
   const [isEditProjectModalOpen, setIsEditProjectModalOpen] = useState(false);
+  const { isMobile, isTablet } = useScreenSize();
 
   const projectTaskStats = useMemo(() => {
     if (!project) return { completed: 0, inProgress: 0, pending: 0 };
@@ -100,7 +102,7 @@ const MainProjectContentComponent: React.FC<MainProjectContentComponentProps> = 
 
   if (!project) {
     return (
-      <main className="flex-1 p-6 lg:p-8 overflow-y-auto flex items-center justify-center">
+      <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto flex items-center justify-center">
         <div className="text-center">
            <svg className="mx-auto h-12 w-12 text-slate-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h12M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-12a2.25 2.25 0 01-2.25-2.25V3M3.75 21v-6.75A2.25 2.25 0 016 12h12a2.25 2.25 0 012.25 2.25V21M3.75 21H21" />
@@ -115,172 +117,193 @@ const MainProjectContentComponent: React.FC<MainProjectContentComponentProps> = 
   const isOverdue = project.deadline && new Date(project.deadline) < new Date() && project.status !== ProjectStatus.COMPLETED;
 
   return (
-    <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto bg-slate-900">
-      <div className="mb-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-          <div className="flex-1">
-            <h1 className="text-3xl font-bold text-slate-100">{project.title}</h1>
-            <div className="flex items-center space-x-4 mt-2">
-              <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                project.status === 'completed' ? 'bg-green-900 text-green-300' :
-                project.status === 'active' ? 'bg-blue-900 text-blue-300' :
-                'bg-yellow-900 text-yellow-300'
-              }`}>
-                {project.status.charAt(0).toUpperCase() + project.status.slice(1).replace('-', ' ')}
-              </span>
-              <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                project.project_context === 'business' ? 'bg-purple-900 text-purple-300' :
-                project.project_context === 'personal' ? 'bg-green-900 text-green-300' :
-                'bg-orange-900 text-orange-300'
-              }`}>
-                {project.project_context.charAt(0).toUpperCase() + project.project_context.slice(1)}
-              </span>
-              {project.business_relevance && (
-                <span className="text-xs text-slate-400">
-                  Priority: {project.business_relevance}/10
+    <main className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8 overflow-y-auto bg-slate-900">
+      <div className="max-w-full">
+        <div className="mb-4 sm:mb-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
+            <div className="flex-1 min-w-0">
+              <h1 className={`${isMobile ? 'text-2xl' : isTablet ? 'text-2xl' : 'text-3xl'} font-bold text-slate-100 truncate`}>
+                {project.title}
+              </h1>
+              <div className="flex flex-wrap items-center gap-2 mt-2">
+                <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                  project.status === 'completed' ? 'bg-green-900 text-green-300' :
+                  project.status === 'active' ? 'bg-blue-900 text-blue-300' :
+                  'bg-yellow-900 text-yellow-300'
+                }`}>
+                  {project.status.charAt(0).toUpperCase() + project.status.slice(1).replace('-', ' ')}
                 </span>
-              )}
-              {project.tags && project.tags.length > 0 && (
-                <div className="flex items-center space-x-1">
-                  {project.tags.slice(0, 3).map((tag, index) => (
-                    <span key={index} className="px-2 py-1 text-xs bg-slate-700 text-slate-300 rounded-full">
-                      {tag}
-                    </span>
-                  ))}
-                  {project.tags.length > 3 && (
-                    <span className="text-xs text-slate-400">
-                      +{project.tags.length - 3} more
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-          <div className="flex space-x-2 mt-3 sm:mt-0">
-            <ActionButton onClick={() => setIsEditProjectModalOpen(true)}>
-              Edit Project
-            </ActionButton>
-            <ActionButton onClick={() => setIsNewTaskModalOpen(true)} icon={<PlusIcon />}>
-              New Task
-            </ActionButton>
-          </div>
-        </div>
-        {project.description && (
-          <p className="text-slate-400 mt-2 text-sm">{project.description}</p>
-        )}
-        
-        {/* Project Metrics Bar */}
-        <div className="mt-4 p-4 bg-slate-800 rounded-lg">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Completion Progress */}
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm text-slate-300">Completion</span>
-                <span className="text-sm font-medium text-slate-200">{completionPercentage}%</span>
-              </div>
-              <div className="w-full bg-slate-600 rounded-full h-2">
-                <div 
-                  className="bg-green-500 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${completionPercentage}%` }}
-                ></div>
+                <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                  project.project_context === 'business' ? 'bg-purple-900 text-purple-300' :
+                  project.project_context === 'personal' ? 'bg-green-900 text-green-300' :
+                  'bg-orange-900 text-orange-300'
+                }`}>
+                  {project.project_context.charAt(0).toUpperCase() + project.project_context.slice(1)}
+                </span>
+                {project.business_relevance && (
+                  <span className="text-xs text-slate-400 whitespace-nowrap">
+                    Priority: {project.business_relevance}/10
+                  </span>
+                )}
+                {project.tags && project.tags.length > 0 && (
+                  <div className="flex items-center gap-1 flex-wrap">
+                    {project.tags.slice(0, isMobile ? 2 : isTablet ? 2 : 3).map((tag, index) => (
+                      <span key={index} className="px-2 py-1 text-xs bg-slate-700 text-slate-300 rounded-full">
+                        {tag}
+                      </span>
+                    ))}
+                    {project.tags.length > (isMobile ? 2 : isTablet ? 2 : 3) && (
+                      <span className="text-xs text-slate-400">
+                        +{project.tags.length - (isMobile ? 2 : isTablet ? 2 : 3)} more
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
-            
-            {/* Urgency Score */}
-            {project.deadline && (
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              <ActionButton 
+                onClick={() => setIsEditProjectModalOpen(true)}
+                fullWidth={isMobile}
+                className={isMobile ? 'text-sm' : ''}
+              >
+                Edit Project
+              </ActionButton>
+              <ActionButton 
+                onClick={() => setIsNewTaskModalOpen(true)} 
+                icon={<PlusIcon />}
+                fullWidth={isMobile}
+                className={isMobile ? 'text-sm' : ''}
+              >
+                New Task
+              </ActionButton>
+            </div>
+          </div>
+          {project.description && (
+            <p className="text-slate-400 mt-2 text-sm leading-relaxed">{project.description}</p>
+          )}
+          
+          {/* Project Metrics Bar */}
+          <div className="mt-4 p-3 sm:p-4 bg-slate-800 rounded-lg">
+            <div className={`grid gap-3 sm:gap-4 ${
+              isMobile ? 'grid-cols-1' : 
+              isTablet ? 'grid-cols-2' : 
+              'grid-cols-1 md:grid-cols-3'
+            }`}>
+              {/* Completion Progress */}
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm text-slate-300">Urgency</span>
-                  <span className={`text-sm font-medium ${
-                    urgencyScore >= 80 ? 'text-red-400' :
-                    urgencyScore >= 60 ? 'text-orange-400' :
-                    urgencyScore >= 40 ? 'text-yellow-400' :
-                    'text-green-400'
-                  }`}>
-                    {urgencyScore}/100
-                  </span>
+                  <span className="text-sm text-slate-300">Completion</span>
+                  <span className="text-sm font-medium text-slate-200">{completionPercentage}%</span>
                 </div>
                 <div className="w-full bg-slate-600 rounded-full h-2">
                   <div 
-                    className={`h-2 rounded-full transition-all duration-300 ${
-                      urgencyScore >= 80 ? 'bg-red-500' :
-                      urgencyScore >= 60 ? 'bg-orange-500' :
-                      urgencyScore >= 40 ? 'bg-yellow-500' :
-                      'bg-green-500'
-                    }`}
-                    style={{ width: `${urgencyScore}%` }}
+                    className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${completionPercentage}%` }}
                   ></div>
                 </div>
               </div>
-            )}
-            
-            {/* Deadline Info */}
-            {project.deadline && (
-              <div>
-                <span className="text-sm text-slate-300">Deadline</span>
-                <p className={`text-sm font-medium mt-1 ${isOverdue ? 'text-red-400' : 'text-slate-200'}`}>
-                  {new Date(project.deadline).toLocaleDateString()}
-                  {isOverdue && <span className="ml-1 text-xs">(Overdue)</span>}
-                </p>
-              </div>
-            )}
+              
+              {/* Urgency Score */}
+              {project.deadline && (
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm text-slate-300">Urgency</span>
+                    <span className={`text-sm font-medium ${
+                      urgencyScore >= 80 ? 'text-red-400' :
+                      urgencyScore >= 60 ? 'text-orange-400' :
+                      urgencyScore >= 40 ? 'text-yellow-400' :
+                      'text-green-400'
+                    }`}>
+                      {urgencyScore}/100
+                    </span>
+                  </div>
+                  <div className="w-full bg-slate-600 rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full transition-all duration-300 ${
+                        urgencyScore >= 80 ? 'bg-red-500' :
+                        urgencyScore >= 60 ? 'bg-orange-500' :
+                        urgencyScore >= 40 ? 'bg-yellow-500' :
+                        'bg-green-500'
+                      }`}
+                      style={{ width: `${urgencyScore}%` }}
+                    ></div>
+                  </div>
+                </div>
+              )}
+              
+              {/* Deadline Info */}
+              {project.deadline && (
+                <div className={isTablet && project.deadline ? 'col-span-2 md:col-span-1' : ''}>
+                  <span className="text-sm text-slate-300">Deadline</span>
+                  <p className={`text-sm font-medium mt-1 ${isOverdue ? 'text-red-400' : 'text-slate-200'}`}>
+                    {new Date(project.deadline).toLocaleDateString()}
+                    {isOverdue && <span className="ml-1 text-xs">(Overdue)</span>}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Project Details Section */}
-      {project.description && (
-        <div className="mb-6 p-4 bg-slate-800 rounded-lg">
-          <h3 className="text-lg font-semibold text-slate-200 mb-2">Project Details</h3>
-          <p className="text-slate-300 text-sm leading-relaxed">{project.description}</p>
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <StatCard title="Completed Tasks" value={projectTaskStats.completed} icon={<CompletedIcon />} color="text-green-400" />
-        <StatCard title="In Progress" value={projectTaskStats.inProgress} icon={<InProgressIcon />} color="text-blue-400" />
-        <StatCard title="Pending Tasks" value={projectTaskStats.pending} icon={<PendingIcon />} color="text-yellow-400" />
-      </div>
-
-      {project.goals && project.goals.length > 0 && (
-        <div className="mb-8 p-4 bg-slate-800 rounded-lg">
-          <h3 className="text-lg font-semibold text-slate-200 mb-2">Project Goals</h3>
-          <ul className="list-disc list-inside space-y-1 text-slate-300 text-sm">
-            {project.goals.map((goal, index) => (
-              <li key={index}>{goal}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      <div>
-        <h3 className="text-xl font-semibold text-slate-100 mb-4">Tasks ({tasks.length})</h3>
-        {tasks.length > 0 ? (
-          <div className="space-y-3" data-testid="task-list">
-            {tasks.map(task => (
-              <TaskItem 
-                key={task.id} 
-                task={task} 
-                projectTitle={project.title}
-                onEditTaskRequest={onEditTaskRequest || (() => {})}
-                onDeleteTask={onDeleteTask || (() => Promise.resolve())}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-10 bg-slate-800 rounded-lg">
-            <svg className="mx-auto h-10 w-10 text-slate-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-               <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10.5 11.25h3M12 17.25v-6.75" />
-            </svg>
-            <p className="mt-2 text-sm text-slate-400">No tasks in this project yet.</p>
-            <button
-              onClick={() => setIsNewTaskModalOpen(true)}
-              className="mt-4 text-sm bg-sky-600 hover:bg-sky-700 text-white font-medium py-2 px-4 rounded-lg"
-            >
-              Add New Task
-            </button>
+        {/* Project Details Section */}
+        {project.description && (
+          <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-slate-800 rounded-lg">
+            <h3 className="text-lg font-semibold text-slate-200 mb-2">Project Details</h3>
+            <p className="text-slate-300 text-sm leading-relaxed">{project.description}</p>
           </div>
         )}
+
+        <div className={`grid gap-3 sm:gap-4 mb-6 sm:mb-8 ${
+          isMobile ? 'grid-cols-1' : 
+          isTablet ? 'grid-cols-2' : 
+          'grid-cols-1 md:grid-cols-3'
+        }`}>
+          <StatCard title="Completed Tasks" value={projectTaskStats.completed} icon={<CompletedIcon />} color="text-green-400" />
+          <StatCard title="In Progress" value={projectTaskStats.inProgress} icon={<InProgressIcon />} color="text-blue-400" />
+          <StatCard title="Pending Tasks" value={projectTaskStats.pending} icon={<PendingIcon />} color="text-yellow-400" />
+        </div>
+
+        {project.goals && project.goals.length > 0 && (
+          <div className="mb-6 sm:mb-8 p-3 sm:p-4 bg-slate-800 rounded-lg">
+            <h3 className="text-lg font-semibold text-slate-200 mb-2">Project Goals</h3>
+            <ul className="list-disc list-inside space-y-1 text-slate-300 text-sm">
+              {project.goals.map((goal, index) => (
+                <li key={index} className="break-words">{goal}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <div>
+          <h3 className="text-xl font-semibold text-slate-100 mb-4">Tasks ({tasks.length})</h3>
+          {tasks.length > 0 ? (
+            <div className="space-y-3" data-testid="task-list">
+              {tasks.map(task => (
+                <TaskItem 
+                  key={task.id} 
+                  task={task} 
+                  projectTitle={project.title}
+                  onEditTaskRequest={onEditTaskRequest || (() => {})}
+                  onDeleteTask={onDeleteTask || (() => Promise.resolve())}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 sm:py-10 bg-slate-800 rounded-lg">
+              <svg className="mx-auto h-10 w-10 text-slate-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                 <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10.5 11.25h3M12 17.25v-6.75" />
+              </svg>
+              <p className="mt-2 text-sm text-slate-400">No tasks in this project yet.</p>
+              <button
+                onClick={() => setIsNewTaskModalOpen(true)}
+                className="mt-4 text-sm bg-sky-600 hover:bg-sky-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+              >
+                Add New Task
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {isNewTaskModalOpen && (

@@ -111,7 +111,7 @@ const ProjectDashboardPage: React.FC<ProjectDashboardPageProps> = ({
   if (isTablet) {
     return (
       <div className="flex flex-1 overflow-hidden">
-        <div className="w-64 flex-shrink-0">
+        <div className="w-56 flex-shrink-0 border-r border-slate-600">
           <LeftSidebarComponent
             projects={filteredProjects}
             selectedProjectId={selectedProjectId}
@@ -119,7 +119,7 @@ const ProjectDashboardPage: React.FC<ProjectDashboardPageProps> = ({
             onAddProject={onAddProject}
           />
         </div>
-        <div className="flex-1">
+        <div className="flex-1 min-w-0 overflow-hidden">
           <MainProjectContentComponent
             project={selectedProjectData}
             tasks={selectedProjectTasks}
