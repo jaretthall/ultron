@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">3.2% </span>
+                <span class="strong">2.98% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>4/125</span>
+                <span class='fraction'>4/134</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">3.3% </span>
+                <span class="strong">3.07% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>4/121</span>
+                <span class='fraction'>4/130</span>
             </div>
         
             
@@ -525,7 +525,19 @@
 <a name='L460'></a><a href='#L460'>460</a>
 <a name='L461'></a><a href='#L461'>461</a>
 <a name='L462'></a><a href='#L462'>462</a>
-<a name='L463'></a><a href='#L463'>463</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<a name='L463'></a><a href='#L463'>463</a>
+<a name='L464'></a><a href='#L464'>464</a>
+<a name='L465'></a><a href='#L465'>465</a>
+<a name='L466'></a><a href='#L466'>466</a>
+<a name='L467'></a><a href='#L467'>467</a>
+<a name='L468'></a><a href='#L468'>468</a>
+<a name='L469'></a><a href='#L469'>469</a>
+<a name='L470'></a><a href='#L470'>470</a>
+<a name='L471'></a><a href='#L471'>471</a>
+<a name='L472'></a><a href='#L472'>472</a>
+<a name='L473'></a><a href='#L473'>473</a>
+<a name='L474'></a><a href='#L474'>474</a>
+<a name='L475'></a><a href='#L475'>475</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -646,9 +658,21 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1108,10 +1132,22 @@ const EditEventModal: React.FC&lt;EditEventModalProps&gt; = <span class="fstat-n
 <span class="cstat-no" title="statement not covered" >        startDateTime = startDate;</span>
 <span class="cstat-no" title="statement not covered" >        endDateTime = endDate || startDate;</span>
       } else {
-<span class="cstat-no" title="statement not covered" >        startDateTime = `${startDate}T${startTime}`;</span>
-<span class="cstat-no" title="statement not covered" >        endDateTime = endDate &amp;&amp; endTime ? `${endDate}T${endTime}` : </span>
-                     endTime ? `${startDate}T${endTime}` :
-                     `${startDate}T${startTime}`;
+        // Create proper Date objects in local time, then convert to ISO strings
+        const localStartDateTime = <span class="cstat-no" title="statement not covered" >new Date(`${startDate}T${startTime}:00`);</span>
+<span class="cstat-no" title="statement not covered" >        startDateTime = localStartDateTime.toISOString();</span>
+        
+<span class="cstat-no" title="statement not covered" >        if (endDate &amp;&amp; endTime) {</span>
+          const localEndDateTime = <span class="cstat-no" title="statement not covered" >new Date(`${endDate}T${endTime}:00`);</span>
+<span class="cstat-no" title="statement not covered" >          endDateTime = localEndDateTime.toISOString();</span>
+        } else <span class="cstat-no" title="statement not covered" >if (endTime) {</span>
+          const localEndDateTime = <span class="cstat-no" title="statement not covered" >new Date(`${startDate}T${endTime}:00`);</span>
+<span class="cstat-no" title="statement not covered" >          endDateTime = localEndDateTime.toISOString();</span>
+        } else {
+          // Default to 1 hour duration
+          const localEndDateTime = <span class="cstat-no" title="statement not covered" >new Date(localStartDateTime);</span>
+<span class="cstat-no" title="statement not covered" >          localEndDateTime.setHours(localEndDateTime.getHours() + 1);</span>
+<span class="cstat-no" title="statement not covered" >          endDateTime = localEndDateTime.toISOString();</span>
+        }
       }
 &nbsp;
       const updates: Partial&lt;Schedule&gt; = <span class="cstat-no" title="statement not covered" >{</span>
@@ -1456,7 +1492,7 @@ export default EditEventModal;</pre></td></tr></table></pre>
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-07-14T02:36:02.172Z
+                at 2025-07-16T19:56:35.451Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>
