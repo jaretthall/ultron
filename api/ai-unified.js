@@ -23,16 +23,16 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Action, projects, tasks, and user preferences are required' });
     }
 
-    const primaryProvider = userPreferences.ai_provider || 'gemini';
-    const PROVIDER_FALLBACK_ORDER = ['gemini', 'claude', 'openai'];
+    const primaryProvider = userPreferences.ai_provider === 'gemini' ? 'claude' : (userPreferences.ai_provider || 'claude');
+    const PROVIDER_FALLBACK_ORDER = ['claude', 'openai']; // Gemini deprecated
 
     // Check provider availability
     const checkProviderAvailability = (provider) => {
       switch (provider) {
         case 'gemini':
-          return !!(process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY);
+          return false; // Gemini deprecated
         case 'claude':
-          return !!(process.env.CLAUDE_API_KEY);
+          return !!(process.env.CLAUDE_API_KEY || userPreferences.claude_api_key);
         case 'openai':
           return !!(process.env.OPENAI_API_KEY || userPreferences.openai_api_key);
         default:

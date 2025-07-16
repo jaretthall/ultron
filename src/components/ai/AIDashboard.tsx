@@ -133,6 +133,7 @@ const AIDashboard: React.FC = () => {
       console.log('AI data refreshed successfully');
     } catch (error) {
       console.error('Error refreshing AI data:', error);
+      alert(`Failed to refresh AI data: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
       setIsLoading(false);
     }
@@ -157,13 +158,26 @@ const AIDashboard: React.FC = () => {
     
     console.log(`Testing ${provider} connection...`);
     try {
-      // Test with a simple insights call
+      // Test with a simple insights call (which internally calls workload analysis)
       const result = await generateAIInsights([], [], { ...userPreferences, ai_provider: provider as 'claude' | 'openai' });
       console.log(`${provider} test result:`, result);
-      alert(`${provider} connection test: ${result.success ? 'SUCCESS' : 'FAILED'}\nError: ${result.error || 'None'}`);
+      
+      let message = `${provider} connection test: ${result.success ? 'SUCCESS' : 'FAILED'}`;
+      if (result.error) {
+        message += `\nError: ${result.error}`;
+      }
+      if (result.provider_used !== provider) {
+        message += `\nNote: Used ${result.provider_used} instead of ${provider}`;
+      }
+      if (result.data) {
+        message += `\nData structure: ${Object.keys(result.data).join(', ')}`;
+      }
+      
+      alert(message);
     } catch (error) {
       console.error(`${provider} test failed:`, error);
-      alert(`${provider} connection test FAILED: ${error}`);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      alert(`${provider} connection test FAILED:\n${errorMessage}\n\nCheck console for detailed error info.`);
     }
   };
 

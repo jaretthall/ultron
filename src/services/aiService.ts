@@ -84,13 +84,14 @@ export const generateAIInsights = async (
       switch (currentProvider) {
         case 'claude':
           const claudeAnalysis = await generateClaudeWorkloadAnalysis(projects, tasks, userPreferences);
+          console.log('Claude analysis result:', claudeAnalysis);
           result = {
             data: {
-              blocked_tasks: claudeAnalysis.bottleneck_detection.resource_bottlenecks || [],
-              projects_needing_attention: claudeAnalysis.bottleneck_detection.dependency_bottlenecks || [],
-              recommendations: claudeAnalysis.strategic_recommendations || [],
-              focus_recommendations: claudeAnalysis.strategic_recommendations || [],
-              priority_balance_score: claudeAnalysis.work_life_balance.balance_score
+              blocked_tasks: claudeAnalysis?.bottleneck_detection?.resource_bottlenecks || [],
+              projects_needing_attention: claudeAnalysis?.bottleneck_detection?.dependency_bottlenecks || [],
+              recommendations: claudeAnalysis?.strategic_recommendations || [],
+              focus_recommendations: claudeAnalysis?.strategic_recommendations || [],
+              priority_balance_score: claudeAnalysis?.work_life_balance?.balance_score || 0
             },
             provider_used: 'claude',
             success: true,
@@ -100,13 +101,14 @@ export const generateAIInsights = async (
           
         case 'openai':
           const openaiAnalysis = await generateOpenAIWorkloadAnalysis(projects, tasks, userPreferences);
+          console.log('OpenAI analysis result:', openaiAnalysis);
           result = {
             data: {
-              blocked_tasks: openaiAnalysis.bottleneck_detection.resource_bottlenecks || [],
-              projects_needing_attention: openaiAnalysis.bottleneck_detection.dependency_bottlenecks || [],
-              recommendations: openaiAnalysis.strategic_recommendations || [],
-              focus_recommendations: openaiAnalysis.strategic_recommendations || [],
-              priority_balance_score: openaiAnalysis.work_life_balance.balance_score
+              blocked_tasks: openaiAnalysis?.bottleneck_detection?.resource_bottlenecks || [],
+              projects_needing_attention: openaiAnalysis?.bottleneck_detection?.dependency_bottlenecks || [],
+              recommendations: openaiAnalysis?.strategic_recommendations || [],
+              focus_recommendations: openaiAnalysis?.strategic_recommendations || [],
+              priority_balance_score: openaiAnalysis?.work_life_balance?.balance_score || 0
             },
             provider_used: 'openai',
             success: true,
