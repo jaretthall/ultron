@@ -2,12 +2,6 @@
 export const APP_VERSION = '3.2.4';
 
 // AI Model configurations
-export const AVAILABLE_GEMINI_MODELS = [
-  { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', description: 'Fast and efficient' },
-  { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', description: 'Most capable' },
-  { id: 'gemini-1.0-pro', name: 'Gemini 1.0 Pro', description: 'Stable version' }
-];
-
 export const AVAILABLE_CLAUDE_MODELS = [
   { id: 'claude-3-haiku-20240307', name: 'Claude 3 Haiku', description: 'Fast and affordable' },
   { id: 'claude-3-sonnet-20240229', name: 'Claude 3 Sonnet', description: 'Balanced performance' },

@@ -4,7 +4,7 @@ import {
   PriorityGroups, TagPatterns, UrgencyMetrics, TimeMetrics, StrategicInsights,
   TaskStatus, TaskPriority, TagUsage, ProjectStatus
 } from '../types';
-import { generateStrategicInsights } from './geminiService';
+// Gemini service removed - using fallback insights
 import { APP_VERSION } from '../src/constants';
 
 export const calculateCompletionPercentage = (projectId: string, tasks: Task[]): number => {
@@ -129,7 +129,13 @@ export const generateWorkspaceSnapshot = async (
   const urgencyA = analyzeUrgency(enrichedP, tasks);
   const timeA = analyzeTime(tasks);
 
-  const strategicI: StrategicInsights = await generateStrategicInsights(projects, tasks, userPreferences);
+  // Gemini service removed - using fallback insights
+  const strategicI: StrategicInsights = {
+    blocked_tasks: [],
+    projects_needing_attention: [],
+    focus_recommendations: ['AI insights not available. Configure Claude or OpenAI in Settings.'],
+    priority_balance_score: 0,
+  };
 
   return {
     metadata: {

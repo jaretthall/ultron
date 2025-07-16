@@ -993,7 +993,7 @@ export class CalendarIntegrationService {
           startLookingFrom.setDate(startLookingFrom.getDate() + 1);
         }
         
-        // Set to 8 AM
+        // Set to working hours start (9 AM)
         startLookingFrom.setHours(workingHoursStart, 0, 0, 0);
       } else {
         // Start from current time but round up to next hour

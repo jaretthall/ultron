@@ -11,7 +11,6 @@ const SettingsPage: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState('AI Provider');
   const [currentAiProvider, setCurrentAiProvider] = useState<AIProvider>(userPreferences?.ai_provider === 'gemini' ? 'claude' : userPreferences?.ai_provider || 'claude');
-  const [currentSelectedGeminiModel, setCurrentSelectedGeminiModel] = useState<string>(userPreferences?.selected_gemini_model || 'gemini-2.5-flash-preview-04-17');
   const [currentClaudeApiKey, setCurrentClaudeApiKey] = useState<string>(userPreferences?.claude_api_key || '');
   const [currentSelectedClaudeModel, setCurrentSelectedClaudeModel] = useState<string>(userPreferences?.selected_claude_model || 'claude-3-5-sonnet-20241022');
   const [currentOpenaiApiKey, setCurrentOpenaiApiKey] = useState<string>(userPreferences?.openai_api_key || '');
@@ -38,7 +37,7 @@ const SettingsPage: React.FC = () => {
   useEffect(() => {
     if (userPreferences) {
       setCurrentAiProvider(userPreferences.ai_provider);
-      setCurrentSelectedGeminiModel(userPreferences.selected_gemini_model);
+      // Gemini model removed
       setCurrentClaudeApiKey(userPreferences.claude_api_key || '');
       setCurrentSelectedClaudeModel(userPreferences.selected_claude_model || 'claude-3-5-sonnet-20241022');
       setCurrentOpenaiApiKey(userPreferences.openai_api_key || '');
@@ -62,7 +61,6 @@ const SettingsPage: React.FC = () => {
   const handleSaveChanges = () => {
     const updatedPrefs: Partial<UserPreferences> = {
         ai_provider: currentAiProvider,
-        selected_gemini_model: currentSelectedGeminiModel,
         claude_api_key: currentClaudeApiKey,
         selected_claude_model: currentSelectedClaudeModel,
         openai_api_key: currentOpenaiApiKey,

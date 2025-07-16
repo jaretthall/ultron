@@ -66,7 +66,7 @@ export const generateAIInsights = async (
   allowFallback: boolean = true
 ): Promise<AIServiceResult<AIInsights>> => {
   /* AI SERVICE ENABLED */
-  const primaryProvider = userPreferences.ai_provider || 'gemini';
+  const primaryProvider = userPreferences.ai_provider === 'gemini' ? 'claude' : userPreferences.ai_provider || 'claude';
   let currentProvider: string | null = primaryProvider;
   let result: AIServiceResult<AIInsights> | null = null;
   
@@ -195,7 +195,7 @@ export const generateAIDailyPlan = async (
     error: undefined
   };
   
-  const primaryProvider = userPreferences.ai_provider || 'gemini';
+  const primaryProvider = userPreferences.ai_provider === 'gemini' ? 'claude' : userPreferences.ai_provider || 'claude';
   
   // Check if primary provider is available
   if (!checkProviderAvailability(primaryProvider, userPreferences)) {
@@ -297,7 +297,7 @@ export const generateAIWorkloadAnalysis = async (
     error: undefined
   };
 
-  const primaryProvider = userPreferences.ai_provider || 'gemini';
+  const primaryProvider = userPreferences.ai_provider === 'gemini' ? 'claude' : userPreferences.ai_provider || 'claude';
   
   // Check if primary provider is available
   if (!checkProviderAvailability(primaryProvider, userPreferences)) {
@@ -499,13 +499,10 @@ export const checkAIProviderHealth = async (userPreferences: UserPreferences): P
   const providers: Record<string, { available: boolean; configured: boolean; error?: string }> = {};
   
   // Check environment variables and API keys
-  const env = (import.meta as any).env;
-  const hasGeminiKey = env?.VITE_GEMINI_API_KEY || env?.VITE_API_KEY;
-  
   // Check Gemini
   providers.gemini = {
-    available: checkProviderAvailability('gemini', userPreferences),
-    configured: !!(hasGeminiKey && userPreferences.selected_gemini_model)
+    available: false, // Gemini deprecated
+    configured: false // Gemini deprecated
   };
   
   // Check Claude - consider configured if API key is present, use default model if not specified

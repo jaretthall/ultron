@@ -108,8 +108,8 @@ const defaultUserPreferences: Omit<UserPreferences, 'id' | 'user_id'> = {
   allow_business_in_personal_time: false,
   allow_personal_in_business_time: false,
   context_switch_buffer_minutes: 30,
-  ai_provider: 'gemini',
-  selected_gemini_model: 'gemini-1.5-flash',
+  ai_provider: 'claude',
+  selected_gemini_model: '', // deprecated
   claude_api_key: '',
   openai_api_key: '',
   focus_blocks: ["Mon 10-12", "Wed 2-4"],
