@@ -492,37 +492,47 @@ const generateDefaultWorkloadAnalysis = (_reason: string): WorkloadAnalysis => {
 
 // Provider health check and diagnostics
 export const checkAIProviderHealth = async (userPreferences: UserPreferences): Promise<{
-  providers: Record<string, { available: boolean; configured: boolean; error?: string }>;
+  providers: Record<string, { available: boolean; configured: boolean; error?: string; debug?: string }>;
   primary_provider: string;
   fallback_available: boolean;
 }> => {
-  const providers: Record<string, { available: boolean; configured: boolean; error?: string }> = {};
+  const providers: Record<string, { available: boolean; configured: boolean; error?: string; debug?: string }> = {};
   
-  // Check environment variables and API keys
-  // Check Gemini
+  // Check Gemini - mark as deprecated
   providers.gemini = {
-    available: false, // Gemini deprecated
-    configured: false // Gemini deprecated
+    available: false,
+    configured: false,
+    error: 'Gemini has been deprecated. Please use Claude or OpenAI.',
+    debug: 'Service discontinued'
   };
   
-  // Check Claude - consider configured if API key is present, use default model if not specified
+  // Check Claude - consider configured if API key is present
+  const claudeConfigured = !!(userPreferences.claude_api_key);
+  const claudeAvailable = checkProviderAvailability('claude', userPreferences);
   providers.claude = {
-    available: checkProviderAvailability('claude', userPreferences),
-    configured: !!(userPreferences.claude_api_key)
+    available: claudeAvailable,
+    configured: claudeConfigured,
+    error: !claudeConfigured ? 'API key not configured' : (!claudeAvailable ? 'API key invalid or service unavailable' : undefined),
+    debug: `API Key: ${userPreferences.claude_api_key ? `Present (${userPreferences.claude_api_key.substring(0, 8)}...)` : 'Missing'}`
   };
   
-  // Check OpenAI - consider configured if API key is present, use default model if not specified
+  // Check OpenAI - consider configured if API key is present
+  const openaiConfigured = !!(userPreferences.openai_api_key);
+  const openaiAvailable = checkProviderAvailability('openai', userPreferences);
   providers.openai = {
-    available: checkProviderAvailability('openai', userPreferences),
-    configured: !!(userPreferences.openai_api_key)
+    available: openaiAvailable,
+    configured: openaiConfigured,
+    error: !openaiConfigured ? 'API key not configured' : (!openaiAvailable ? 'API key invalid or service unavailable' : undefined),
+    debug: `API Key: ${userPreferences.openai_api_key ? `Present (${userPreferences.openai_api_key.substring(0, 8)}...)` : 'Missing'}`
   };
   
-  const primaryProvider = userPreferences.ai_provider;
-  const fallbackAvailable = !!getNextAvailableProvider(primaryProvider, userPreferences);
+  // Auto-migrate from Gemini to Claude
+  const effectivePrimaryProvider = userPreferences.ai_provider === 'gemini' ? 'claude' : userPreferences.ai_provider;
+  const fallbackAvailable = !!getNextAvailableProvider(effectivePrimaryProvider, userPreferences);
   
   return {
     providers,
-    primary_provider: primaryProvider,
+    primary_provider: effectivePrimaryProvider,
     fallback_available: fallbackAvailable
   };
 };

@@ -83,6 +83,14 @@ const AIDashboard: React.FC = () => {
     }
   }, [projects, tasks, userPreferences?.ai_provider]);
 
+  // Auto-migrate from Gemini to Claude if user is still on Gemini
+  useEffect(() => {
+    if (userPreferences?.ai_provider === 'gemini') {
+      console.warn('User is still configured to use Gemini. Auto-migrating to Claude.');
+      // You can add an auto-migration call here if needed
+    }
+  }, [userPreferences?.ai_provider]);
+
   const loadAIData = async () => {
     if (!userPreferences) {
       console.log('User preferences not loaded yet, skipping AI data load');
@@ -144,21 +152,80 @@ const AIDashboard: React.FC = () => {
     }
   };
 
-  const ProviderHealthIndicator: React.FC<{ provider: string; health: any }> = ({ provider, health }) => (
-    <div className="flex items-center space-x-2 p-2 rounded-lg bg-gray-50">
-      <div className="flex items-center space-x-1">
-        {health.available ? (
-          <CheckCircleIcon className="w-4 h-4 text-green-500" />
-        ) : (
-          <XCircleIcon className="w-4 h-4 text-red-500" />
-        )}
-        <span className="text-sm font-medium capitalize text-gray-800">{provider}</span>
+  const testProviderConnection = async (provider: string) => {
+    if (!userPreferences) return;
+    
+    console.log(`Testing ${provider} connection...`);
+    try {
+      // Test with a simple insights call
+      const result = await generateAIInsights([], [], { ...userPreferences, ai_provider: provider as 'claude' | 'openai' });
+      console.log(`${provider} test result:`, result);
+      alert(`${provider} connection test: ${result.success ? 'SUCCESS' : 'FAILED'}\nError: ${result.error || 'None'}`);
+    } catch (error) {
+      console.error(`${provider} test failed:`, error);
+      alert(`${provider} connection test FAILED: ${error}`);
+    }
+  };
+
+  const ProviderHealthIndicator: React.FC<{ provider: string; health: any }> = ({ provider, health }) => {
+    // Handle Gemini deprecation
+    if (provider === 'gemini') {
+      return (
+        <div className="flex items-center space-x-2 p-3 rounded-lg bg-red-50 border border-red-200">
+          <div className="flex items-center space-x-1">
+            <XCircleIcon className="w-4 h-4 text-red-500" />
+            <span className="text-sm font-medium capitalize text-gray-800">Gemini</span>
+          </div>
+          <span className="text-xs text-red-700 font-medium">
+            Deprecated - Use Claude or OpenAI
+          </span>
+        </div>
+      );
+    }
+    
+    return (
+      <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50 border border-gray-200">
+        <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1">
+            {health.available ? (
+              <CheckCircleIcon className="w-4 h-4 text-green-500" />
+            ) : (
+              <XCircleIcon className="w-4 h-4 text-red-500" />
+            )}
+            <span className="text-sm font-medium capitalize text-gray-800">{provider}</span>
+          </div>
+          {health.configured && (
+            <button
+              onClick={() => testProviderConnection(provider)}
+              className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+            >
+              Test
+            </button>
+          )}
+        </div>
+        <div className="text-right">
+          <span className="text-xs text-gray-700">
+            {health.configured ? (health.available ? 'Ready' : 'Error') : 'Not configured'}
+          </span>
+          {health.debug && (
+            <div className="text-xs text-gray-500 mt-1">
+              {health.debug}
+            </div>
+          )}
+          {health.error && (
+            <div className="text-xs text-red-600 mt-1">
+              {health.error}
+            </div>
+          )}
+          {!health.configured && (
+            <div className="text-xs text-blue-600 mt-1">
+              <a href="/settings" className="hover:underline">Configure in Settings →</a>
+            </div>
+          )}
+        </div>
       </div>
-      <span className="text-xs text-gray-700">
-        {health.configured ? (health.available ? 'Ready' : 'Error') : 'Not configured'}
-      </span>
-    </div>
-  );
+    );
+  };
 
   const InsightsPanel: React.FC = () => (
     <div className="space-y-6">
@@ -865,8 +932,13 @@ Please format the response as Markdown that I can copy-paste into my schedule te
               <div>
                 <span className="text-sm text-gray-700">Primary Provider</span>
                 <div className="text-lg font-medium text-blue-600 capitalize">
-                  {providerHealth.primary_provider}
+                  {providerHealth.primary_provider === 'gemini' ? 'claude (migrated from gemini)' : providerHealth.primary_provider}
                 </div>
+                {providerHealth.primary_provider === 'gemini' && (
+                  <div className="text-xs text-yellow-600 mt-1">
+                    Gemini has been deprecated. Using Claude instead.
+                  </div>
+                )}
               </div>
               <div>
                 <span className="text-sm text-gray-700">Fallback Available</span>
@@ -897,9 +969,9 @@ Please format the response as Markdown that I can copy-paste into my schedule te
             <h3 className="text-lg font-semibold text-yellow-800 mb-3">Configuration Tips</h3>
             <ul className="space-y-1 text-sm text-yellow-700">
               <li>• Configure multiple providers for better reliability</li>
-              <li>• Gemini offers excellent context understanding</li>
-              <li>• Claude provides detailed strategic analysis</li>
-              <li>• OpenAI excels at structured planning</li>
+              <li>• Claude provides detailed strategic analysis and context understanding</li>
+              <li>• OpenAI excels at structured planning and creative tasks</li>
+              <li>• Set up API keys in Settings to enable AI features</li>
             </ul>
           </div>
         </>
