@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useCustomAuth } from '../../contexts/CustomAuthContext';
+import { useSupabaseAuth } from '../../contexts/SupabaseAuthContext';
 
 interface AuthFormProps {
   onSuccess?: () => void;
@@ -14,7 +14,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const { signIn, signUp, loading } = useCustomAuth();
+  const { signIn, signUp, loading } = useSupabaseAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

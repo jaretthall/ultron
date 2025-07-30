@@ -1,11 +1,11 @@
 import React from 'react';
-import { CustomAuthProvider, useCustomAuth } from './contexts/CustomAuthContext';
+import { SupabaseAuthProvider, useSupabaseAuth } from './contexts/SupabaseAuthContext';
 import AuthForm from './components/auth/AuthForm';
 import AppWithAuth from './AppWithAuth';
 import LoadingSpinner from './components/LoadingSpinner';
 
 const AuthenticatedApp: React.FC = () => {
-  const { isAuthenticated, loading } = useCustomAuth();
+  const { isAuthenticated, loading } = useSupabaseAuth();
 
   if (loading) {
     return (
@@ -24,9 +24,9 @@ const AuthenticatedApp: React.FC = () => {
 
 const App: React.FC = () => {
   return (
-    <CustomAuthProvider>
+    <SupabaseAuthProvider>
       <AuthenticatedApp />
-    </CustomAuthProvider>
+    </SupabaseAuthProvider>
   );
 };
 
