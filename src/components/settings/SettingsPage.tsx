@@ -4,6 +4,7 @@ import { UserPreferences, AIProvider } from '../../../types';
 import { AVAILABLE_CLAUDE_MODELS, AVAILABLE_OPENAI_MODELS, APP_VERSION } from '../../constants';
 import { useAppState } from '../../contexts/AppStateContext';
 import TagManager from '../tags/TagManager';
+import AuthDebug from '../debug/AuthDebug';
 
 const SettingsPage: React.FC = () => {
   const { state, updateUserPreferences } = useAppState();
@@ -56,7 +57,7 @@ const SettingsPage: React.FC = () => {
   }, [userPreferences]);
 
 
-  const tabs = ['AI Provider', 'Preferences', 'Sync', 'Security', 'Integrations', 'Advanced', 'Notes'];
+  const tabs = ['AI Provider', 'Preferences', 'Sync', 'Security', 'Integrations', 'Advanced', 'Notes', 'Debug'];
 
   const handleSaveChanges = () => {
     const updatedPrefs: Partial<UserPreferences> = {
@@ -1328,6 +1329,8 @@ const SettingsPage: React.FC = () => {
             </div>
           </section>
         );
+      case 'Debug':
+        return <AuthDebug />;
       default:
         return (
             <section className="p-6 bg-slate-800 rounded-lg">

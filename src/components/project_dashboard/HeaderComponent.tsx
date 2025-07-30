@@ -13,8 +13,16 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
   onProjectContextFilterChange 
 }) => {
   const location = useLocation();
-  const { signOut } = useSupabaseAuth();
+  const { signOut, user, isAuthenticated, loading } = useSupabaseAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Debug authentication state
+  console.log('🔍 HeaderComponent Auth State:', { 
+    isAuthenticated, 
+    loading, 
+    userEmail: user?.email,
+    userId: user?.id 
+  });
 
   const getLinkClassName = (path: string) => {
     const isActive = location.pathname === path;
@@ -107,10 +115,17 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
                 className="flex items-center space-x-2 text-slate-300 hover:text-white px-3 py-2 rounded"
                 data-testid="sign-out-button"
                 onClick={async () => {
+                  console.log('🔓 Attempting sign out...');
                   try {
-                    await signOut();
+                    const result = await signOut();
+                    console.log('🔓 Sign out result:', result);
+                    if (!result.success) {
+                      console.error('❌ Sign out failed:', result.error);
+                      alert(`Sign out failed: ${result.error}`);
+                    }
                   } catch (error) {
-                    console.error('Sign out failed:', error);
+                    console.error('❌ Sign out exception:', error);
+                    alert(`Sign out error: ${error}`);
                   }
                 }}
               >
@@ -162,11 +177,19 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
                 className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-slate-300 hover:text-white hover:bg-slate-700 flex items-center space-x-2"
                 data-testid="sign-out-button"
                 onClick={async () => {
+                  console.log('🔓 Attempting mobile sign out...');
                   try {
-                    await signOut();
-                    setIsMobileMenuOpen(false);
+                    const result = await signOut();
+                    console.log('🔓 Mobile sign out result:', result);
+                    if (result.success) {
+                      setIsMobileMenuOpen(false);
+                    } else {
+                      console.error('❌ Mobile sign out failed:', result.error);
+                      alert(`Sign out failed: ${result.error}`);
+                    }
                   } catch (error) {
-                    console.error('Sign out failed:', error);
+                    console.error('❌ Mobile sign out exception:', error);
+                    alert(`Sign out error: ${error}`);
                   }
                 }}
               >

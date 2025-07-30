@@ -90,6 +90,13 @@ export const SupabaseAuthProvider: React.FC<SupabaseAuthProviderProps> = ({ chil
       async (event, session) => {
         console.log('Auth state changed:', event, session?.user?.email || 'No user');
         
+        console.log('🔍 Auth state update:', {
+          event,
+          userEmail: session?.user?.email,
+          isAuthenticated: !!session?.user,
+          sessionExists: !!session
+        });
+
         setAuthState({
           user: session?.user ?? null,
           loading: false,
