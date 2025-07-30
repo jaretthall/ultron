@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useCustomAuth } from '../../contexts/CustomAuthContext';
+import { useSupabaseAuth } from '../../contexts/SupabaseAuthContext';
 import { Menu, X } from 'lucide-react';
 
 interface HeaderComponentProps {
@@ -13,7 +13,7 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
   onProjectContextFilterChange 
 }) => {
   const location = useLocation();
-  const { signOut } = useCustomAuth();
+  const { signOut } = useSupabaseAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const getLinkClassName = (path: string) => {

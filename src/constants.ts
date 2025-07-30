@@ -1,5 +1,5 @@
 // Application constants
-export const APP_VERSION = '3.2.4';
+export const APP_VERSION = '3.2.5';
 
 // AI Model configurations
 export const AVAILABLE_CLAUDE_MODELS = [

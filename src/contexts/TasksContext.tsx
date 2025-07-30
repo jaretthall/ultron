@@ -5,7 +5,7 @@
 
 import React, { createContext, useContext, useReducer, useEffect, useCallback, ReactNode } from 'react';
 import { Task, TaskStatus } from '../../types';
-import { useCustomAuth } from './CustomAuthContext';
+import { useSupabaseAuth } from './SupabaseAuthContext';
 // import { adaptiveDatabaseService } from '../../services/adaptiveDatabaseService';
 import { tasksService, subscriptions } from '../../services/databaseService';
 import { performanceMonitor } from '../utils/performanceMonitoring';
@@ -99,7 +99,7 @@ const TasksContext = createContext<TasksContextType | undefined>(undefined);
 // Provider Component
 export const TasksProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(tasksReducer, initialState);
-  const { user, isAuthenticated } = useCustomAuth();
+  const { user, isAuthenticated } = useSupabaseAuth();
 
   // Load tasks
   const loadTasks = useCallback(async () => {
