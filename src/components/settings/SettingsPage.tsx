@@ -208,7 +208,7 @@ const SettingsPage: React.FC = () => {
           <section className="p-6 bg-slate-800 rounded-lg">
             <h3 className="text-xl font-semibold mb-6 text-slate-100">AI Provider Configuration</h3>
 
-            <div className="space-y-6">
+            <form onSubmit={(e) => { e.preventDefault(); handleSaveChanges(); }} className="space-y-6">
               <div>
                 <label htmlFor="aiProvider" className="block text-sm font-medium text-slate-300 mb-1">Choose AI Provider</label>
                 <select
@@ -289,12 +289,12 @@ const SettingsPage: React.FC = () => {
                 </>
               )}
                  <button
-                    onClick={handleSaveChanges}
+                    type="submit"
                     className="mt-6 w-full sm:w-auto bg-sky-600 hover:bg-sky-700 text-white font-medium py-2.5 px-6 rounded-lg text-sm"
                   >
                     Save AI Preferences
                   </button>
-            </div>
+            </form>
           </section>
         );
       case 'Preferences':
