@@ -40,6 +40,16 @@ export const SupabaseAuthProvider: React.FC<SupabaseAuthProviderProps> = ({ chil
   useEffect(() => {
     // Get initial session
     const getInitialSession = async () => {
+      if (!supabase) {
+        setAuthState({
+          user: null,
+          loading: false,
+          isAuthenticated: false,
+          session: null
+        });
+        return;
+      }
+
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         
@@ -73,6 +83,8 @@ export const SupabaseAuthProvider: React.FC<SupabaseAuthProviderProps> = ({ chil
 
     getInitialSession();
 
+    if (!supabase) return;
+
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
@@ -86,7 +98,7 @@ export const SupabaseAuthProvider: React.FC<SupabaseAuthProviderProps> = ({ chil
         });
 
         // Create user preferences on first sign up
-        if (event === 'SIGNED_UP' && session?.user) {
+        if (event === 'SIGNED_IN' && session?.user) {
           await createUserPreferences(session.user);
         }
       }
@@ -98,6 +110,8 @@ export const SupabaseAuthProvider: React.FC<SupabaseAuthProviderProps> = ({ chil
   }, []);
 
   const createUserPreferences = async (user: User) => {
+    if (!supabase) return;
+    
     try {
       // Check if preferences already exist
       const { data: existing } = await supabase
@@ -138,6 +152,10 @@ export const SupabaseAuthProvider: React.FC<SupabaseAuthProviderProps> = ({ chil
   };
 
   const signUp = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+    if (!supabase) {
+      return { success: false, error: 'Supabase client not available' };
+    }
+
     try {
       setAuthState(prev => ({ ...prev, loading: true }));
 
@@ -171,6 +189,10 @@ export const SupabaseAuthProvider: React.FC<SupabaseAuthProviderProps> = ({ chil
   };
 
   const signIn = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+    if (!supabase) {
+      return { success: false, error: 'Supabase client not available' };
+    }
+
     try {
       setAuthState(prev => ({ ...prev, loading: true }));
 
@@ -201,6 +223,10 @@ export const SupabaseAuthProvider: React.FC<SupabaseAuthProviderProps> = ({ chil
   };
 
   const signOut = async (): Promise<{ success: boolean; error?: string }> => {
+    if (!supabase) {
+      return { success: false, error: 'Supabase client not available' };
+    }
+
     try {
       const { error } = await supabase.auth.signOut();
       

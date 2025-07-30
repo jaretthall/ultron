@@ -101,6 +101,12 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
 
     setIsSubmitting(true);
 
+    if (!supabase) {
+      setError('Authentication service not available.');
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/update-password`

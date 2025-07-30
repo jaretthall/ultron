@@ -25,9 +25,15 @@ const UpdatePasswordPage: React.FC = () => {
         return;
       }
 
+      if (!supabase) {
+        setError('Authentication service not available.');
+        setVerifying(false);
+        return;
+      }
+
       try {
         // Verify the OTP token
-        const { data, error } = await supabase.auth.verifyOtp({
+        const { error } = await supabase.auth.verifyOtp({
           token_hash: tokenHash,
           type: 'recovery'
         });
@@ -35,7 +41,7 @@ const UpdatePasswordPage: React.FC = () => {
         if (error) {
           console.error('Token verification error:', error);
           setError('Invalid or expired reset token. Please request a new password reset.');
-        } else if (data.user) {
+        } else {
           console.log('✅ Token verified successfully');
           // Token is valid, user can now reset password
         }
@@ -72,9 +78,15 @@ const UpdatePasswordPage: React.FC = () => {
 
     setLoading(true);
 
+    if (!supabase) {
+      setError('Authentication service not available.');
+      setLoading(false);
+      return;
+    }
+
     try {
       // Update the user's password
-      const { data, error } = await supabase.auth.updateUser({
+      const { error } = await supabase.auth.updateUser({
         password: password
       });
 
