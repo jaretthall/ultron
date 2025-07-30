@@ -27,7 +27,10 @@ const BYPASS_CREDENTIALS = [
   { email: 'justclay63@gmail.com', password: 't4mhozd25q' },
   { email: 'test@ultron.com', password: 'ultron123' },
   { email: 'admin@ultron.com', password: 'admin123' },
-  { email: 'test@example.com', password: 'TestPassword123!' }
+  { email: 'test@example.com', password: 'TestPassword123!' },
+  // Beta testers
+  { email: 'matthias.j.hall@icloud.com', password: 'BetaTest123!' },
+  { email: 'vh77913@students.hcde.org', password: 'BetaTest123!' }
 ];
 
 // Production security: Only allow predefined emails
