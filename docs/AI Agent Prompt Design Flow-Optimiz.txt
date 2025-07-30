@@ -1,0 +1,150 @@
+ AI Agent Prompt: Design Flow-Optimized Task Templates for Productivity Application
+
+  Context & Objective
+
+  You are designing task templates for "Ultron," a productivity management application that
+  emphasizes flow state optimization and anti-procrastination principles. The current templates are      
+  generic and don't leverage flow-based psychology. Your goal is to create 12-15 highly specific,        
+  flow-optimized task templates that help users achieve "buttery execution" by addressing the
+  neurochemical "civil war" between approach and avoidance systems.
+
+  Core Flow-State Principles to Integrate
+
+  1. 4% Challenge Sweet Spot - Tasks should be challenging enough to engage but not overwhelm
+  2. Micro-Goals - Break tasks into "ridiculously specific" steps that eliminate mental resistance       
+  3. Minimum Flow Blocks - Focus on uninterrupted time needed rather than total duration
+  4. Engagement Strategies - Address the critical "engage" phase before struggle begins
+  5. Energy Level Matching - Align task cognitive load with optimal energy states
+  6. Procrastination vs Ambivalence - Help users distinguish between resistance types
+
+  Template Structure Requirements
+
+  Each template must include:
+
+  {
+    id: string; // kebab-case, descriptive
+    name: string; // Emoji + clear name (e.g., "🔬 Research Deep Dive")
+    description: string; // 1-2 sentences describing the template's purpose
+    context: string; // 2-3 sentences with flow-optimized context and approach
+    priority: TaskPriority; // low, medium, high, urgent
+    estimated_hours: number; // Realistic time estimate (0.5-8 hours)
+    tags: string[]; // 3-5 relevant tags
+    project_context?: ProjectContext; // business or personal
+
+    // NEW FLOW-BASED FIELDS:
+    microGoals: string; // Pre-written micro-steps that eliminate resistance
+    challengeLevel: number; // 1-10 scale (4-6 is optimal flow zone)
+    engagementStrategy: string; // sleep-to-flow, lower-hurdle, time-constraint, response-inhibition     
+    minimumFlowHours: number; // Minimum uninterrupted time for effective flow
+    minimumFlowMinutes: number; // Additional minutes (0, 15, 30, 45)
+    energyLevel: number; // 1=low, 2=medium, 3=high energy required
+    procrastinationTips: string; // Specific advice for this task type
+  }
+
+  Target User Personas
+
+  1. Therapist/Counselor - Progress notes, session prep, documentation, compliance
+  2. Director of Operations - maintenance, installations, writing procedures, planning, collaborations, meetings
+  3. IT - admin, connections, installations, updates, fixing problems
+  4. Business Professional - Presentations, analysis, client communication, strategic planning
+  5. Developer/Technical - Code reviews, debugging, feature implementation, system integration
+  6. Creative Professional - Design work, content creation, ideation, prototyping
+  7. Project Manager - Planning, stakeholder management, process optimization, reporting
+
+  Template Categories to Cover (3-4 templates each)
+
+  1. Deep Work Templates (High cognitive load, flow-critical)
+
+  - Complex analysis tasks
+  - Strategic planning and ideation
+  - Technical implementation work
+  - Creative design and problem-solving
+
+  2. Communication Templates (Medium cognitive load, relationship-critical)
+
+  - Client presentations and updates
+  - Team collaboration and feedback
+  - Stakeholder management
+  - Documentation and knowledge transfer
+
+  3. Administrative Templates (Low-medium cognitive load, process-critical)
+
+  - Compliance and regulatory tasks
+  - Process documentation and improvement
+  - Data entry and organization
+  - Routine maintenance and updates
+
+  4. Learning Templates (Variable cognitive load, growth-critical)
+
+  - Skill development and training
+  - Research and investigation
+  - Best practice analysis
+  - Professional development
+
+  Flow Optimization Guidelines
+
+  Micro-Goals Examples:
+
+  ❌ Bad: "Complete market research"
+  ✅ Good: "1. Open competitor analysis spreadsheet\n2. Navigate to Company A's pricing page\n3.
+  Record 3 pricing tiers in cell B2-B4\n4. Screenshot pricing table\n5. Repeat for Companies B-E"        
+
+  Challenge Level Calibration:
+
+  - Level 1-3: Boredom risk - Routine, automated tasks
+  - Level 4-6: Flow sweet spot - Optimal challenge-skill balance
+  - Level 7-10: Anxiety risk - Overwhelming complexity
+
+  Engagement Strategy Selection:
+
+  - Sleep-to-Flow: Morning tasks, within 60 seconds of waking
+  - Lower-Hurdle: Start with easiest version to build momentum
+  - Time-Constraint: Artificial deadline pressure for motivation
+  - Response-Inhibition: Commit before overthinking can sabotage
+
+  Energy Level Matching:
+
+  - Level 1: Administrative, routine tasks, email processing
+  - Level 2: Planning, documentation, moderate analysis
+  - Level 3: Complex problem-solving, creative work, strategic thinking
+
+  Industry-Specific Requirements
+
+  Healthcare/Therapy Context:
+
+  - HIPAA compliance considerations
+  - Evidence-based practice requirements
+  - Client safety and ethical guidelines
+  - Professional development standards
+
+  Business/Corporate Context:
+
+  - ROI and business impact focus
+  - Stakeholder communication needs
+  - Process efficiency optimization
+  - Strategic alignment requirements
+
+  Technical/Development Context:
+
+  - Code quality and best practices
+  - Security and performance considerations
+  - Documentation and knowledge transfer
+  - Testing and validation processes
+
+  Success Criteria
+
+  Your templates should:
+  1. Eliminate "blank page" syndrome - Clear starting points and next steps
+  2. Reduce decision fatigue - Pre-optimized settings for common scenarios
+  3. Address common procrastination triggers - Built-in resistance management
+  4. Scale across experience levels - Useful for beginners and experts
+  5. Feel immediately actionable - Users can start within 60 seconds
+
+  Output Format
+
+  Provide exactly 12-15 templates in TypeScript format, organized by category. Include detailed
+  comments explaining the flow-optimization rationale for each template's settings.
+
+  Focus on practical, real-world scenarios that your target users face daily, with emphasis on tasks     
+   that commonly trigger procrastination or require sustained focus. Each template should feel like      
+  a "cheat code" for achieving flow state in that specific type of work.
