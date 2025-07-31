@@ -40,10 +40,7 @@ export const SupabaseAuthProvider: React.FC<SupabaseAuthProviderProps> = ({ chil
   useEffect(() => {
     // Get initial session
     const getInitialSession = async () => {
-      console.log('🔐 Starting initial session check...');
-      
       if (!supabase) {
-        console.error('❌ Supabase client not available');
         setAuthState({
           user: null,
           loading: false,
@@ -54,11 +51,10 @@ export const SupabaseAuthProvider: React.FC<SupabaseAuthProviderProps> = ({ chil
       }
 
       try {
-        console.log('📡 Calling supabase.auth.getSession()...');
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
-          console.error('❌ Error getting session:', error);
+          console.error('Error getting session:', error);
           setAuthState({
             user: null,
             loading: false,
@@ -68,12 +64,6 @@ export const SupabaseAuthProvider: React.FC<SupabaseAuthProviderProps> = ({ chil
           return;
         }
 
-        console.log('✅ Session check complete:', {
-          hasSession: !!session,
-          userEmail: session?.user?.email,
-          isAuthenticated: !!session?.user
-        });
-
         setAuthState({
           user: session?.user ?? null,
           loading: false,
@@ -81,7 +71,7 @@ export const SupabaseAuthProvider: React.FC<SupabaseAuthProviderProps> = ({ chil
           session
         });
       } catch (error) {
-        console.error('❌ Exception in getInitialSession:', error);
+        console.error('Error in getInitialSession:', error);
         setAuthState({
           user: null,
           loading: false,
@@ -91,15 +81,7 @@ export const SupabaseAuthProvider: React.FC<SupabaseAuthProviderProps> = ({ chil
       }
     };
 
-    // Add timeout to prevent infinite loading
-    const timeoutId = setTimeout(() => {
-      console.warn('⏰ Session check timeout - forcing loading to false');
-      setAuthState(prev => ({ ...prev, loading: false }));
-    }, 5000);
-
-    getInitialSession().then(() => {
-      clearTimeout(timeoutId);
-    });
+    getInitialSession();
 
     if (!supabase) return;
 
@@ -130,7 +112,6 @@ export const SupabaseAuthProvider: React.FC<SupabaseAuthProviderProps> = ({ chil
     );
 
     return () => {
-      clearTimeout(timeoutId);
       subscription.unsubscribe();
     };
   }, []);
@@ -230,18 +211,7 @@ export const SupabaseAuthProvider: React.FC<SupabaseAuthProviderProps> = ({ chil
       if (error) {
         console.error('Sign in error:', error);
         setAuthState(prev => ({ ...prev, loading: false }));
-        
-        // Provide more helpful error messages
-        let errorMessage = error.message;
-        if (error.message.includes('Invalid login credentials')) {
-          errorMessage = 'Invalid email or password. Please check your credentials and try again.';
-        } else if (error.message.includes('Email not confirmed')) {
-          errorMessage = 'Please check your email and confirm your account before signing in.';
-        } else if (error.status === 400) {
-          errorMessage = 'Invalid email or password. If this is a new environment, you may need to create a new account.';
-        }
-        
-        return { success: false, error: errorMessage };
+        return { success: false, error: error.message };
       }
 
       if (!data.user) {
