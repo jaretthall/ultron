@@ -230,7 +230,18 @@ export const SupabaseAuthProvider: React.FC<SupabaseAuthProviderProps> = ({ chil
       if (error) {
         console.error('Sign in error:', error);
         setAuthState(prev => ({ ...prev, loading: false }));
-        return { success: false, error: error.message };
+        
+        // Provide more helpful error messages
+        let errorMessage = error.message;
+        if (error.message.includes('Invalid login credentials')) {
+          errorMessage = 'Invalid email or password. Please check your credentials and try again.';
+        } else if (error.message.includes('Email not confirmed')) {
+          errorMessage = 'Please check your email and confirm your account before signing in.';
+        } else if (error.status === 400) {
+          errorMessage = 'Invalid email or password. If this is a new environment, you may need to create a new account.';
+        }
+        
+        return { success: false, error: errorMessage };
       }
 
       if (!data.user) {

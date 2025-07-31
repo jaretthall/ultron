@@ -127,6 +127,9 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
     }
   };
 
+  // Check if we're in beta mode
+  const isBetaMode = import.meta.env.VITE_BETA_MODE === 'true';
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-950 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -142,6 +145,11 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
           <p className="mt-2 text-center text-sm text-slate-400">
             Welcome to Ultron - Your AI-powered productivity command center
           </p>
+          {isBetaMode && (
+            <p className="mt-1 text-center text-xs text-yellow-400 font-semibold">
+              Beta Environment - Separate from Production
+            </p>
+          )}
           
         </div>
 

@@ -6,6 +6,8 @@
   "homepage": "https://ultron-productivity.vercel.app/",
   "scripts": {
     "dev": "vite",
+    "dev:beta": "cp .env.beta .env && vite",
+    "dev:prod": "cp .env.local .env && vite",
     "build": "vite build",
     "test": "jest",
     "test:watch": "jest --watch",
