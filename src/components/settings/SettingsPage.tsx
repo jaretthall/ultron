@@ -782,40 +782,6 @@ const SettingsPage: React.FC = () => {
                   </div>
                 </div>
             </section>
-
-            <section className="p-6 bg-slate-800 rounded-lg">
-              <h3 className="text-xl font-semibold mb-4 text-slate-100">Backup & Data Management</h3>
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-slate-700 p-4 rounded-lg">
-                    <h4 className="font-medium text-slate-100 mb-2">Local Backup</h4>
-                    <p className="text-sm text-slate-400 mb-3">Export your data to local storage</p>
-                    <button className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors">
-                      Export All Data
-                    </button>
-                  </div>
-                  <div className="bg-slate-700 p-4 rounded-lg">
-                    <h4 className="font-medium text-slate-100 mb-2">Data Restore</h4>
-                    <p className="text-sm text-slate-400 mb-3">Import data from backup file</p>
-                    <button className="w-full px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-md transition-colors">
-                      Import Data
-                    </button>
-                  </div>
-                </div>
-                
-                <div className="bg-slate-700 p-4 rounded-lg">
-                  <h4 className="font-medium text-slate-100 mb-2">Automatic Backups</h4>
-                  <p className="text-sm text-slate-400 mb-3">Configure automatic backup schedule</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-300">Daily backups</span>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" className="sr-only peer" />
-                      <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-sky-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-600"></div>
-                    </label>
-                  </div>
-                </div>
-              </div>
-            </section>
           </>
         );
       case 'Security':
@@ -933,24 +899,7 @@ const SettingsPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Data Management */}
-              <div>
-                <h4 className="text-lg font-medium text-slate-200 mb-4">Data Management</h4>
-                <div className="space-y-3">
-                  <button className="w-full px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium rounded-md transition-colors">
-                    Download My Data
-                  </button>
-                  <button className="w-full px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-medium rounded-md transition-colors">
-                    Clear Cache & Reset
-                  </button>
-                  <button className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-md transition-colors">
-                    Delete All Data
-                  </button>
-                </div>
-                <p className="text-xs text-slate-400 mt-2">
-                  Data deletion is permanent and cannot be undone. Export your data first if needed.
-                </p>
-              </div>
+              {/* Data Management moved to Advanced tab */}
             </div>
           </section>
         );

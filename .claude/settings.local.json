@@ -35,7 +35,11 @@
       "Bash(npx vite:*)",
       "Bash(npx eslint:*)",
       "WebFetch(domain:localhost)",
-      "Bash(npm test:*)"
+      "Bash(npm test:*)",
+      "Bash(npm audit:*)",
+      "Bash(npm ls:*)",
+      "Bash(npm outdated:*)",
+      "Bash(npm update:*)"
     ],
     "deny": []
   },

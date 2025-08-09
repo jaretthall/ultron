@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAppMode } from '../../hooks/useLabels';
 import { Schedule, Task, Project, TaskPriority, TaskStatus } from '../../../types';
 import { formatDateForInput } from '../../utils/dateUtils';
 import LoadingSpinner from '../LoadingSpinner';
@@ -21,6 +22,8 @@ const CounselingSessionModal: React.FC<CounselingSessionModalProps> = ({
   projects,
   defaultDate
 }) => {
+  const [appMode] = useAppMode();
+  if (appMode === 'student') return null;
   const [title, setTitle] = useState('Counseling Session');
   const [context, setContext] = useState('Individual therapy session');
   const [date, setDate] = useState(defaultDate ? formatDateForInput(defaultDate) : '');

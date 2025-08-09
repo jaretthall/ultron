@@ -7,6 +7,16 @@ import {
 
 // All Claude API calls now go through serverless functions to avoid CORS issues
 
+// Helper to read current app mode from localStorage without React
+function getAppMode(): 'business' | 'student' {
+  try {
+    const stored = localStorage.getItem('ultron_app_mode');
+    return stored === 'student' ? 'student' : 'business';
+  } catch {
+    return 'business';
+  }
+}
+
 // Claude strategic insights generation
 export const generateClaudeInsights = async (
   projects: Project[],
@@ -29,7 +39,7 @@ export const generateClaudeInsights = async (
       body: JSON.stringify({
         projects,
         tasks,
-        userPreferences
+        userPreferences: { ...userPreferences, app_mode: getAppMode() }
       })
     });
 
@@ -87,7 +97,7 @@ export const generateClaudeDailyPlan = async (
         date: date.toISOString(),
         projects,
         tasks,
-        userPreferences: { ...userPreferences, ai_provider: 'claude' },
+        userPreferences: { ...userPreferences, ai_provider: 'claude', app_mode: getAppMode() },
         focusBlockData
       })
     });
@@ -156,7 +166,7 @@ export const generateClaudeWorkloadAnalysis = async (
         action: 'workload-analysis',
         projects,
         tasks,
-        userPreferences: { ...userPreferences, ai_provider: 'claude' },
+        userPreferences: { ...userPreferences, ai_provider: 'claude', app_mode: getAppMode() },
         schedulingData
       })
     });

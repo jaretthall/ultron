@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useLabels } from '../hooks/useLabels';
 import { WorkspaceSnapshot, TaskStatus, TaskPriority, ProjectStatus } from '../../types';
 import { generateWorkspaceSnapshot } from '../../services/exportService';
 // import { AnalyticsService, AnalyticsData } from '../../services/analyticsService';
@@ -49,6 +50,7 @@ interface DashboardProps {
 const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
   const { state } = useAppState();
   const { projects, tasks, userPreferences } = state;
+  const labels = useLabels();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -117,28 +119,28 @@ const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
       {/* Stats Section */}
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatCard 
-          title="Active Projects" 
+          title={`Active ${labels.projects}`} 
           value={activeProjectsCount} 
           icon={<ProjectIcon />} 
           color="text-emerald-400"
           onClick={navigateTo ? () => navigateTo('Projects') : undefined}
         />
         <StatCard 
-          title="Total Tasks" 
+          title={`Total ${labels.tasks}`} 
           value={totalTasksCount} 
           icon={<TaskIcon />} 
           color="text-blue-400"
           onClick={navigateTo ? () => navigateTo('Tasks') : undefined}
         />
         <StatCard 
-          title="Pending Tasks" 
+          title={`Pending ${labels.tasks}`} 
           value={pendingTasksCount} 
           icon={<PendingTaskIcon />} 
           color="text-yellow-400"
           onClick={navigateTo ? () => navigateTo('Tasks') : undefined}
         />
         <StatCard 
-          title="Urgent/High Priority Tasks" 
+          title={`Urgent/High Priority ${labels.tasks}`} 
           value={highPriorityTasksCount} 
           icon={<HighPriorityIcon />} 
           color="text-red-400"
@@ -150,7 +152,7 @@ const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
       <section className="bg-slate-800 p-6 rounded-xl shadow-lg mb-8">
         <h2 className="text-2xl font-semibold text-sky-300 mb-4">Comprehensive Data Export</h2>
         <p className="text-slate-300 mb-6">
-          Generate a complete snapshot of your workspace, including projects, tasks, analytics,
+          Generate a complete snapshot of your workspace, including {labels.projects.toLowerCase()}, {labels.tasks.toLowerCase()}, analytics,
           and AI-generated strategic insights. This JSON file can be used for external analysis, backup, or with other AI tools.
         </p>
         <button

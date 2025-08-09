@@ -52,9 +52,15 @@ export const projectsService = {
       async () => {
         return RetryableOperations.databaseRead(async () => {
           console.log('📊 Fetching projects from Supabase...');
+          const user = getCustomAuthUser();
+          if (!user?.id) {
+            console.warn('No authenticated user found for projects.getAll()');
+            return [];
+          }
           const { data, error } = await supabase!!
             .from('projects')
             .select('*')
+            .eq('user_id', user.id)
             .order('created_at', { ascending: false });
           
           console.log('📊 Projects fetch result:', { 
@@ -307,9 +313,15 @@ export const tasksService = {
     return withCache(
       CACHE_KEYS.ALL_TASKS,
       async () => {
+        const user = getCustomAuthUser();
+        if (!user?.id) {
+          console.warn('No authenticated user found for tasks.getAll()');
+          return [];
+        }
         const { data, error } = await supabase!
           .from('tasks')
           .select('*')
+          .eq('user_id', user.id)
           .order('created_at', { ascending: false });
         
         if (error) handleError('fetching tasks', error);

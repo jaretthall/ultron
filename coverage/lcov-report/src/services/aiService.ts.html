@@ -25,14 +25,14 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/132</span>
+                <span class='fraction'>0/138</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/76</span>
+                <span class='fraction'>0/94</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/127</span>
+                <span class='fraction'>0/133</span>
             </div>
         
             
@@ -593,7 +593,19 @@
 <a name='L528'></a><a href='#L528'>528</a>
 <a name='L529'></a><a href='#L529'>529</a>
 <a name='L530'></a><a href='#L530'>530</a>
-<a name='L531'></a><a href='#L531'>531</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L531'></a><a href='#L531'>531</a>
+<a name='L532'></a><a href='#L532'>532</a>
+<a name='L533'></a><a href='#L533'>533</a>
+<a name='L534'></a><a href='#L534'>534</a>
+<a name='L535'></a><a href='#L535'>535</a>
+<a name='L536'></a><a href='#L536'>536</a>
+<a name='L537'></a><a href='#L537'>537</a>
+<a name='L538'></a><a href='#L538'>538</a>
+<a name='L539'></a><a href='#L539'>539</a>
+<a name='L540'></a><a href='#L540'>540</a>
+<a name='L541'></a><a href='#L541'>541</a>
+<a name='L542'></a><a href='#L542'>542</a>
+<a name='L543'></a><a href='#L543'>543</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -680,6 +692,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -696,6 +709,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1092,7 +1106,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -1101,13 +1114,24 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1209,13 +1233,14 @@ export const <span class="cstat-no" title="statement not covered" >generateAIIns
 <span class="cstat-no" title="statement not covered" >      switch (currentProvider) {</span>
         case 'claude':
           const claudeAnalysis = <span class="cstat-no" title="statement not covered" >await generateClaudeWorkloadAnalysis(projects, tasks, userPreferences);</span>
+<span class="cstat-no" title="statement not covered" >          console.log('Claude analysis result:', claudeAnalysis);</span>
 <span class="cstat-no" title="statement not covered" >          result = {</span>
             data: {
-              blocked_tasks: claudeAnalysis.bottleneck_detection.resource_bottlenecks || [],
-              projects_needing_attention: claudeAnalysis.bottleneck_detection.dependency_bottlenecks || [],
-              recommendations: claudeAnalysis.strategic_recommendations || [],
-              focus_recommendations: claudeAnalysis.strategic_recommendations || [],
-              priority_balance_score: claudeAnalysis.work_life_balance.balance_score
+              blocked_tasks: claudeAnalysis?.bottleneck_detection?.resource_bottlenecks || [],
+              projects_needing_attention: claudeAnalysis?.bottleneck_detection?.dependency_bottlenecks || [],
+              recommendations: claudeAnalysis?.strategic_recommendations || [],
+              focus_recommendations: claudeAnalysis?.strategic_recommendations || [],
+              priority_balance_score: claudeAnalysis?.work_life_balance?.balance_score || 0
             },
             provider_used: 'claude',
             success: true,
@@ -1225,13 +1250,14 @@ export const <span class="cstat-no" title="statement not covered" >generateAIIns
           
         case 'openai':
           const openaiAnalysis = <span class="cstat-no" title="statement not covered" >await generateOpenAIWorkloadAnalysis(projects, tasks, userPreferences);</span>
+<span class="cstat-no" title="statement not covered" >          console.log('OpenAI analysis result:', openaiAnalysis);</span>
 <span class="cstat-no" title="statement not covered" >          result = {</span>
             data: {
-              blocked_tasks: openaiAnalysis.bottleneck_detection.resource_bottlenecks || [],
-              projects_needing_attention: openaiAnalysis.bottleneck_detection.dependency_bottlenecks || [],
-              recommendations: openaiAnalysis.strategic_recommendations || [],
-              focus_recommendations: openaiAnalysis.strategic_recommendations || [],
-              priority_balance_score: openaiAnalysis.work_life_balance.balance_score
+              blocked_tasks: openaiAnalysis?.bottleneck_detection?.resource_bottlenecks || [],
+              projects_needing_attention: openaiAnalysis?.bottleneck_detection?.dependency_bottlenecks || [],
+              recommendations: openaiAnalysis?.strategic_recommendations || [],
+              focus_recommendations: openaiAnalysis?.strategic_recommendations || [],
+              priority_balance_score: openaiAnalysis?.work_life_balance?.balance_score || 0
             },
             provider_used: 'openai',
             success: true,
@@ -1617,37 +1643,47 @@ const generateDefaultWorkloadAnalysis = <span class="cstat-no" title="statement 
 &nbsp;
 // Provider health check and diagnostics
 export const <span class="cstat-no" title="statement not covered" >checkAIProviderHealth = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >a</span>sync </span>(userPreferences: UserPreferences): Promise&lt;{</span>
-  providers: Record&lt;string, { available: boolean; configured: boolean; error?: string }&gt;;
+  providers: Record&lt;string, { available: boolean; configured: boolean; error?: string; debug?: string }&gt;;
   primary_provider: string;
   fallback_available: boolean;
 }&gt; =&gt; {
-  const providers: Record&lt;string, { available: boolean; configured: boolean; error?: string }&gt; = <span class="cstat-no" title="statement not covered" >{};</span>
+  const providers: Record&lt;string, { available: boolean; configured: boolean; error?: string; debug?: string }&gt; = <span class="cstat-no" title="statement not covered" >{};</span>
   
-  // Check environment variables and API keys
-  // Check Gemini
+  // Check Gemini - mark as deprecated
 <span class="cstat-no" title="statement not covered" >  providers.gemini = {</span>
-    available: false, // Gemini deprecated
-    configured: false // Gemini deprecated
+    available: false,
+    configured: false,
+    error: 'Gemini has been deprecated. Please use Claude or OpenAI.',
+    debug: 'Service discontinued'
   };
   
-  // Check Claude - consider configured if API key is present, use default model if not specified
+  // Check Claude - consider configured if API key is present
+  const claudeConfigured = <span class="cstat-no" title="statement not covered" >!!(userPreferences.claude_api_key);</span>
+  const claudeAvailable = <span class="cstat-no" title="statement not covered" >checkProviderAvailability('claude', userPreferences);</span>
 <span class="cstat-no" title="statement not covered" >  providers.claude = {</span>
-    available: checkProviderAvailability('claude', userPreferences),
-    configured: !!(userPreferences.claude_api_key)
+    available: claudeAvailable,
+    configured: claudeConfigured,
+    error: !claudeConfigured ? 'API key not configured' : (!claudeAvailable ? 'API key invalid or service unavailable' : undefined),
+    debug: `API Key: ${userPreferences.claude_api_key ? `Present (${userPreferences.claude_api_key.substring(0, 8)}...)` : 'Missing'}`
   };
   
-  // Check OpenAI - consider configured if API key is present, use default model if not specified
+  // Check OpenAI - consider configured if API key is present
+  const openaiConfigured = <span class="cstat-no" title="statement not covered" >!!(userPreferences.openai_api_key);</span>
+  const openaiAvailable = <span class="cstat-no" title="statement not covered" >checkProviderAvailability('openai', userPreferences);</span>
 <span class="cstat-no" title="statement not covered" >  providers.openai = {</span>
-    available: checkProviderAvailability('openai', userPreferences),
-    configured: !!(userPreferences.openai_api_key)
+    available: openaiAvailable,
+    configured: openaiConfigured,
+    error: !openaiConfigured ? 'API key not configured' : (!openaiAvailable ? 'API key invalid or service unavailable' : undefined),
+    debug: `API Key: ${userPreferences.openai_api_key ? `Present (${userPreferences.openai_api_key.substring(0, 8)}...)` : 'Missing'}`
   };
   
-  const primaryProvider = <span class="cstat-no" title="statement not covered" >userPreferences.ai_provider;</span>
-  const fallbackAvailable = <span class="cstat-no" title="statement not covered" >!!getNextAvailableProvider(primaryProvider, userPreferences);</span>
+  // Auto-migrate from Gemini to Claude
+  const effectivePrimaryProvider = <span class="cstat-no" title="statement not covered" >userPreferences.ai_provider === 'gemini' ? 'claude' : userPreferences.ai_provider;</span>
+  const fallbackAvailable = <span class="cstat-no" title="statement not covered" >!!getNextAvailableProvider(effectivePrimaryProvider, userPreferences);</span>
   
 <span class="cstat-no" title="statement not covered" >  return {</span>
     providers,
-    primary_provider: primaryProvider,
+    primary_provider: effectivePrimaryProvider,
     fallback_available: fallbackAvailable
   };
 };
@@ -1660,7 +1696,7 @@ export type { DailyPlan, WorkloadAnalysis }; </pre></td></tr></table></pre>
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-07-16T19:56:35.451Z
+                at 2025-08-09T16:38:52.785Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

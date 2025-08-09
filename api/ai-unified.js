@@ -17,6 +17,7 @@ export default async function handler(req, res) {
 
   try {
     const { action, projects, tasks, userPreferences, date, focusBlockData, schedulingData } = req.body;
+    const appMode = (userPreferences && userPreferences.app_mode === 'student') ? 'student' : 'business';
 
     // Validate required data
     if (!action || !projects || !tasks || !userPreferences) {
@@ -185,8 +186,11 @@ async function generateWorkloadAnalysis(provider, projects, tasks, userPreferenc
     strategic_recommendations: [`Workload analysis generated using ${provider} AI provider`]
   };
 
-  // For now, return the default analysis with provider-specific insights
+  // For now, return the default analysis with provider-specific insights and app_mode flavor
   defaultAnalysis.strategic_recommendations.push(`Analysis completed using ${provider} provider`);
+  if ((userPreferences && userPreferences.app_mode) === 'student') {
+    defaultAnalysis.strategic_recommendations.push('Student mode: consider study blocks, assignment due dates, and class schedules.');
+  }
   return defaultAnalysis;
 }
 

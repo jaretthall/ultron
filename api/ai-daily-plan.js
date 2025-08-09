@@ -17,6 +17,7 @@ export default async function handler(req, res) {
 
   try {
     const { date, projects, tasks, userPreferences, focusBlockData } = req.body;
+    const appMode = (userPreferences && userPreferences.app_mode === 'student') ? 'student' : 'business';
 
     // Validate required data
     if (!date || !projects || !tasks || !userPreferences) {
@@ -112,7 +113,9 @@ async function generateGeminiDailyPlan(date, projects, tasks, userPreferences, f
 
   const model = userPreferences.selected_gemini_model || 'gemini-1.5-flash';
   
-  const prompt = `Create a daily plan for ${date.toISOString().split('T')[0]} based on the following data:
+  const prompt = `Create a daily plan for ${date.toISOString().split('T')[0]} based on the following data.
+Use domain terminology based on app_mode: ${userPreferences.app_mode === 'student' ? 'Classes and Assignments' : 'Projects and Tasks'}.
+If app_mode is student, prioritize due dates, class times, and study blocks.
 
 Projects: ${JSON.stringify(projects, null, 2)}
 Tasks: ${JSON.stringify(tasks, null, 2)}
@@ -205,7 +208,7 @@ async function generateClaudeDailyPlan(date, projects, tasks, userPreferences, f
     throw new Error('Claude API key not configured');
   }
 
-  const prompt = `Create a daily plan for ${date.toISOString().split('T')[0]} based on the provided data. Focus on optimal task scheduling, energy management, and productivity optimization.`;
+  const prompt = `Create a daily plan for ${date.toISOString().split('T')[0]} based on the provided data. Use ${userPreferences.app_mode === 'student' ? 'Classes and Assignments' : 'Projects and Tasks'} terminology. If in student mode, emphasize due dates, class schedules, and study sessions. Focus on optimal scheduling, energy management, and productivity.`;
 
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -261,7 +264,7 @@ async function generateOpenAIDailyPlan(date, projects, tasks, userPreferences, f
 
   const model = userPreferences.selected_openai_model || 'gpt-4-turbo-preview';
   
-  const prompt = `Create a detailed daily plan for ${date.toISOString().split('T')[0]} based on the following data:
+  const prompt = `Create a detailed daily plan for ${date.toISOString().split('T')[0]} based on the following data. Use domain terminology based on app_mode: ${userPreferences.app_mode === 'student' ? 'Classes and Assignments' : 'Projects and Tasks'}. If app_mode is student, emphasize academic due dates and study blocks.
 
 Projects: ${JSON.stringify(projects, null, 2)}
 Tasks: ${JSON.stringify(tasks, null, 2)}
