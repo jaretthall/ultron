@@ -1,9 +1,13 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { UserPreferences, AIProvider } from '../../../types';
 import { AVAILABLE_CLAUDE_MODELS, AVAILABLE_OPENAI_MODELS, APP_VERSION } from '../../constants';
 import { useAppState } from '../../contexts/AppStateContext';
 import TagManager from '../tags/TagManager';
+import { useAppMode } from '../../hooks/useLabels';
+import { IdGenerator } from '../../utils/idGeneration';
+import { projectsService, tasksService, schedulesService, tagsService, tagCategoriesService, notesService } from '../../../services/databaseService';
+import { useCustomAuth } from '../../contexts/CustomAuthContext';
 
 const SettingsPage: React.FC = () => {
   const { state, updateUserPreferences } = useAppState();
@@ -16,6 +20,12 @@ const SettingsPage: React.FC = () => {
   const [currentOpenaiApiKey, setCurrentOpenaiApiKey] = useState<string>(userPreferences?.openai_api_key || '');
   const [currentSelectedOpenaiModel, setCurrentSelectedOpenaiModel] = useState<string>(userPreferences?.selected_openai_model || 'gpt-4o');
   const [isTagManagerOpen, setIsTagManagerOpen] = useState(false);
+  const [appMode, setAppMode] = useAppMode();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isImportingData, setIsImportingData] = useState(false);
+  const [importProgress, setImportProgress] = useState('');
+  const { user } = useCustomAuth();
 
   // Preferences state
   const [workingHoursStart, setWorkingHoursStart] = useState(userPreferences?.working_hours_start || '09:00');
@@ -198,6 +208,206 @@ const SettingsPage: React.FC = () => {
     // In a real implementation, this would save to the schedules table
     console.log('Saving imported events:', events);
     // For now, just log the events - in production this would use the database service
+  };
+
+  const handleExportData = async () => {
+    setIsExporting(true);
+    try {
+      // Fetch all data
+      const [projects, tasks, schedules, tags, tagCategories, notes] = await Promise.all([
+        projectsService.getAll(),
+        tasksService.getAll(),
+        schedulesService.getAll(),
+        tagsService.getAll(),
+        tagCategoriesService.getAll(),
+        notesService.getAll(),
+      ]);
+
+      const exportData = {
+        version: APP_VERSION,
+        exportDate: new Date().toISOString(),
+        userId: user?.id || 'unknown',
+        data: {
+          projects,
+          tasks,
+          schedules,
+          tags,
+          tagCategories,
+          notes,
+          userPreferences,
+        },
+      };
+
+      // Create and download the file
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ultron-backup-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      alert('Data exported successfully!');
+    } catch (error) {
+      console.error('Export failed:', error);
+      alert('Failed to export data. Please try again.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleImportData = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsImportingData(true);
+    setImportProgress('Reading file...');
+
+    try {
+      const text = await file.text();
+      const importData = JSON.parse(text);
+
+      // Validate structure
+      if (!importData.data || !importData.version) {
+        throw new Error('Invalid backup file format');
+      }
+
+      const currentUserId = user?.id;
+      if (!currentUserId) {
+        throw new Error('You must be logged in to import data');
+      }
+
+      const { projects, tasks, schedules, tags, tagCategories, notes, userPreferences: importedPrefs } = importData.data;
+
+      // Generate new IDs to avoid conflicts
+      const projectIdMap = new Map<string, string>();
+      const taskIdMap = new Map<string, string>();
+      const tagIdMap = new Map<string, string>();
+      const categoryIdMap = new Map<string, string>();
+
+      // Import tag categories first
+      if (tagCategories?.length) {
+        setImportProgress('Importing tag categories...');
+        for (const category of tagCategories) {
+          const newId = IdGenerator.generateCategoryId();
+          categoryIdMap.set(category.id, newId);
+          await tagCategoriesService.create({
+            ...category,
+            id: newId,
+            user_id: currentUserId,
+          });
+        }
+      }
+
+      // Import tags
+      if (tags?.length) {
+        setImportProgress('Importing tags...');
+        for (const tag of tags) {
+          const newId = IdGenerator.generateTagId();
+          tagIdMap.set(tag.id, newId);
+          await tagsService.create({
+            ...tag,
+            id: newId,
+            user_id: currentUserId,
+            category_id: tag.category_id ? categoryIdMap.get(tag.category_id) || tag.category_id : null,
+          });
+        }
+      }
+
+      // Import projects
+      if (projects?.length) {
+        setImportProgress('Importing projects...');
+        for (const project of projects) {
+          const newId = IdGenerator.generateProjectId();
+          projectIdMap.set(project.id, newId);
+          await projectsService.create({
+            ...project,
+            id: newId,
+            user_id: currentUserId,
+            tags: project.tags?.map((tagId: string) => tagIdMap.get(tagId) || tagId) || [],
+          });
+        }
+      }
+
+      // Import tasks
+      if (tasks?.length) {
+        setImportProgress('Importing tasks...');
+        for (const task of tasks) {
+          const newId = IdGenerator.generateTaskId();
+          taskIdMap.set(task.id, newId);
+          await tasksService.create({
+            ...task,
+            id: newId,
+            user_id: currentUserId,
+            project_id: task.project_id ? projectIdMap.get(task.project_id) || task.project_id : null,
+            tags: task.tags?.map((tagId: string) => tagIdMap.get(tagId) || tagId) || [],
+          });
+        }
+      }
+
+      // Import schedules
+      if (schedules?.length) {
+        setImportProgress('Importing schedules...');
+        for (const schedule of schedules) {
+          await schedulesService.create({
+            ...schedule,
+            id: IdGenerator.generateScheduleId(),
+            user_id: currentUserId,
+            task_id: schedule.task_id ? taskIdMap.get(schedule.task_id) || schedule.task_id : null,
+          });
+        }
+      }
+
+      // Import notes
+      if (notes?.length) {
+        setImportProgress('Importing notes...');
+        for (const note of notes) {
+          await notesService.create({
+            ...note,
+            id: IdGenerator.generateNoteId(),
+            user_id: currentUserId,
+            project_id: note.project_id ? projectIdMap.get(note.project_id) || note.project_id : null,
+            task_id: note.task_id ? taskIdMap.get(note.task_id) || note.task_id : null,
+            tags: note.tags?.map((tagId: string) => tagIdMap.get(tagId) || tagId) || [],
+          });
+        }
+      }
+
+      // Update user preferences if provided
+      if (importedPrefs) {
+        setImportProgress('Importing preferences...');
+        await updateUserPreferences(importedPrefs);
+      }
+
+      setImportProgress('Import completed successfully!');
+      setTimeout(() => {
+        setImportProgress('');
+        window.location.reload(); // Reload to show imported data
+      }, 2000);
+
+    } catch (error) {
+      console.error('Import failed:', error);
+      setImportProgress('');
+      alert('Failed to import data. Please check the file format and try again.');
+    } finally {
+      setIsImportingData(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleAppModeChange = (mode: 'business' | 'student') => {
+    setAppMode(mode);
+  };
+
+  const handleSaveAppMode = () => {
+    // Mode is already saved to localStorage via setAppMode
+    alert(`App mode changed to ${appMode === 'student' ? 'Student' : 'Business'} mode. The interface will update to reflect this change.`);
+    // Optionally trigger a page reload to ensure all components update
+    window.location.reload();
   };
 
 
@@ -1119,6 +1329,90 @@ const SettingsPage: React.FC = () => {
             <h3 className="text-xl font-semibold mb-6 text-slate-100">Advanced Settings</h3>
             
             <div className="space-y-6">
+              {/* Data Backup and Restore */}
+              <div>
+                <h4 className="text-lg font-medium text-slate-200 mb-4">Data Backup & Restore</h4>
+                <div className="space-y-4">
+                  <div className="bg-slate-700 p-4 rounded-lg">
+                    <h5 className="font-medium text-slate-100 mb-2">Export Data</h5>
+                    <p className="text-sm text-slate-400 mb-3">Download all your data as a JSON file for backup or migration</p>
+                    <button
+                      onClick={handleExportData}
+                      disabled={isExporting}
+                      className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white text-sm font-medium rounded-md transition-colors"
+                    >
+                      {isExporting ? 'Exporting...' : 'Export All Data'}
+                    </button>
+                  </div>
+                  
+                  <div className="bg-slate-700 p-4 rounded-lg">
+                    <h5 className="font-medium text-slate-100 mb-2">Import Data</h5>
+                    <p className="text-sm text-slate-400 mb-3">Restore data from a previously exported JSON file</p>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="application/json"
+                      onChange={handleImportData}
+                      className="hidden"
+                    />
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isImportingData}
+                      className="w-full px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-800 text-white text-sm font-medium rounded-md transition-colors"
+                    >
+                      {isImportingData ? `Importing... ${importProgress}` : 'Import Data'}
+                    </button>
+                    {importProgress && (
+                      <p className="text-sm text-slate-300 mt-2">{importProgress}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* App Mode Toggle */}
+              <div>
+                <h4 className="text-lg font-medium text-slate-200 mb-4">App Mode</h4>
+                <div className="bg-slate-700 p-4 rounded-lg">
+                  <p className="text-sm text-slate-400 mb-4">Choose the terminology that best fits your use case</p>
+                  <div className="space-y-3">
+                    <label className="flex items-center cursor-pointer">
+                      <input
+                        type="radio"
+                        name="appMode"
+                        value="business"
+                        checked={appMode === 'business'}
+                        onChange={() => handleAppModeChange('business')}
+                        className="mr-3 text-sky-600 focus:ring-sky-500"
+                      />
+                      <div>
+                        <span className="text-slate-100 font-medium">Business Mode</span>
+                        <p className="text-xs text-slate-400">Projects, Tasks, Counseling visible</p>
+                      </div>
+                    </label>
+                    <label className="flex items-center cursor-pointer">
+                      <input
+                        type="radio"
+                        name="appMode"
+                        value="student"
+                        checked={appMode === 'student'}
+                        onChange={() => handleAppModeChange('student')}
+                        className="mr-3 text-sky-600 focus:ring-sky-500"
+                      />
+                      <div>
+                        <span className="text-slate-100 font-medium">Student Mode</span>
+                        <p className="text-xs text-slate-400">Classes, Assignments, Counseling hidden</p>
+                      </div>
+                    </label>
+                  </div>
+                  <button
+                    onClick={handleSaveAppMode}
+                    className="mt-4 w-full px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium rounded-md transition-colors"
+                  >
+                    Apply Mode Change
+                  </button>
+                </div>
+              </div>
+
               {/* Performance Settings */}
               <div>
                 <h4 className="text-lg font-medium text-slate-200 mb-4">Performance & Optimization</h4>
