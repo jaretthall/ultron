@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useCustomAuth } from '../../contexts/CustomAuthContext';
+import { useSupabaseAuth } from '../../contexts/SupabaseAuthContext';
 import { Menu, X } from 'lucide-react';
+import { useLabels, useAppMode } from '../../hooks/useLabels';
 
 interface HeaderComponentProps {
   projectContextFilter: 'all' | 'business' | 'personal';
@@ -13,8 +14,18 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
   onProjectContextFilterChange 
 }) => {
   const location = useLocation();
-  const { signOut } = useCustomAuth();
+  const { signOut, user, isAuthenticated, loading } = useSupabaseAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const labels = useLabels();
+  const [appMode] = useAppMode();
+
+  // Debug authentication state
+  console.log('🔍 HeaderComponent Auth State:', { 
+    isAuthenticated, 
+    loading, 
+    userEmail: user?.email,
+    userId: user?.id 
+  });
 
   const getLinkClassName = (path: string) => {
     const isActive = location.pathname === path;
@@ -36,14 +47,19 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
 
   const navigationItems = [
     { to: '/', label: 'Home' },
-    { to: '/projects', label: 'Projects' },
-    { to: '/tasks', label: 'Tasks' },
+    { to: '/projects', label: labels.projects },
+    { to: '/tasks', label: labels.tasks },
     { to: '/calendar', label: 'Calendar' },
     { to: '/documents', label: 'Documents' },
     { to: '/ai', label: 'AI' },
     { to: '/analytics', label: 'Analytics' },
     { to: '/settings', label: 'Settings' }
   ];
+
+  // Filter out counseling link in student mode
+  if (labels.counseling && appMode === 'business') {
+    navigationItems.splice(4, 0, { to: '/counseling', label: labels.counseling });
+  }
 
   return (
     <header className="bg-slate-800 border-b border-slate-700 px-4 py-3">
@@ -80,7 +96,7 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
               aria-label="Filter projects by context"
               title="Filter projects by business or personal context"
             >
-              <option value="all">All Projects</option>
+              <option value="all">All {labels.projects}</option>
               <option value="business">Business</option>
               <option value="personal">Personal</option>
             </select>
@@ -107,10 +123,17 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
                 className="flex items-center space-x-2 text-slate-300 hover:text-white px-3 py-2 rounded"
                 data-testid="sign-out-button"
                 onClick={async () => {
+                  console.log('🔓 Attempting sign out...');
                   try {
-                    await signOut();
+                    const result = await signOut();
+                    console.log('🔓 Sign out result:', result);
+                    if (!result.success) {
+                      console.error('❌ Sign out failed:', result.error);
+                      alert(`Sign out failed: ${result.error}`);
+                    }
                   } catch (error) {
-                    console.error('Sign out failed:', error);
+                    console.error('❌ Sign out exception:', error);
+                    alert(`Sign out error: ${error}`);
                   }
                 }}
               >
@@ -150,7 +173,7 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
                   className="w-full bg-slate-700 text-white text-sm rounded px-3 py-2 border border-slate-600"
                   aria-label="Filter projects by context"
                 >
-                  <option value="all">All Projects</option>
+                  <option value="all">All {labels.projects}</option>
                   <option value="business">Business</option>
                   <option value="personal">Personal</option>
                 </select>
@@ -162,11 +185,19 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
                 className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-slate-300 hover:text-white hover:bg-slate-700 flex items-center space-x-2"
                 data-testid="sign-out-button"
                 onClick={async () => {
+                  console.log('🔓 Attempting mobile sign out...');
                   try {
-                    await signOut();
-                    setIsMobileMenuOpen(false);
+                    const result = await signOut();
+                    console.log('🔓 Mobile sign out result:', result);
+                    if (result.success) {
+                      setIsMobileMenuOpen(false);
+                    } else {
+                      console.error('❌ Mobile sign out failed:', result.error);
+                      alert(`Sign out failed: ${result.error}`);
+                    }
                   } catch (error) {
-                    console.error('Sign out failed:', error);
+                    console.error('❌ Mobile sign out exception:', error);
+                    alert(`Sign out error: ${error}`);
                   }
                 }}
               >

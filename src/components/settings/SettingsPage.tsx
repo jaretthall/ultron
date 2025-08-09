@@ -1,9 +1,14 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { UserPreferences, AIProvider } from '../../../types';
 import { AVAILABLE_CLAUDE_MODELS, AVAILABLE_OPENAI_MODELS, APP_VERSION } from '../../constants';
 import { useAppState } from '../../contexts/AppStateContext';
 import TagManager from '../tags/TagManager';
+import AuthDebug from '../debug/AuthDebug';
+import { useAppMode } from '../../hooks/useLabels';
+import { IdGenerator } from '../../utils/idGeneration';
+import { projectsService, tasksService, schedulesService, tagsService, tagCategoriesService, notesService } from '../../../services/databaseService';
+import { useSupabaseAuth } from '../../contexts/SupabaseAuthContext';
 
 const SettingsPage: React.FC = () => {
   const { state, updateUserPreferences } = useAppState();
@@ -16,6 +21,12 @@ const SettingsPage: React.FC = () => {
   const [currentOpenaiApiKey, setCurrentOpenaiApiKey] = useState<string>(userPreferences?.openai_api_key || '');
   const [currentSelectedOpenaiModel, setCurrentSelectedOpenaiModel] = useState<string>(userPreferences?.selected_openai_model || 'gpt-4o');
   const [isTagManagerOpen, setIsTagManagerOpen] = useState(false);
+  const [appMode, setAppMode] = useAppMode();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isImportingData, setIsImportingData] = useState(false);
+  const [importProgress, setImportProgress] = useState('');
+  const { user } = useSupabaseAuth();
 
   // Preferences state
   const [workingHoursStart, setWorkingHoursStart] = useState(userPreferences?.working_hours_start || '09:00');
@@ -32,7 +43,7 @@ const SettingsPage: React.FC = () => {
   const [outlookConnected, setOutlookConnected] = useState(false);
   const [appleConnected] = useState(false);
   const [importedEvents, setImportedEvents] = useState<any[]>([]);
-  const [isImporting, setIsImporting] = useState(false);
+  const [isImportingCalendar, setIsImportingCalendar] = useState(false);
 
   useEffect(() => {
     if (userPreferences) {
@@ -56,7 +67,7 @@ const SettingsPage: React.FC = () => {
   }, [userPreferences]);
 
 
-  const tabs = ['AI Provider', 'Preferences', 'Sync', 'Security', 'Integrations', 'Advanced', 'Notes'];
+  const tabs = ['AI Provider', 'Preferences', 'Sync', 'Security', 'Integrations', 'Advanced', 'Notes', 'Debug'];
 
   const handleSaveChanges = () => {
     const updatedPrefs: Partial<UserPreferences> = {
@@ -93,7 +104,7 @@ const SettingsPage: React.FC = () => {
   };
 
   const handleFileImport = async (file: File) => {
-    setIsImporting(true);
+    setIsImportingCalendar(true);
     try {
       const text = await file.text();
       let events: any[] = [];
@@ -117,7 +128,7 @@ const SettingsPage: React.FC = () => {
       console.error('Error importing calendar file:', error);
       alert('Error importing calendar file. Please check the format.');
     } finally {
-      setIsImporting(false);
+      setIsImportingCalendar(false);
     }
   };
 
@@ -180,6 +191,206 @@ const SettingsPage: React.FC = () => {
     return events;
   };
 
+  const handleExportData = async () => {
+    setIsExporting(true);
+    try {
+      // Fetch all data
+      const [projects, tasks, schedules, tags, tagCategories, notes] = await Promise.all([
+        projectsService.getAll(),
+        tasksService.getAll(),
+        schedulesService.getAll(),
+        tagsService.getAll(),
+        tagCategoriesService.getAll(),
+        notesService.getAll(),
+      ]);
+
+      const exportData = {
+        version: APP_VERSION,
+        exportDate: new Date().toISOString(),
+        userId: user?.id || 'unknown',
+        data: {
+          projects,
+          tasks,
+          schedules,
+          tags,
+          tagCategories,
+          notes,
+          userPreferences,
+        },
+      };
+
+      // Create and download the file
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ultron-backup-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      alert('Data exported successfully!');
+    } catch (error) {
+      console.error('Export failed:', error);
+      alert('Failed to export data. Please try again.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleImportData = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsImportingData(true);
+    setImportProgress('Reading file...');
+
+    try {
+      const text = await file.text();
+      const importData = JSON.parse(text);
+
+      // Validate structure
+      if (!importData.data || !importData.version) {
+        throw new Error('Invalid backup file format');
+      }
+
+      const currentUserId = user?.id;
+      if (!currentUserId) {
+        throw new Error('You must be logged in to import data');
+      }
+
+      const { projects, tasks, schedules, tags, tagCategories, notes, userPreferences: importedPrefs } = importData.data;
+
+      // Generate new IDs to avoid conflicts
+      const projectIdMap = new Map<string, string>();
+      const taskIdMap = new Map<string, string>();
+      const tagIdMap = new Map<string, string>();
+      const categoryIdMap = new Map<string, string>();
+
+      // Import tag categories first
+      if (tagCategories?.length) {
+        setImportProgress('Importing tag categories...');
+        for (const category of tagCategories) {
+          const newId = IdGenerator.generateCategoryId();
+          categoryIdMap.set(category.id, newId);
+          await tagCategoriesService.create({
+            ...category,
+            id: newId,
+            user_id: currentUserId,
+          });
+        }
+      }
+
+      // Import tags
+      if (tags?.length) {
+        setImportProgress('Importing tags...');
+        for (const tag of tags) {
+          const newId = IdGenerator.generateTagId();
+          tagIdMap.set(tag.id, newId);
+          await tagsService.create({
+            ...tag,
+            id: newId,
+            user_id: currentUserId,
+            category_id: tag.category_id ? categoryIdMap.get(tag.category_id) || tag.category_id : null,
+          });
+        }
+      }
+
+      // Import projects
+      if (projects?.length) {
+        setImportProgress('Importing projects...');
+        for (const project of projects) {
+          const newId = IdGenerator.generateProjectId();
+          projectIdMap.set(project.id, newId);
+          await projectsService.create({
+            ...project,
+            id: newId,
+            user_id: currentUserId,
+            tags: project.tags?.map((tagId: string) => tagIdMap.get(tagId) || tagId) || [],
+          });
+        }
+      }
+
+      // Import tasks
+      if (tasks?.length) {
+        setImportProgress('Importing tasks...');
+        for (const task of tasks) {
+          const newId = IdGenerator.generateTaskId();
+          taskIdMap.set(task.id, newId);
+          await tasksService.create({
+            ...task,
+            id: newId,
+            user_id: currentUserId,
+            project_id: task.project_id ? projectIdMap.get(task.project_id) || task.project_id : null,
+            tags: task.tags?.map((tagId: string) => tagIdMap.get(tagId) || tagId) || [],
+          });
+        }
+      }
+
+      // Import schedules
+      if (schedules?.length) {
+        setImportProgress('Importing schedules...');
+        for (const schedule of schedules) {
+          await schedulesService.create({
+            ...schedule,
+            id: IdGenerator.generateScheduleId(),
+            user_id: currentUserId,
+            task_id: schedule.task_id ? taskIdMap.get(schedule.task_id) || schedule.task_id : null,
+          });
+        }
+      }
+
+      // Import notes
+      if (notes?.length) {
+        setImportProgress('Importing notes...');
+        for (const note of notes) {
+          await notesService.create({
+            ...note,
+            id: IdGenerator.generateNoteId(),
+            user_id: currentUserId,
+            project_id: note.project_id ? projectIdMap.get(note.project_id) || note.project_id : null,
+            task_id: note.task_id ? taskIdMap.get(note.task_id) || note.task_id : null,
+            tags: note.tags?.map((tagId: string) => tagIdMap.get(tagId) || tagId) || [],
+          });
+        }
+      }
+
+      // Update user preferences if provided
+      if (importedPrefs) {
+        setImportProgress('Importing preferences...');
+        await updateUserPreferences(importedPrefs);
+      }
+
+      setImportProgress('Import completed successfully!');
+      setTimeout(() => {
+        setImportProgress('');
+        window.location.reload(); // Reload to show imported data
+      }, 2000);
+
+    } catch (error) {
+      console.error('Import failed:', error);
+      setImportProgress('');
+      alert('Failed to import data. Please check the file format and try again.');
+    } finally {
+      setIsImportingData(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleAppModeChange = (mode: 'business' | 'student') => {
+    setAppMode(mode);
+  };
+
+  const handleSaveAppMode = () => {
+    // Mode is already saved to localStorage via setAppMode
+    alert(`App mode changed to ${appMode === 'student' ? 'Student' : 'Business'} mode. The interface will update to reflect this change.`);
+    // Optionally trigger a page reload to ensure all components update
+    window.location.reload();
+  };
+
   const parseDateString = (dateStr: string) => {
     // Simple date parsing for ICS format (YYYYMMDDTHHMMSSZ)
     if (dateStr.length >= 8) {
@@ -208,7 +419,7 @@ const SettingsPage: React.FC = () => {
           <section className="p-6 bg-slate-800 rounded-lg">
             <h3 className="text-xl font-semibold mb-6 text-slate-100">AI Provider Configuration</h3>
 
-            <div className="space-y-6">
+            <form onSubmit={(e) => { e.preventDefault(); handleSaveChanges(); }} className="space-y-6">
               <div>
                 <label htmlFor="aiProvider" className="block text-sm font-medium text-slate-300 mb-1">Choose AI Provider</label>
                 <select
@@ -289,12 +500,12 @@ const SettingsPage: React.FC = () => {
                 </>
               )}
                  <button
-                    onClick={handleSaveChanges}
+                    type="submit"
                     className="mt-6 w-full sm:w-auto bg-sky-600 hover:bg-sky-700 text-white font-medium py-2.5 px-6 rounded-lg text-sm"
                   >
                     Save AI Preferences
                   </button>
-            </div>
+            </form>
           </section>
         );
       case 'Preferences':
@@ -489,7 +700,7 @@ const SettingsPage: React.FC = () => {
                         <p className="text-xs text-slate-400">Automatically sync changes as they happen</p>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" defaultChecked className="sr-only peer" />
+                        <input type="checkbox" defaultChecked className="sr-only peer" aria-label="Real-time sync" />
                         <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-sky-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-600"></div>
                       </label>
                     </div>
@@ -500,7 +711,7 @@ const SettingsPage: React.FC = () => {
                         <p className="text-xs text-slate-400">Allow app to work without internet connection</p>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" defaultChecked className="sr-only peer" />
+                        <input type="checkbox" defaultChecked className="sr-only peer" aria-label="Offline mode" />
                         <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-sky-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-600"></div>
                       </label>
                     </div>
@@ -510,7 +721,10 @@ const SettingsPage: React.FC = () => {
                         <h5 className="text-sm font-medium text-slate-100">Conflict Resolution</h5>
                         <p className="text-xs text-slate-400">How to handle data conflicts during sync</p>
                       </div>
-                      <select className="bg-slate-600 border-slate-500 text-slate-100 rounded-md px-3 py-1 text-sm">
+                      <select 
+                        className="bg-slate-600 border-slate-500 text-slate-100 rounded-md px-3 py-1 text-sm"
+                        aria-label="Conflict resolution method"
+                      >
                         <option value="ask">Ask me</option>
                         <option value="client">Client wins</option>
                         <option value="server">Server wins</option>
@@ -599,7 +813,7 @@ const SettingsPage: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-slate-300">Daily backups</span>
                     <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" className="sr-only peer" />
+                      <input type="checkbox" className="sr-only peer" aria-label="Daily backups" />
                       <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-sky-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-600"></div>
                     </label>
                   </div>
@@ -686,7 +900,7 @@ const SettingsPage: React.FC = () => {
                       <p className="text-xs text-slate-400">Help improve the app by sharing usage analytics</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" defaultChecked className="sr-only peer" />
+                      <input type="checkbox" defaultChecked className="sr-only peer" aria-label="Analytics collection" />
                       <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-sky-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-600"></div>
                     </label>
                   </div>
@@ -697,7 +911,7 @@ const SettingsPage: React.FC = () => {
                       <p className="text-xs text-slate-400">Automatically send crash reports to help fix bugs</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" defaultChecked className="sr-only peer" />
+                      <input type="checkbox" defaultChecked className="sr-only peer" aria-label="Error reporting" />
                       <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-sky-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-600"></div>
                     </label>
                   </div>
@@ -903,7 +1117,10 @@ const SettingsPage: React.FC = () => {
                       <h5 className="text-sm font-medium text-slate-100">Auto-sync Frequency</h5>
                       <p className="text-xs text-slate-400">How often to sync with external services</p>
                     </div>
-                    <select className="bg-slate-600 border-slate-500 text-slate-100 rounded-md px-3 py-1 text-sm">
+                    <select 
+                      className="bg-slate-600 border-slate-500 text-slate-100 rounded-md px-3 py-1 text-sm"
+                      aria-label="Auto-sync frequency"
+                    >
                       <option value="realtime">Real-time</option>
                       <option value="5min">Every 5 minutes</option>
                       <option value="15min">Every 15 minutes</option>
@@ -917,7 +1134,10 @@ const SettingsPage: React.FC = () => {
                       <h5 className="text-sm font-medium text-slate-100">Conflict Resolution</h5>
                       <p className="text-xs text-slate-400">How to handle sync conflicts</p>
                     </div>
-                    <select className="bg-slate-600 border-slate-500 text-slate-100 rounded-md px-3 py-1 text-sm">
+                    <select 
+                      className="bg-slate-600 border-slate-500 text-slate-100 rounded-md px-3 py-1 text-sm"
+                      aria-label="Integration conflict resolution"
+                    >
                       <option value="ask">Ask me</option>
                       <option value="ultron">Ultron wins</option>
                       <option value="external">External wins</option>
@@ -931,7 +1151,7 @@ const SettingsPage: React.FC = () => {
                       <p className="text-xs text-slate-400">Encrypt backups before uploading</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" defaultChecked className="sr-only peer" />
+                      <input type="checkbox" defaultChecked className="sr-only peer" aria-label="Backup encryption" />
                       <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-sky-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-600"></div>
                     </label>
                   </div>
@@ -956,7 +1176,7 @@ const SettingsPage: React.FC = () => {
                       <p className="text-xs text-slate-400">Automatically save notes as you type</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" defaultChecked className="sr-only peer" />
+                      <input type="checkbox" defaultChecked className="sr-only peer" aria-label="Auto-save notes" />
                       <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-sky-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-600"></div>
                     </label>
                   </div>
@@ -967,7 +1187,7 @@ const SettingsPage: React.FC = () => {
                       <p className="text-xs text-slate-400">Keep track of note changes</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" defaultChecked className="sr-only peer" />
+                      <input type="checkbox" defaultChecked className="sr-only peer" aria-label="Version history" />
                       <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-sky-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-600"></div>
                     </label>
                   </div>
@@ -977,7 +1197,10 @@ const SettingsPage: React.FC = () => {
                       <h5 className="text-sm font-medium text-slate-100">Default Note Format</h5>
                       <p className="text-xs text-slate-400">Choose your preferred note format</p>
                     </div>
-                    <select className="bg-slate-600 border-slate-500 text-slate-100 rounded-md px-3 py-1 text-sm">
+                    <select 
+                      className="bg-slate-600 border-slate-500 text-slate-100 rounded-md px-3 py-1 text-sm"
+                      aria-label="Default note format"
+                    >
                       <option value="markdown">Markdown</option>
                       <option value="plain">Plain Text</option>
                       <option value="rich">Rich Text</option>
@@ -1027,7 +1250,7 @@ const SettingsPage: React.FC = () => {
                       <p className="text-xs text-slate-400">Automatically link notes to related projects</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" defaultChecked className="sr-only peer" />
+                      <input type="checkbox" defaultChecked className="sr-only peer" aria-label="Auto-link to projects" />
                       <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-sky-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-600"></div>
                     </label>
                   </div>
@@ -1038,7 +1261,7 @@ const SettingsPage: React.FC = () => {
                       <p className="text-xs text-slate-400">Automatically suggest tags based on content</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" className="sr-only peer" />
+                      <input type="checkbox" className="sr-only peer" aria-label="Smart tagging" />
                       <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-sky-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-600"></div>
                     </label>
                   </div>
@@ -1048,7 +1271,10 @@ const SettingsPage: React.FC = () => {
                       <h5 className="text-sm font-medium text-slate-100">Archive Old Notes</h5>
                       <p className="text-xs text-slate-400">How long to keep notes before archiving</p>
                     </div>
-                    <select className="bg-slate-600 border-slate-500 text-slate-100 rounded-md px-3 py-1 text-sm">
+                    <select 
+                      className="bg-slate-600 border-slate-500 text-slate-100 rounded-md px-3 py-1 text-sm"
+                      aria-label="Archive old notes duration"
+                    >
                       <option value="never">Never</option>
                       <option value="6months">6 Months</option>
                       <option value="1year">1 Year</option>
@@ -1068,7 +1294,7 @@ const SettingsPage: React.FC = () => {
                       <p className="text-xs text-slate-400">Enable searching within note content</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" defaultChecked className="sr-only peer" />
+                      <input type="checkbox" defaultChecked className="sr-only peer" aria-label="Full-text search" />
                       <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-sky-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-600"></div>
                     </label>
                   </div>
@@ -1079,7 +1305,7 @@ const SettingsPage: React.FC = () => {
                       <p className="text-xs text-slate-400">Generate automatic summaries of long notes</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" className="sr-only peer" />
+                      <input type="checkbox" className="sr-only peer" aria-label="AI-powered summaries" />
                       <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-sky-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-600"></div>
                     </label>
                   </div>
@@ -1119,6 +1345,89 @@ const SettingsPage: React.FC = () => {
             <h3 className="text-xl font-semibold mb-6 text-slate-100">Advanced Settings</h3>
             
             <div className="space-y-6">
+              {/* Data Backup and Restore */}
+              <div>
+                <h4 className="text-lg font-medium text-slate-200 mb-4">Data Backup & Restore</h4>
+                <div className="space-y-4">
+                  <div className="bg-slate-700 p-4 rounded-lg">
+                    <h5 className="font-medium text-slate-100 mb-2">Export Data</h5>
+                    <p className="text-sm text-slate-400 mb-3">Download all your data as a JSON file for backup or migration</p>
+                    <button
+                      onClick={handleExportData}
+                      disabled={isExporting}
+                      className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white text-sm font-medium rounded-md transition-colors"
+                    >
+                      {isExporting ? 'Exporting...' : 'Export All Data'}
+                    </button>
+                  </div>
+                  
+                  <div className="bg-slate-700 p-4 rounded-lg">
+                    <h5 className="font-medium text-slate-100 mb-2">Import Data</h5>
+                    <p className="text-sm text-slate-400 mb-3">Restore data from a previously exported JSON file</p>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="application/json"
+                      onChange={handleImportData}
+                      className="hidden"
+                    />
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isImportingData}
+                      className="w-full px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-800 text-white text-sm font-medium rounded-md transition-colors"
+                    >
+                      {isImportingData ? `Importing... ${importProgress}` : 'Import Data'}
+                    </button>
+                    {importProgress && (
+                      <p className="text-sm text-slate-300 mt-2">{importProgress}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* App Mode Toggle */}
+              <div>
+                <h4 className="text-lg font-medium text-slate-200 mb-4">App Mode</h4>
+                <div className="bg-slate-700 p-4 rounded-lg">
+                  <p className="text-sm text-slate-400 mb-4">Choose the terminology that best fits your use case</p>
+                  <div className="space-y-3">
+                    <label className="flex items-center cursor-pointer">
+                      <input
+                        type="radio"
+                        name="appMode"
+                        value="business"
+                        checked={appMode === 'business'}
+                        onChange={() => handleAppModeChange('business')}
+                        className="mr-3 text-sky-600 focus:ring-sky-500"
+                      />
+                      <div>
+                        <span className="text-slate-100 font-medium">Business Mode</span>
+                        <p className="text-xs text-slate-400">Projects, Tasks, Counseling visible</p>
+                      </div>
+                    </label>
+                    <label className="flex items-center cursor-pointer">
+                      <input
+                        type="radio"
+                        name="appMode"
+                        value="student"
+                        checked={appMode === 'student'}
+                        onChange={() => handleAppModeChange('student')}
+                        className="mr-3 text-sky-600 focus:ring-sky-500"
+                      />
+                      <div>
+                        <span className="text-slate-100 font-medium">Student Mode</span>
+                        <p className="text-xs text-slate-400">Classes, Assignments, Counseling hidden</p>
+                      </div>
+                    </label>
+                  </div>
+                  <button
+                    onClick={handleSaveAppMode}
+                    className="mt-4 w-full px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium rounded-md transition-colors"
+                  >
+                    Apply Mode Change
+                  </button>
+                </div>
+              </div>
               {/* Performance Settings */}
               <div>
                 <h4 className="text-lg font-medium text-slate-200 mb-4">Performance & Optimization</h4>
@@ -1129,7 +1438,7 @@ const SettingsPage: React.FC = () => {
                       <p className="text-xs text-slate-400">Use GPU acceleration for better performance</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" defaultChecked className="sr-only peer" />
+                      <input type="checkbox" defaultChecked className="sr-only peer" aria-label="Enable hardware acceleration" />
                       <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-sky-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-600"></div>
                     </label>
                   </div>
@@ -1139,7 +1448,10 @@ const SettingsPage: React.FC = () => {
                       <h5 className="text-sm font-medium text-slate-100">Cache Duration</h5>
                       <p className="text-xs text-slate-400">How long to keep data in cache</p>
                     </div>
-                    <select className="bg-slate-600 border-slate-500 text-slate-100 rounded-md px-3 py-1 text-sm">
+                    <select 
+                      className="bg-slate-600 border-slate-500 text-slate-100 rounded-md px-3 py-1 text-sm"
+                      aria-label="Cache duration"
+                    >
                       <option value="1hour">1 Hour</option>
                       <option value="6hours">6 Hours</option>
                       <option value="1day">1 Day</option>
@@ -1153,7 +1465,7 @@ const SettingsPage: React.FC = () => {
                       <p className="text-xs text-slate-400">Preload upcoming tasks and projects</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" defaultChecked className="sr-only peer" />
+                      <input type="checkbox" defaultChecked className="sr-only peer" aria-label="Preload data" />
                       <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-sky-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-600"></div>
                     </label>
                   </div>
@@ -1170,7 +1482,7 @@ const SettingsPage: React.FC = () => {
                       <p className="text-xs text-slate-400">Enable debug logging and console output</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" className="sr-only peer" />
+                      <input type="checkbox" className="sr-only peer" aria-label="Debug mode" />
                       <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-sky-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-600"></div>
                     </label>
                   </div>
@@ -1181,7 +1493,7 @@ const SettingsPage: React.FC = () => {
                       <p className="text-xs text-slate-400">Log API response times for debugging</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" className="sr-only peer" />
+                      <input type="checkbox" className="sr-only peer" aria-label="API response time logging" />
                       <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-sky-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-600"></div>
                     </label>
                   </div>
@@ -1192,7 +1504,7 @@ const SettingsPage: React.FC = () => {
                       <p className="text-xs text-slate-400">Enable beta features and experiments</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" className="sr-only peer" />
+                      <input type="checkbox" className="sr-only peer" aria-label="Experimental features" />
                       <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-sky-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-600"></div>
                     </label>
                   </div>
@@ -1208,7 +1520,10 @@ const SettingsPage: React.FC = () => {
                       <h5 className="text-sm font-medium text-slate-100">Data Retention Policy</h5>
                       <p className="text-xs text-slate-400">How long to keep deleted items</p>
                     </div>
-                    <select className="bg-slate-600 border-slate-500 text-slate-100 rounded-md px-3 py-1 text-sm">
+                    <select 
+                      className="bg-slate-600 border-slate-500 text-slate-100 rounded-md px-3 py-1 text-sm"
+                      aria-label="Data retention policy"
+                    >
                       <option value="immediate">Delete Immediately</option>
                       <option value="7days">7 Days</option>
                       <option value="30days">30 Days</option>
@@ -1222,7 +1537,7 @@ const SettingsPage: React.FC = () => {
                       <p className="text-xs text-slate-400">Automatically compress old projects and tasks</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" defaultChecked className="sr-only peer" />
+                      <input type="checkbox" defaultChecked className="sr-only peer" aria-label="Compress old data" />
                       <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-sky-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-600"></div>
                     </label>
                   </div>
@@ -1251,7 +1566,10 @@ const SettingsPage: React.FC = () => {
                       <h5 className="text-sm font-medium text-slate-100">AI Response Timeout</h5>
                       <p className="text-xs text-slate-400">Maximum time to wait for AI responses</p>
                     </div>
-                    <select className="bg-slate-600 border-slate-500 text-slate-100 rounded-md px-3 py-1 text-sm">
+                    <select 
+                      className="bg-slate-600 border-slate-500 text-slate-100 rounded-md px-3 py-1 text-sm"
+                      aria-label="AI response timeout"
+                    >
                       <option value="10">10 seconds</option>
                       <option value="30">30 seconds</option>
                       <option value="60">1 minute</option>
@@ -1264,7 +1582,10 @@ const SettingsPage: React.FC = () => {
                       <h5 className="text-sm font-medium text-slate-100">Context Window Size</h5>
                       <p className="text-xs text-slate-400">Amount of context to send to AI models</p>
                     </div>
-                    <select className="bg-slate-600 border-slate-500 text-slate-100 rounded-md px-3 py-1 text-sm">
+                    <select 
+                      className="bg-slate-600 border-slate-500 text-slate-100 rounded-md px-3 py-1 text-sm"
+                      aria-label="Context window size"
+                    >
                       <option value="small">Small (4k tokens)</option>
                       <option value="medium">Medium (8k tokens)</option>
                       <option value="large">Large (16k tokens)</option>
@@ -1278,7 +1599,7 @@ const SettingsPage: React.FC = () => {
                       <p className="text-xs text-slate-400">Try alternative AI providers if primary fails</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" defaultChecked className="sr-only peer" />
+                      <input type="checkbox" defaultChecked className="sr-only peer" aria-label="AI fallback chain" />
                       <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-sky-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-600"></div>
                     </label>
                   </div>
@@ -1328,6 +1649,8 @@ const SettingsPage: React.FC = () => {
             </div>
           </section>
         );
+      case 'Debug':
+        return <AuthDebug />;
       default:
         return (
             <section className="p-6 bg-slate-800 rounded-lg">
@@ -1381,6 +1704,7 @@ const SettingsPage: React.FC = () => {
               <button
                 onClick={() => setShowCalendarImport(false)}
                 className="text-slate-400 hover:text-slate-200"
+                aria-label="Close calendar import modal"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1422,7 +1746,7 @@ const SettingsPage: React.FC = () => {
                 </label>
               </div>
 
-              {isImporting && (
+              {isImportingCalendar && (
                 <div className="flex items-center justify-center space-x-2 text-blue-400">
                   <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>

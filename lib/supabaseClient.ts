@@ -3,9 +3,14 @@ import {
   Project, Task, UserPreferences, Tag, TagCategory, Note, Schedule, DocumentFile, Plan
 } from '../types'; // Path should be correct if types.ts is in src/
 
-// Supabase configuration - Prioritize environment variables
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
+// Supabase configuration - Support beta environment
+const isBetaMode = import.meta.env.VITE_BETA_MODE === 'true';
+const supabaseUrl = isBetaMode 
+  ? import.meta.env.VITE_SUPABASE_URL_BETA || import.meta.env.VITE_SUPABASE_URL
+  : import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = isBetaMode
+  ? import.meta.env.VITE_SUPABASE_ANON_KEY_BETA || import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY
+  : import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
 
 // Check if we're on Vercel or similar IPv4-only platform
 const isIPv4OnlyPlatform = () => {
@@ -34,6 +39,7 @@ export const isSupabaseConfigured = (): boolean => {
 // Initialize Supabase client with better error handling
 const initializeSupabase = () => {
   console.log('🔍 Initializing Supabase client...');
+  console.log('- Beta Mode:', isBetaMode);
   console.log('- Raw URL:', supabaseUrl);
   console.log('- Raw Key:', supabaseAnonKey);
   console.log('- URL type:', typeof supabaseUrl);

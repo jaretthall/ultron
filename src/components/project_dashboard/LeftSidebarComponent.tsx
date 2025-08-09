@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Project, ProjectStatus } from '../../../types';
 import { useScreenSize } from '../ResponsiveLayout';
 import NewProjectModal from '../projects/NewProjectModal';
+import { useLabels } from '../../hooks/useLabels';
 
 interface LeftSidebarComponentProps {
   projects: Project[];
@@ -18,6 +19,7 @@ const LeftSidebarComponent: React.FC<LeftSidebarComponentProps> = ({
 }) => {
   const [statusFilter, setStatusFilter] = useState<'all' | ProjectStatus>('all');
   const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false);
+  const labels = useLabels();
 
   const { isMobile, isTablet } = useScreenSize();
   
@@ -38,12 +40,12 @@ const LeftSidebarComponent: React.FC<LeftSidebarComponentProps> = ({
       <div className={`${isMobile ? 'p-3' : isTablet ? 'p-3' : 'p-4'}`}>
         <div className="flex items-center justify-between mb-4">
           <h2 className={`${isMobile ? 'text-lg' : isTablet ? 'text-lg' : 'text-xl'} font-semibold text-slate-200`}>
-            Projects
+            {labels.projects}
           </h2>
           <button
             onClick={() => setIsNewProjectModalOpen(true)}
             className="bg-sky-600 hover:bg-sky-700 text-white p-2 rounded-lg transition-colors"
-            title="Add New Project"
+            title={`Add ${labels.newProject}`}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

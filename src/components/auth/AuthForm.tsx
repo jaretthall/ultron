@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useCustomAuth } from '../../contexts/CustomAuthContext';
+import { useSupabaseAuth } from '../../contexts/SupabaseAuthContext';
+import { supabase } from '../../../lib/supabaseClient';
 
 interface AuthFormProps {
   onSuccess?: () => void;
@@ -13,8 +14,10 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotPasswordSent, setForgotPasswordSent] = useState(false);
 
-  const { signIn, signUp, loading } = useCustomAuth();
+  const { signIn, signUp, loading } = useSupabaseAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,6 +85,46 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
     setEmail('');
     setPassword('');
     setConfirmPassword('');
+    setShowForgotPassword(false);
+    setForgotPasswordSent(false);
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSuccessMessage(null);
+
+    if (!email.trim()) {
+      setError('Please enter your email address.');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    if (!supabase) {
+      setError('Authentication service not available.');
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/update-password`
+      });
+
+      if (error) {
+        console.error('Password reset error:', error);
+        setError(error.message || 'Failed to send password reset email.');
+      } else {
+        setForgotPasswordSent(true);
+        setSuccessMessage('Password reset email sent! Check your inbox.');
+      }
+    } catch (error) {
+      console.error('Password reset exception:', error);
+      setError('An unexpected error occurred. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -225,7 +268,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
             </button>
           </div>
 
-          <div className="text-center">
+          <div className="text-center space-y-2">
             <button
               type="button"
               onClick={toggleMode}
@@ -238,7 +281,70 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
                 : "Already have an account? Sign in"
               }
             </button>
+            
+            {isLogin && !showForgotPassword && (
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setShowForgotPassword(true)}
+                  className="text-sm text-slate-400 hover:text-slate-300"
+                  disabled={isSubmitting || loading}
+                >
+                  Forgot your password?
+                </button>
+              </div>
+            )}
           </div>
+
+          {/* Forgot Password Form */}
+          {showForgotPassword && (
+            <div className="mt-6 pt-6 border-t border-slate-700">
+              <form onSubmit={handleForgotPassword}>
+                <div className="text-center mb-4">
+                  <h3 className="text-lg font-medium text-white">Reset Password</h3>
+                  <p className="text-sm text-slate-400 mt-1">
+                    Enter your email and we'll send you a reset link
+                  </p>
+                </div>
+                
+                <div className="mb-4">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                    placeholder="Enter your email"
+                    disabled={isSubmitting || loading || forgotPasswordSent}
+                    required
+                  />
+                </div>
+
+                <div className="flex space-x-3">
+                  <button
+                    type="submit"
+                    disabled={isSubmitting || loading || forgotPasswordSent}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? 'Sending...' : 'Send Reset Link'}
+                  </button>
+                  
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowForgotPassword(false);
+                      setForgotPasswordSent(false);
+                      setError(null);
+                      setSuccessMessage(null);
+                    }}
+                    className="px-4 py-2 text-slate-400 hover:text-slate-300 transition-colors"
+                    disabled={isSubmitting || loading}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
         </form>
       </div>
     </div>

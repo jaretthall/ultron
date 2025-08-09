@@ -1,4 +1,5 @@
-import { getCustomAuthUser } from '../src/contexts/CustomAuthContext';
+// Note: This service is deprecated as we've migrated to Supabase authentication
+// It was used for localStorage-based custom authentication
 import {
   Project, Task, UserPreferences, Tag, TagCategory
 } from '../types';
@@ -18,11 +19,8 @@ class CustomDatabaseService {
   }
 
   private getCurrentUser() {
-    const user = getCustomAuthUser();
-    if (!user) {
-      throw new Error('User not authenticated');
-    }
-    return user;
+    // This service is deprecated - all auth now goes through Supabase
+    throw new Error('CustomDatabaseService is deprecated. Use Supabase authentication instead.');
   }
 
   private getFromStorage<T>(table: string): T[] {
