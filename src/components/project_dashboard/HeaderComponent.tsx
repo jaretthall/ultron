@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useSupabaseAuth } from '../../contexts/SupabaseAuthContext';
 import { Menu, X } from 'lucide-react';
+import { useLabels, useAppMode } from '../../hooks/useLabels';
 
 interface HeaderComponentProps {
   projectContextFilter: 'all' | 'business' | 'personal';
@@ -15,6 +16,8 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
   const location = useLocation();
   const { signOut, user, isAuthenticated, loading } = useSupabaseAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const labels = useLabels();
+  const [appMode] = useAppMode();
 
   // Debug authentication state
   console.log('🔍 HeaderComponent Auth State:', { 
@@ -44,14 +47,19 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
 
   const navigationItems = [
     { to: '/', label: 'Home' },
-    { to: '/projects', label: 'Projects' },
-    { to: '/tasks', label: 'Tasks' },
+    { to: '/projects', label: labels.projects },
+    { to: '/tasks', label: labels.tasks },
     { to: '/calendar', label: 'Calendar' },
     { to: '/documents', label: 'Documents' },
     { to: '/ai', label: 'AI' },
     { to: '/analytics', label: 'Analytics' },
     { to: '/settings', label: 'Settings' }
   ];
+
+  // Filter out counseling link in student mode
+  if (labels.counseling && appMode === 'business') {
+    navigationItems.splice(4, 0, { to: '/counseling', label: labels.counseling });
+  }
 
   return (
     <header className="bg-slate-800 border-b border-slate-700 px-4 py-3">
@@ -88,7 +96,7 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
               aria-label="Filter projects by context"
               title="Filter projects by business or personal context"
             >
-              <option value="all">All Projects</option>
+              <option value="all">All {labels.projects}</option>
               <option value="business">Business</option>
               <option value="personal">Personal</option>
             </select>
@@ -165,7 +173,7 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
                   className="w-full bg-slate-700 text-white text-sm rounded px-3 py-2 border border-slate-600"
                   aria-label="Filter projects by context"
                 >
-                  <option value="all">All Projects</option>
+                  <option value="all">All {labels.projects}</option>
                   <option value="business">Business</option>
                   <option value="personal">Personal</option>
                 </select>

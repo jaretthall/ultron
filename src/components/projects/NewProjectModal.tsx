@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Project, ProjectStatus, ProjectContext } from '../../../types';
 import { PROJECT_TEMPLATES } from '../../constants/templates';
+import { useLabels } from '../../hooks/useLabels';
 
 interface NewProjectModalProps {
   isOpen: boolean;
@@ -10,6 +11,7 @@ interface NewProjectModalProps {
 }
 
 const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAddProject }) => {
+  const labels = useLabels();
   const [title, setTitle] = useState('');
   const [projectDescription, setProjectDescription] = useState('');
   const [goals, setGoals] = useState('');
@@ -134,7 +136,7 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
         onClick={e => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-6">
-          <h2 id="newProjectModalTitle" className="text-2xl font-semibold text-sky-400">Create New Project</h2>
+          <h2 id="newProjectModalTitle" className="text-2xl font-semibold text-sky-400">{labels.newProject}</h2>
           <button 
             onClick={onClose} 
             className="text-slate-400 hover:text-slate-200" 
