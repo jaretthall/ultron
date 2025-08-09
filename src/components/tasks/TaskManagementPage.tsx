@@ -1,6 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Task, Project, TaskStatus } from '../../../types';
+import { useLabels } from '../../hooks/useLabels';
 import NewTaskModal from './NewTaskModal';
 import TaskItem from './TaskItem';
 import TaskCard from './TaskCard';
@@ -56,6 +57,7 @@ const TaskManagementPage: React.FC<TaskManagementPageProps> = ({
   const tasks = initialTasks;
 
   const [searchTerm, setSearchTerm] = useState('');
+  const labels = useLabels();
   const [projectFilter, setProjectFilter] = useState('All Projects');
   const [statusFilter, setStatusFilter] = useState<TaskStatus | 'All' | 'Active'>('Active');
   const [categoryFilter, setCategoryFilter] = useState('All Categories');
@@ -131,15 +133,15 @@ const TaskManagementPage: React.FC<TaskManagementPageProps> = ({
     <div className="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto bg-slate-900 text-slate-100 flex flex-col">
       <div className="flex justify-between items-center mb-6 shrink-0">
         <div>
-          <h1 className="text-3xl font-bold">Task Management</h1>
+          <h1 className="text-3xl font-bold">{labels.taskManagement}</h1>
           <p className="text-slate-400 mt-1">Organize and prioritize your tasks.</p>
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
           className="bg-sky-600 hover:bg-sky-700 text-white font-medium py-2 px-4 rounded-lg flex items-center text-sm"
-          aria-label="Add New Task"
+          aria-label={labels.newTask}
         >
-          <PlusIcon /> <span className="ml-2">New Task</span>
+          <PlusIcon /> <span className="ml-2">{labels.newTask}</span>
         </button>
       </div>
 

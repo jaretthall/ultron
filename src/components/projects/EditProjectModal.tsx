@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Project, ProjectStatus, ProjectContext } from '../../../types';
+import { useLabels } from '../../hooks/useLabels';
 
 interface EditProjectModalProps {
   isOpen: boolean;
@@ -26,6 +27,8 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
   const [businessRelevance, setBusinessRelevance] = useState(5);
   const [preferredTimeSlots, setPreferredTimeSlots] = useState<string[]>([]);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  
+  const labels = useLabels();
 
   const timeSlotOptions = [
     'early-morning',
@@ -147,7 +150,7 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
         onClick={e => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-6">
-          <h2 id="editProjectModalTitle" className="text-2xl font-semibold text-sky-400">Edit Project</h2>
+          <h2 id="editProjectModalTitle" className="text-2xl font-semibold text-sky-400">{labels.editProject}</h2>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-200" aria-label="Close modal">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-7 h-7">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -348,7 +351,7 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
                 type="submit"
                 className="px-4 py-2 text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 rounded-md transition-colors"
               >
-                Update Project
+{labels.editProject}
               </button>
             </div>
           </div>

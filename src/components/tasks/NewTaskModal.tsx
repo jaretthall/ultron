@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { Task, TaskPriority, TaskStatus, Project } from '../../../types';
+import { useLabels } from '../../hooks/useLabels';
 import LoadingSpinner from '../LoadingSpinner';
 import { TASK_TEMPLATES } from '../../constants/templates';
 // Phase 6: Security and monitoring integration
@@ -59,6 +60,8 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
   const [minimumFlowHours, setMinimumFlowHours] = useState(2);
   const [minimumFlowMinutes, setMinimumFlowMinutes] = useState(0);
   const [energyLevel, setEnergyLevel] = useState(2);
+  
+  const labels = useLabels();
 
   // Filter out temporary projects (those with IDs starting with 'temp_')
   const availableProjects = useMemo(() => projects.filter(p => !p.id.startsWith('temp_')), [projects]);
@@ -370,7 +373,7 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
         >
           <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-6">
             <div className="flex items-center justify-between">
-              <h2 id="newTaskModalTitle" className="text-xl font-semibold">Add New Task</h2>
+              <h2 id="newTaskModalTitle" className="text-xl font-semibold">{labels.newTask}</h2>
               <button 
                   onClick={handleCloseModal} 
                   className="w-8 h-8 rounded-lg hover:bg-white/20 transition-colors flex items-center justify-center"
@@ -799,7 +802,7 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
                     <span>Creating...</span>
                   </>
                 ) : (
-                  <span>Create Task</span>
+                  <span>{labels.newTask}</span>
                 )}
               </button>
             </div>

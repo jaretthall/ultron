@@ -6,6 +6,7 @@ import StatCard from '../StatCard';
 import EditProjectModal from '../projects/EditProjectModal';
 import { calculateProjectCompletion, calculateUrgencyScore } from '../../utils/projectUtils';
 import { useScreenSize } from '../ResponsiveLayout';
+import { useLabels } from '../../hooks/useLabels';
 
 // Icons
 const CompletedIcon: React.FC = () => (
@@ -74,6 +75,7 @@ const MainProjectContentComponent: React.FC<MainProjectContentComponentProps> = 
   const [isNewTaskModalOpen, setIsNewTaskModalOpen] = useState(false);
   const [isEditProjectModalOpen, setIsEditProjectModalOpen] = useState(false);
   const { isMobile, isTablet } = useScreenSize();
+  const labels = useLabels();
 
   const projectTaskStats = useMemo(() => {
     if (!project) return { completed: 0, inProgress: 0, pending: 0 };
@@ -107,7 +109,7 @@ const MainProjectContentComponent: React.FC<MainProjectContentComponentProps> = 
            <svg className="mx-auto h-12 w-12 text-slate-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h12M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-12a2.25 2.25 0 01-2.25-2.25V3M3.75 21v-6.75A2.25 2.25 0 016 12h12a2.25 2.25 0 012.25 2.25V21M3.75 21H21" />
           </svg>
-          <h2 className="mt-2 text-xl font-medium text-slate-300">No Project Selected</h2>
+          <h2 className="mt-2 text-xl font-medium text-slate-300">No {labels.project} Selected</h2>
           <p className="mt-1 text-sm text-slate-500">Please select a project from the sidebar to view its details.</p>
         </div>
       </main>
@@ -167,7 +169,7 @@ const MainProjectContentComponent: React.FC<MainProjectContentComponentProps> = 
                 fullWidth={isMobile}
                 className={isMobile ? 'text-sm' : ''}
               >
-                Edit Project
+{labels.editProject}
               </ActionButton>
               <ActionButton 
                 onClick={() => setIsNewTaskModalOpen(true)} 
@@ -175,7 +177,7 @@ const MainProjectContentComponent: React.FC<MainProjectContentComponentProps> = 
                 fullWidth={isMobile}
                 className={isMobile ? 'text-sm' : ''}
               >
-                New Task
+{labels.newTask}
               </ActionButton>
             </div>
           </div>
@@ -249,7 +251,7 @@ const MainProjectContentComponent: React.FC<MainProjectContentComponentProps> = 
         {/* Project Details Section */}
         {project.description && (
           <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-slate-800 rounded-lg">
-            <h3 className="text-lg font-semibold text-slate-200 mb-2">Project Details</h3>
+            <h3 className="text-lg font-semibold text-slate-200 mb-2">{labels.project} Details</h3>
             <p className="text-slate-300 text-sm leading-relaxed">{project.description}</p>
           </div>
         )}
@@ -259,14 +261,14 @@ const MainProjectContentComponent: React.FC<MainProjectContentComponentProps> = 
           isTablet ? 'grid-cols-2' : 
           'grid-cols-1 md:grid-cols-3'
         }`}>
-          <StatCard title="Completed Tasks" value={projectTaskStats.completed} icon={<CompletedIcon />} color="text-green-400" />
+          <StatCard title={`Completed ${labels.tasks}`} value={projectTaskStats.completed} icon={<CompletedIcon />} color="text-green-400" />
           <StatCard title="In Progress" value={projectTaskStats.inProgress} icon={<InProgressIcon />} color="text-blue-400" />
-          <StatCard title="Pending Tasks" value={projectTaskStats.pending} icon={<PendingIcon />} color="text-yellow-400" />
+          <StatCard title={`Pending ${labels.tasks}`} value={projectTaskStats.pending} icon={<PendingIcon />} color="text-yellow-400" />
         </div>
 
         {project.goals && project.goals.length > 0 && (
           <div className="mb-6 sm:mb-8 p-3 sm:p-4 bg-slate-800 rounded-lg">
-            <h3 className="text-lg font-semibold text-slate-200 mb-2">Project Goals</h3>
+            <h3 className="text-lg font-semibold text-slate-200 mb-2">{labels.project} Goals</h3>
             <ul className="list-disc list-inside space-y-1 text-slate-300 text-sm">
               {project.goals.map((goal, index) => (
                 <li key={index} className="break-words">{goal}</li>
@@ -276,7 +278,7 @@ const MainProjectContentComponent: React.FC<MainProjectContentComponentProps> = 
         )}
 
         <div>
-          <h3 className="text-xl font-semibold text-slate-100 mb-4">Tasks ({tasks.length})</h3>
+          <h3 className="text-xl font-semibold text-slate-100 mb-4">{labels.tasks} ({tasks.length})</h3>
           {tasks.length > 0 ? (
             <div className="space-y-3" data-testid="task-list">
               {tasks.map(task => (
@@ -299,7 +301,7 @@ const MainProjectContentComponent: React.FC<MainProjectContentComponentProps> = 
                 onClick={() => setIsNewTaskModalOpen(true)}
                 className="mt-4 text-sm bg-sky-600 hover:bg-sky-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
               >
-                Add New Task
+{labels.newTask}
               </button>
             </div>
           )}

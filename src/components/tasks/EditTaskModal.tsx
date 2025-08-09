@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Task, Project, TaskStatus } from '../../../types';
+import { useLabels } from '../../hooks/useLabels';
 
 interface EditTaskModalProps {
   task: Task;
@@ -31,6 +32,8 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
   });
   const [estimatedHours, setEstimatedHours] = useState(task.estimated_hours || 0);
   const [tags, setTags] = useState(task.tags?.join(', ') || '');
+  
+  const labels = useLabels();
   const [progress, setProgress] = useState(task.progress || 0);
   const [dueTime, setDueTime] = useState(() => {
     if (task.due_date) {
@@ -206,7 +209,7 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
         <div className={`${status === 'completed' ? 'bg-gradient-to-r from-green-600 to-emerald-600' : 'bg-gradient-to-r from-purple-600 to-indigo-600'} text-white p-6`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <h2 className="text-xl font-semibold">Edit Task</h2>
+              <h2 className="text-xl font-semibold">{labels.editTask}</h2>
               {status === 'completed' && (
                 <span className="inline-flex items-center gap-1 px-2 py-1 bg-white/20 rounded-full text-xs font-medium">
                   <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
@@ -704,7 +707,7 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
               type="submit"
               className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded font-medium transition-colors"
             >
-              Save Changes
+{labels.editTask}
             </button>
           </div>
         </form>

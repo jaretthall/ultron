@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Project, ProjectStatus, ProjectContext } from '../../../types';
 import { PROJECT_TEMPLATES } from '../../constants/templates';
+import { useLabels } from '../../hooks/useLabels';
 
 interface NewProjectModalProps {
   isOpen: boolean;
@@ -22,6 +23,8 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
   const [selectedTemplate, setSelectedTemplate] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  
+  const labels = useLabels();
 
   const timeSlotOptions = [
     'early-morning',
@@ -90,7 +93,7 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
     e.preventDefault();
     
     if (!title.trim()) {
-      setErrorMessage('Project title is required.');
+      setErrorMessage(`${labels.project} title is required.`);
       return;
     }
 
@@ -134,7 +137,7 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
         onClick={e => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-6">
-          <h2 id="newProjectModalTitle" className="text-2xl font-semibold text-sky-400">Create New Project</h2>
+          <h2 id="newProjectModalTitle" className="text-2xl font-semibold text-sky-400">{labels.newProject}</h2>
           <button 
             onClick={onClose} 
             className="text-slate-400 hover:text-slate-200" 
@@ -157,7 +160,7 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
           {/* Template Selection */}
           <div>
             <label htmlFor="projectTemplate" className="block text-sm font-medium text-slate-300 mb-1">
-              Project Template
+{labels.project} Template
               <span className="block text-xs text-slate-400 font-normal mt-0.5">
                 Choose a template to pre-fill common project types, or start from scratch.
               </span>
@@ -363,7 +366,7 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
                   <span>Creating...</span>
                 </>
               ) : (
-                <span>Create Project</span>
+                <span>{labels.newProject}</span>
               )}
             </button>
           </div>

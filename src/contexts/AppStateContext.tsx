@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect, useCallback, ReactNode } from 'react';
 import { Project, Task, UserPreferences, Tag, TagCategory, Schedule } from '../../types';
 import { useCustomAuth } from './CustomAuthContext';
-import { supabase } from '../../lib/supabaseClient';
 import { adaptiveDatabaseService } from '../../services/adaptiveDatabaseService';
 import { 
   tasksService, 
@@ -397,36 +396,11 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
         while (!preferencesCreated && retryCount < maxRetries) {
           try {
             console.log(`🔄 Attempting to create user preferences (attempt ${retryCount + 1}/${maxRetries})...`);
-            
-            // First verify the user exists in the database
-            if (supabase && user?.id) {
-              const { data: userData, error: userError } = await supabase
-                .from('users')
-                .select('id')
-                .eq('id', user.id)
-                .single();
-              
-              if (userError || !userData) {
-                console.warn(`⚠️ User ${user.id} not found in database, attempt ${retryCount + 1}. Waiting before retry...`);
-                if (retryCount < maxRetries - 1) {
-                  await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1))); // Increasing delay
-                  retryCount++;
-                  continue;
-                } else {
-                  console.error('❌ User never appeared in database after all retries');
-                  break;
-                }
-              } else {
-                console.log(`✅ User ${user.id} verified in database`);
-              }
-            }
-            
-            // Use upsert to handle React Strict Mode double-invocation
+            // Directly upsert without querying public.users (RLS blocks that and Supabase Auth is canonical)
             const newPreferences = await userPreferencesService.upsert(defaultUserPreferences);
             dispatch({ type: 'SET_USER_PREFERENCES', preferences: newPreferences });
             preferencesCreated = true;
             console.log('✅ User preferences created/updated successfully');
-            
           } catch (prefError: any) {
             console.warn(`❌ Failed to create user preferences (attempt ${retryCount + 1}):`, prefError?.message || prefError);
             

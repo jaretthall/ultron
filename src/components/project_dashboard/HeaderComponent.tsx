@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useCustomAuth } from '../../contexts/CustomAuthContext';
+import { useLabels } from '../../hooks/useLabels';
 import { Menu, X } from 'lucide-react';
 
 interface HeaderComponentProps {
@@ -15,6 +16,7 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
   const location = useLocation();
   const { signOut } = useCustomAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const labels = useLabels();
 
   const getLinkClassName = (path: string) => {
     const isActive = location.pathname === path;
@@ -36,8 +38,8 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
 
   const navigationItems = [
     { to: '/', label: 'Home' },
-    { to: '/projects', label: 'Projects' },
-    { to: '/tasks', label: 'Tasks' },
+    { to: '/projects', label: labels.projects },
+    { to: '/tasks', label: labels.tasks },
     { to: '/calendar', label: 'Calendar' },
     { to: '/documents', label: 'Documents' },
     { to: '/ai', label: 'AI' },
@@ -80,7 +82,7 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
               aria-label="Filter projects by context"
               title="Filter projects by business or personal context"
             >
-              <option value="all">All Projects</option>
+              <option value="all">All {labels.projects}</option>
               <option value="business">Business</option>
               <option value="personal">Personal</option>
             </select>
@@ -141,7 +143,7 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
               {/* Mobile Project Context Filter */}
               <div className="px-3 py-2">
                 <label htmlFor="mobile-project-filter" className="block text-sm font-medium text-slate-300 mb-1">
-                  Project Filter
+                  {labels.project} Filter
                 </label>
                 <select
                   id="mobile-project-filter"
@@ -150,7 +152,7 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
                   className="w-full bg-slate-700 text-white text-sm rounded px-3 py-2 border border-slate-600"
                   aria-label="Filter projects by context"
                 >
-                  <option value="all">All Projects</option>
+                  <option value="all">All {labels.projects}</option>
                   <option value="business">Business</option>
                   <option value="personal">Personal</option>
                 </select>

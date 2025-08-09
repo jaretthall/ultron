@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Task, Schedule } from '../../../types';
 import { useAppState } from '../../contexts/AppStateContext';
+import { useAppMode } from '../../hooks/useLabels';
 import { calendarIntegrationService, CalendarEvent, AIScheduleSuggestion } from '../../services/calendarIntegrationService';
 import { formatDateForInput } from '../../utils/dateUtils';
 
@@ -64,6 +65,7 @@ interface EnhancedCalendarPageProps {
 const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick }) => {
   const { state, addTask, updateTask, addSchedule, updateSchedule, deleteSchedule } = useAppState();
   const { tasks, projects, schedules } = state;
+  const [appMode] = useAppMode();
 
   // State for calendar navigation and view
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -636,14 +638,16 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
                   {!isMobile && <span>Event</span>}
                 </button>
                 
-                <button
-                  onClick={() => setShowCounselingModal(true)}
-                  className={`${isMobile ? 'px-2 py-1.5' : 'px-3 py-2'} rounded-lg bg-teal-600 text-white hover:bg-teal-700 transition-colors flex items-center gap-1 flex-shrink-0`}
-                  title="Schedule counseling session with automatic progress note"
-                >
-                  <PlusIcon className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
-                  {!isMobile && <span>Counsel</span>}
-                </button>
+                {appMode === 'business' && (
+                  <button
+                    onClick={() => setShowCounselingModal(true)}
+                    className={`${isMobile ? 'px-2 py-1.5' : 'px-3 py-2'} rounded-lg bg-teal-600 text-white hover:bg-teal-700 transition-colors flex items-center gap-1 flex-shrink-0`}
+                    title="Schedule counseling session with automatic progress note"
+                  >
+                    <PlusIcon className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
+                    {!isMobile && <span>Counsel</span>}
+                  </button>
+                )}
               </div>
             </div>
           </div>
