@@ -52,7 +52,7 @@ export const projectsService = {
       async () => {
         return RetryableOperations.databaseRead(async () => {
           console.log('📊 Fetching projects from Supabase...');
-          const user = getCustomAuthUser();
+          const user = await getCustomAuthUser();
           if (!user?.id) {
             console.warn('No authenticated user found for projects.getAll()');
             return [];
@@ -112,7 +112,7 @@ export const projectsService = {
     }
     
     // Get current user from custom auth
-    const user = getCustomAuthUser();
+    const user = await getCustomAuthUser();
     if (!user) {
       throw enhanceError(new Error('User not authenticated'), 'project creation authentication');
     }
@@ -313,7 +313,7 @@ export const tasksService = {
     return withCache(
       CACHE_KEYS.ALL_TASKS,
       async () => {
-        const user = getCustomAuthUser();
+        const user = await getCustomAuthUser();
         if (!user?.id) {
           console.warn('No authenticated user found for tasks.getAll()');
           return [];
@@ -357,7 +357,7 @@ export const tasksService = {
     if (!supabase) throw new Error('Supabase client not initialized');
     
     // Get current user from custom auth
-    const user = getCustomAuthUser();
+    const user = await getCustomAuthUser();
     if (!user) {
       throw new Error('User not authenticated');
     }
@@ -878,7 +878,7 @@ export const tasksService = {
   ): Promise<Task> {
     if (!supabase) throw new Error('Supabase client not initialized');
     
-    const user = getCustomAuthUser();
+    const user = await getCustomAuthUser();
     if (!user?.id) throw new Error('User not authenticated');
 
     console.log('Scheduling work session:', {
@@ -923,7 +923,7 @@ export const tasksService = {
   async clearWorkSession(taskId: string): Promise<Task> {
     if (!supabase) throw new Error('Supabase client not initialized');
     
-    const user = getCustomAuthUser();
+    const user = await getCustomAuthUser();
     if (!user?.id) throw new Error('User not authenticated');
 
     const { data, error } = await supabase
@@ -960,7 +960,7 @@ export const tasksService = {
   async getTasksWithWorkSessions(startDate: Date, endDate: Date): Promise<Task[]> {
     if (!supabase) throw new Error('Supabase client not initialized');
     
-    const user = getCustomAuthUser();
+    const user = await getCustomAuthUser();
     if (!user?.id) throw new Error('User not authenticated');
 
     const { data, error } = await supabase
@@ -986,7 +986,7 @@ export const tasksService = {
   async getUnscheduledTasks(): Promise<Task[]> {
     if (!supabase) throw new Error('Supabase client not initialized');
     
-    const user = getCustomAuthUser();
+    const user = await getCustomAuthUser();
     if (!user?.id) throw new Error('User not authenticated');
 
     const { data, error } = await supabase
@@ -1017,7 +1017,7 @@ export const tasksService = {
   ): Promise<Task> {
     if (!supabase) throw new Error('Supabase client not initialized');
     
-    const user = getCustomAuthUser();
+    const user = await getCustomAuthUser();
     if (!user?.id) throw new Error('User not authenticated');
 
     console.log('Rescheduling work session:', {
@@ -1063,7 +1063,7 @@ export const schedulesService = {
     
     try {
       // Get current user first
-      const user = getCustomAuthUser();
+      const user = await getCustomAuthUser();
       if (!user) {
         console.warn('No authenticated user found for schedules.getAll()');
         return [];
@@ -1140,7 +1140,7 @@ export const schedulesService = {
     if (!supabase) throw new Error('Supabase client not initialized');
     
     // Get current user from custom auth
-    const user = getCustomAuthUser();
+    const user = await getCustomAuthUser();
     if (!user) {
       throw new Error('User not authenticated');
     }
@@ -1381,7 +1381,7 @@ export const userPreferencesService = {
     if (!supabase) throw new Error('Supabase client not initialized');
     
     // Get current user from custom auth
-    const user = getCustomAuthUser();
+    const user = await getCustomAuthUser();
     if (!user) {
       throw new Error('User not authenticated');
     }
@@ -1403,7 +1403,7 @@ export const userPreferencesService = {
     if (!supabase) throw new Error('Supabase client not initialized');
     
     // Get current user from custom auth
-    const user = getCustomAuthUser();
+    const user = await getCustomAuthUser();
     if (!user) {
       throw new Error('User not authenticated');
     }
@@ -1464,7 +1464,7 @@ export const userPreferencesService = {
     if (!supabase) throw new Error('Supabase client not initialized');
     
     // Get current user from custom auth
-    const user = getCustomAuthUser();
+    const user = await getCustomAuthUser();
     if (!user) {
       throw new Error('User not authenticated');
     }
@@ -1484,7 +1484,7 @@ export const userPreferencesService = {
     if (!supabase) throw new Error('Supabase client not initialized');
     
     // Get current user from custom auth
-    const user = getCustomAuthUser();
+    const user = await getCustomAuthUser();
     if (!user) {
       throw new Error('User not authenticated');
     }
@@ -1550,9 +1550,12 @@ export const tagsService = {
   async create(tag: Omit<Tag, 'id' | 'created_at' | 'updated_at' | 'user_id'>): Promise<Tag> {
     if (!supabase) throw new Error('Supabase client not initialized');
     
+    const user = await getCustomAuthUser();
+    if (!user?.id) handleError('creating tag - unauthenticated', { message: 'User not authenticated' } as any);
+
     const { data, error } = await supabase
       .from('tags')
-      .insert([tag])
+      .insert([{ ...tag, user_id: user!.id }])
       .select()
       .single();
     
@@ -1850,9 +1853,12 @@ export const tagCategoriesService = {
   async create(category: Omit<TagCategory, 'id' | 'created_at' | 'updated_at' | 'user_id'>): Promise<TagCategory> {
     if (!supabase) throw new Error('Supabase client not initialized');
     
+    const user = await getCustomAuthUser();
+    if (!user?.id) handleError('creating tag category - unauthenticated', { message: 'User not authenticated' } as any);
+
     const { data, error } = await supabase
       .from('tag_categories')
-      .insert([category])
+      .insert([{ ...category, user_id: user!.id }])
       .select()
       .single();
     
@@ -2232,7 +2238,7 @@ export const subscriptions = {
 //   async getDailySchedule(date: string): Promise<DailySchedule | null> {
 //     if (!supabase) throw new Error('Supabase client not initialized');
 //     
-//     const user = getCustomAuthUser();
+//     const user = await getCustomAuthUser();
 //     if (!user?.id) throw new Error('User not authenticated');
 
 //     const { data, error } = await supabase
@@ -2256,7 +2262,7 @@ export const subscriptions = {
 //   async saveDailySchedule(date: string, scheduleText: string, scheduleType: 'business' | 'personal' | 'mixed' = 'mixed'): Promise<DailySchedule> {
 //     if (!supabase) throw new Error('Supabase client not initialized');
 //     
-//     const user = getCustomAuthUser();
+//     const user = await getCustomAuthUser();
 //     if (!user?.id) {
 //       console.error('No authenticated user found for saveDailySchedule');
 //       throw new Error('User not authenticated - please sign in');
@@ -2327,7 +2333,7 @@ export const subscriptions = {
 //   async deleteDailySchedule(date: string): Promise<void> {
 //     if (!supabase) throw new Error('Supabase client not initialized');
     
-//     const user = getCustomAuthUser();
+//     const user = await getCustomAuthUser();
 //     if (!user?.id) throw new Error('User not authenticated');
 
 //     const { error } = await supabase
@@ -2342,7 +2348,7 @@ export const subscriptions = {
 //   async getRecentSchedules(limit: number = 7): Promise<DailySchedule[]> {
 //     if (!supabase) throw new Error('Supabase client not initialized');
     
-//     const user = getCustomAuthUser();
+//     const user = await getCustomAuthUser();
 //     if (!user?.id) throw new Error('User not authenticated');
 
 //     const { data, error } = await supabase
@@ -2460,7 +2466,7 @@ export const notesService = {
   async getAll(): Promise<any[]> {
     if (!supabase) throw enhanceError(new Error('Supabase client not initialized'), 'notesService.getAll');
     
-    const user = getCustomAuthUser();
+    const user = await getCustomAuthUser();
     if (!user?.id) throw enhanceError(new Error('User not authenticated'), 'notesService.getAll');
     
     return RetryableOperations.databaseRead(async () => {
@@ -2477,7 +2483,7 @@ export const notesService = {
   async create(note: { title: string; content: string }): Promise<any> {
     if (!supabase) throw enhanceError(new Error('Supabase client not initialized'), 'notesService.create');
     
-    const user = getCustomAuthUser();
+    const user = await getCustomAuthUser();
     if (!user?.id) throw enhanceError(new Error('User not authenticated'), 'notesService.create');
     
     return RetryableOperations.databaseWrite(async () => {
@@ -2499,7 +2505,7 @@ export const notesService = {
   async update(id: string, updates: { title?: string; content?: string }): Promise<any> {
     if (!supabase) throw enhanceError(new Error('Supabase client not initialized'), 'notesService.update');
     
-    const user = getCustomAuthUser();
+    const user = await getCustomAuthUser();
     if (!user?.id) throw enhanceError(new Error('User not authenticated'), 'notesService.update');
     
     return RetryableOperations.databaseWrite(async () => {
@@ -2522,7 +2528,7 @@ export const notesService = {
   async delete(id: string): Promise<void> {
     if (!supabase) throw enhanceError(new Error('Supabase client not initialized'), 'notesService.delete');
     
-    const user = getCustomAuthUser();
+    const user = await getCustomAuthUser();
     if (!user?.id) throw enhanceError(new Error('User not authenticated'), 'notesService.delete');
     
     return RetryableOperations.databaseWrite(async () => {
@@ -2542,7 +2548,7 @@ export const shoppingListsService = {
   async getAll(): Promise<any[]> {
     if (!supabase) throw enhanceError(new Error('Supabase client not initialized'), 'shoppingListsService.getAll');
     
-    const user = getCustomAuthUser();
+    const user = await getCustomAuthUser();
     if (!user?.id) throw enhanceError(new Error('User not authenticated'), 'shoppingListsService.getAll');
     
     return RetryableOperations.databaseRead(async () => {
@@ -2567,7 +2573,7 @@ export const shoppingListsService = {
   async create(list: { name: string; category: string }): Promise<any> {
     if (!supabase) throw enhanceError(new Error('Supabase client not initialized'), 'shoppingListsService.create');
     
-    const user = getCustomAuthUser();
+    const user = await getCustomAuthUser();
     if (!user?.id) throw enhanceError(new Error('User not authenticated'), 'shoppingListsService.create');
     
     return RetryableOperations.databaseWrite(async () => {
@@ -2589,7 +2595,7 @@ export const shoppingListsService = {
   async update(id: string, updates: { name?: string; category?: string }): Promise<any> {
     if (!supabase) throw enhanceError(new Error('Supabase client not initialized'), 'shoppingListsService.update');
     
-    const user = getCustomAuthUser();
+    const user = await getCustomAuthUser();
     if (!user?.id) throw enhanceError(new Error('User not authenticated'), 'shoppingListsService.update');
     
     return RetryableOperations.databaseWrite(async () => {
@@ -2612,7 +2618,7 @@ export const shoppingListsService = {
   async delete(id: string): Promise<void> {
     if (!supabase) throw enhanceError(new Error('Supabase client not initialized'), 'shoppingListsService.delete');
     
-    const user = getCustomAuthUser();
+    const user = await getCustomAuthUser();
     if (!user?.id) throw enhanceError(new Error('User not authenticated'), 'shoppingListsService.delete');
     
     return RetryableOperations.databaseWrite(async () => {
@@ -2630,7 +2636,7 @@ export const shoppingListsService = {
   async addItem(listId: string, text: string): Promise<any> {
     if (!supabase) throw enhanceError(new Error('Supabase client not initialized'), 'shoppingListsService.addItem');
     
-    const user = getCustomAuthUser();
+    const user = await getCustomAuthUser();
     if (!user?.id) throw enhanceError(new Error('User not authenticated'), 'shoppingListsService.addItem');
     
     return RetryableOperations.databaseWrite(async () => {

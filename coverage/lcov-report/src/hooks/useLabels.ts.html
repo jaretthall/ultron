@@ -3,7 +3,7 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for src/components/LoadingSpinner.tsx</title>
+    <title>Code coverage report for src/hooks/useLabels.ts</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../../prettify.css" />
     <link rel="stylesheet" href="../../base.css" />
@@ -19,34 +19,34 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../../index.html">All files</a> / <a href="index.html">src/components</a> LoadingSpinner.tsx</h1>
+        <h1><a href="../../index.html">All files</a> / <a href="index.html">src/hooks</a> useLabels.ts</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">75% </span>
+                <span class="strong">43.75% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>3/4</span>
+                <span class='fraction'>7/16</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/1</span>
+                <span class='fraction'>0/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/1</span>
+                <span class='fraction'>0/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">75% </span>
+                <span class="strong">35.71% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>3/4</span>
+                <span class='fraction'>5/14</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -85,66 +85,51 @@
 <a name='L20'></a><a href='#L20'>20</a>
 <a name='L21'></a><a href='#L21'>21</a>
 <a name='L22'></a><a href='#L22'>22</a>
-<a name='L23'></a><a href='#L23'>23</a>
-<a name='L24'></a><a href='#L24'>24</a>
-<a name='L25'></a><a href='#L25'>25</a>
-<a name='L26'></a><a href='#L26'>26</a>
-<a name='L27'></a><a href='#L27'>27</a>
-<a name='L28'></a><a href='#L28'>28</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<a name='L23'></a><a href='#L23'>23</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span></td><td class="text"><pre class="prettyprint lang-js">import React from 'react';
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { useState } from 'react';
+import { AppLabels, AppMode, getLabels } from '../constants/labels';
 &nbsp;
-const LoadingSpinner: React.FC&lt;{ size?: string }&gt; = <span class="fstat-no" title="function not covered" >({</span> size = <span class="branch-0 cbranch-no" title="branch not covered" >'h-8 w-8' </span>}) =&gt; {
-<span class="cstat-no" title="statement not covered" >  return (</span>
-    &lt;svg 
-      className={`animate-spin text-sky-400 ${size}`} 
-      xmlns="http://www.w3.org/2000/svg" 
-      fill="none" 
-      viewBox="0 0 24 24"
-    &gt;
-      &lt;circle 
-        className="opacity-25" 
-        cx="12" 
-        cy="12" 
-        r="10" 
-        stroke="currentColor" 
-        strokeWidth="4"
-      &gt;&lt;/circle&gt;
-      &lt;path 
-        className="opacity-75" 
-        fill="currentColor" 
-        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-      &gt;&lt;/path&gt;
-    &lt;/svg&gt;
-  );
+const APP_MODE_KEY = 'ultron_app_mode';
+&nbsp;
+export const useAppMode = <span class="fstat-no" title="function not covered" >(): [AppMode, (mode: AppMode) =&gt; void] =</span>&gt; {
+  const [appMode, setAppModeState] = <span class="cstat-no" title="statement not covered" >useState&lt;AppMode&gt;(<span class="fstat-no" title="function not covered" >() =</span>&gt; {</span>
+    const stored = <span class="cstat-no" title="statement not covered" >localStorage.getItem(APP_MODE_KEY);</span>
+<span class="cstat-no" title="statement not covered" >    return (stored === 'student' || stored === 'business') ? stored : 'business';</span>
+  });
+&nbsp;
+  const setAppMode = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(m</span>ode: AppMode) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    localStorage.setItem(APP_MODE_KEY, mode);</span>
+<span class="cstat-no" title="statement not covered" >    setAppModeState(mode);</span>
+  };
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  return [appMode, setAppMode];</span>
 };
 &nbsp;
-export default LoadingSpinner; </pre></td></tr></table></pre>
+export const useLabels = <span class="fstat-no" title="function not covered" >(): AppLabels =</span>&gt; {
+  const [appMode] = <span class="cstat-no" title="statement not covered" >useAppMode();</span>
+<span class="cstat-no" title="statement not covered" >  return getLabels(appMode);</span>
+};</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->

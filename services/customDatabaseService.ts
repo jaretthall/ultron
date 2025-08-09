@@ -17,17 +17,17 @@ class CustomDatabaseService {
     });
   }
 
-  private getCurrentUser() {
-    const user = getCustomAuthUser();
+  private async getCurrentUser() {
+    const user = await getCustomAuthUser();
     if (!user) {
       throw new Error('User not authenticated');
     }
     return user;
   }
 
-  private getFromStorage<T>(table: string): T[] {
+  private async getFromStorage<T>(table: string): Promise<T[]> {
     try {
-      const user = this.getCurrentUser();
+      const user = await this.getCurrentUser();
       const key = this.getStorageKey(table, user.id);
       const data = localStorage.getItem(key);
       return data ? JSON.parse(data) : [];
@@ -37,9 +37,9 @@ class CustomDatabaseService {
     }
   }
 
-  private saveToStorage<T>(table: string, data: T[]): void {
+  private async saveToStorage<T>(table: string, data: T[]): Promise<void> {
     try {
-      const user = this.getCurrentUser();
+      const user = await this.getCurrentUser();
       const key = this.getStorageKey(table, user.id);
       localStorage.setItem(key, JSON.stringify(data));
     } catch (error) {
@@ -50,17 +50,17 @@ class CustomDatabaseService {
 
   // Projects Service
   async getAllProjects(): Promise<Project[]> {
-    return this.getFromStorage<Project>('projects');
+    return await this.getFromStorage<Project>('projects');
   }
 
   async getProjectById(id: string): Promise<Project | null> {
-    const projects = this.getFromStorage<Project>('projects');
+    const projects = await this.getFromStorage<Project>('projects');
     return projects.find(p => p.id === id) || null;
   }
 
   async createProject(project: Omit<Project, 'id' | 'created_at' | 'updated_at' | 'user_id'>): Promise<Project> {
-    const user = this.getCurrentUser();
-    const projects = this.getFromStorage<Project>('projects');
+    const user = await this.getCurrentUser();
+    const projects = await this.getFromStorage<Project>('projects');
     
     const newProject: Project = {
       ...project,
@@ -74,12 +74,12 @@ class CustomDatabaseService {
     };
 
     projects.push(newProject);
-    this.saveToStorage('projects', projects);
+    await this.saveToStorage('projects', projects);
     return newProject;
   }
 
   async updateProject(id: string, updates: Partial<Project>): Promise<Project> {
-    const projects = this.getFromStorage<Project>('projects');
+    const projects = await this.getFromStorage<Project>('projects');
     const index = projects.findIndex(p => p.id === id);
     
     if (index === -1) {
@@ -94,12 +94,12 @@ class CustomDatabaseService {
     };
 
     projects[index] = updatedProject;
-    this.saveToStorage('projects', projects);
+    await this.saveToStorage('projects', projects);
     return updatedProject;
   }
 
   async deleteProject(id: string): Promise<boolean> {
-    const projects = this.getFromStorage<Project>('projects');
+    const projects = await this.getFromStorage<Project>('projects');
     const filteredProjects = projects.filter(p => p.id !== id);
     
     if (filteredProjects.length === projects.length) {
@@ -107,32 +107,32 @@ class CustomDatabaseService {
     }
 
     // Also delete associated tasks
-    const tasks = this.getFromStorage<Task>('tasks');
+    const tasks = await this.getFromStorage<Task>('tasks');
     const filteredTasks = tasks.filter(t => t.project_id !== id);
-    this.saveToStorage('tasks', filteredTasks);
+    await this.saveToStorage('tasks', filteredTasks);
 
-    this.saveToStorage('projects', filteredProjects);
+    await this.saveToStorage('projects', filteredProjects);
     return true;
   }
 
   // Tasks Service
   async getAllTasks(): Promise<Task[]> {
-    return this.getFromStorage<Task>('tasks');
+    return await this.getFromStorage<Task>('tasks');
   }
 
   async getTaskById(id: string): Promise<Task | null> {
-    const tasks = this.getFromStorage<Task>('tasks');
+    const tasks = await this.getFromStorage<Task>('tasks');
     return tasks.find(t => t.id === id) || null;
   }
 
   async getTasksByProject(projectId: string): Promise<Task[]> {
-    const tasks = this.getFromStorage<Task>('tasks');
+    const tasks = await this.getFromStorage<Task>('tasks');
     return tasks.filter(t => t.project_id === projectId);
   }
 
   async createTask(task: Omit<Task, 'id' | 'created_at' | 'updated_at' | 'user_id'>): Promise<Task> {
-    const user = this.getCurrentUser();
-    const tasks = this.getFromStorage<Task>('tasks');
+    const user = await this.getCurrentUser();
+    const tasks = await this.getFromStorage<Task>('tasks');
     
     const newTask: Task = {
       ...task,
@@ -145,12 +145,12 @@ class CustomDatabaseService {
     };
 
     tasks.push(newTask);
-    this.saveToStorage('tasks', tasks);
+    await this.saveToStorage('tasks', tasks);
     return newTask;
   }
 
   async updateTask(id: string, updates: Partial<Task>): Promise<Task> {
-    const tasks = this.getFromStorage<Task>('tasks');
+    const tasks = await this.getFromStorage<Task>('tasks');
     const index = tasks.findIndex(t => t.id === id);
     
     if (index === -1) {
@@ -165,31 +165,31 @@ class CustomDatabaseService {
     };
 
     tasks[index] = updatedTask;
-    this.saveToStorage('tasks', tasks);
+    await this.saveToStorage('tasks', tasks);
     return updatedTask;
   }
 
   async deleteTask(id: string): Promise<boolean> {
-    const tasks = this.getFromStorage<Task>('tasks');
+    const tasks = await this.getFromStorage<Task>('tasks');
     const filteredTasks = tasks.filter(t => t.id !== id);
     
     if (filteredTasks.length === tasks.length) {
       return false; // No task was deleted
     }
 
-    this.saveToStorage('tasks', filteredTasks);
+    await this.saveToStorage('tasks', filteredTasks);
     return true;
   }
 
   // User Preferences Service
   async getUserPreferences(): Promise<UserPreferences | null> {
-    const preferences = this.getFromStorage<UserPreferences>('user_preferences');
+    const preferences = await this.getFromStorage<UserPreferences>('user_preferences');
     return preferences[0] || null;
   }
 
   async updateUserPreferences(preferences: Partial<UserPreferences>): Promise<UserPreferences> {
-    const user = this.getCurrentUser();
-    const existingPrefs = this.getFromStorage<UserPreferences>('user_preferences');
+    const user = await this.getCurrentUser();
+    const existingPrefs = await this.getFromStorage<UserPreferences>('user_preferences');
     
     const defaultPrefs: UserPreferences = {
       id: this.generateUUID(),
@@ -214,18 +214,18 @@ class CustomDatabaseService {
       updated_at: new Date().toISOString()
     };
 
-    this.saveToStorage('user_preferences', [updatedPrefs]);
+    await this.saveToStorage('user_preferences', [updatedPrefs]);
     return updatedPrefs;
   }
 
   // Tags Service
   async getAllTags(): Promise<Tag[]> {
-    return this.getFromStorage<Tag>('tags');
+    return await this.getFromStorage<Tag>('tags');
   }
 
   async createTag(tag: Omit<Tag, 'id' | 'created_at' | 'updated_at' | 'user_id'>): Promise<Tag> {
-    const user = this.getCurrentUser();
-    const tags = this.getFromStorage<Tag>('tags');
+    const user = await this.getCurrentUser();
+    const tags = await this.getFromStorage<Tag>('tags');
     
     const newTag: Tag = {
       ...tag,
@@ -236,12 +236,12 @@ class CustomDatabaseService {
     };
 
     tags.push(newTag);
-    this.saveToStorage('tags', tags);
+    await this.saveToStorage('tags', tags);
     return newTag;
   }
 
   async updateTag(id: string, updates: Partial<Tag>): Promise<Tag> {
-    const tags = this.getFromStorage<Tag>('tags');
+    const tags = await this.getFromStorage<Tag>('tags');
     const index = tags.findIndex(t => t.id === id);
     
     if (index === -1) {
@@ -256,30 +256,30 @@ class CustomDatabaseService {
     };
 
     tags[index] = updatedTag;
-    this.saveToStorage('tags', tags);
+    await this.saveToStorage('tags', tags);
     return updatedTag;
   }
 
   async deleteTag(id: string): Promise<boolean> {
-    const tags = this.getFromStorage<Tag>('tags');
+    const tags = await this.getFromStorage<Tag>('tags');
     const filteredTags = tags.filter(t => t.id !== id);
     
     if (filteredTags.length === tags.length) {
       return false;
     }
 
-    this.saveToStorage('tags', filteredTags);
+    await this.saveToStorage('tags', filteredTags);
     return true;
   }
 
   // Tag Categories Service
   async getAllTagCategories(): Promise<TagCategory[]> {
-    return this.getFromStorage<TagCategory>('tag_categories');
+    return await this.getFromStorage<TagCategory>('tag_categories');
   }
 
   async createTagCategory(category: Omit<TagCategory, 'id' | 'created_at' | 'updated_at' | 'user_id'>): Promise<TagCategory> {
-    const user = this.getCurrentUser();
-    const categories = this.getFromStorage<TagCategory>('tag_categories');
+    const user = await this.getCurrentUser();
+    const categories = await this.getFromStorage<TagCategory>('tag_categories');
     
     const newCategory: TagCategory = {
       ...category,
@@ -290,13 +290,13 @@ class CustomDatabaseService {
     };
 
     categories.push(newCategory);
-    this.saveToStorage('tag_categories', categories);
+    await this.saveToStorage('tag_categories', categories);
     return newCategory;
   }
 
   // Clear all data for current user (useful for testing)
   async clearAllUserData(): Promise<void> {
-    const user = this.getCurrentUser();
+    const user = await this.getCurrentUser();
     const tables = ['projects', 'tasks', 'user_preferences', 'tags', 'tag_categories'];
     
     tables.forEach(table => {

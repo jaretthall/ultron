@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/72</span>
+                <span class='fraction'>0/74</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/69</span>
+                <span class='fraction'>0/71</span>
             </div>
         
             
@@ -253,29 +253,27 @@
 <a name='L188'></a><a href='#L188'>188</a>
 <a name='L189'></a><a href='#L189'>189</a>
 <a name='L190'></a><a href='#L190'>190</a>
-<a name='L191'></a><a href='#L191'>191</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L191'></a><a href='#L191'>191</a>
+<a name='L192'></a><a href='#L192'>192</a>
+<a name='L193'></a><a href='#L193'>193</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -296,11 +294,17 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -444,6 +448,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" >import React, { useState, useEffect, useCallback } from 'react';</span>
+<span class="cstat-no" title="statement not covered" >import { useLabels } from '../hooks/useLabels';</span>
 <span class="cstat-no" title="statement not covered" >import { WorkspaceSnapshot, TaskStatus, TaskPriority, ProjectStatus } from '../../types';</span>
 <span class="cstat-no" title="statement not covered" >import { generateWorkspaceSnapshot } from '../../services/exportService';</span>
 // import { AnalyticsService, AnalyticsData } from '../../services/analyticsService';
@@ -494,6 +499,7 @@ interface DashboardProps {
 const Dashboard: React.FC&lt;DashboardProps&gt; = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >({</span> navigateTo }) =&gt; {</span>
   const { state } = <span class="cstat-no" title="statement not covered" >useAppState();</span>
   const { projects, tasks, userPreferences } = <span class="cstat-no" title="statement not covered" >state;</span>
+  const labels = <span class="cstat-no" title="statement not covered" >useLabels();</span>
 &nbsp;
   const [isLoading, setIsLoading] = <span class="cstat-no" title="statement not covered" >useState&lt;boolean&gt;(false);</span>
   const [error, setError] = <span class="cstat-no" title="statement not covered" >useState&lt;string | null&gt;(null);</span>
@@ -562,28 +568,28 @@ const Dashboard: React.FC&lt;DashboardProps&gt; = <span class="cstat-no" title="
       {/* Stats Section */}
       &lt;section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"&gt;
         &lt;StatCard 
-          title="Active Projects" 
+          title={`Active ${labels.projects}`} 
           value={activeProjectsCount} 
           icon={&lt;ProjectIcon /&gt;} 
           color="text-emerald-400"
           onClick={navigateTo ? <span class="fstat-no" title="function not covered" >() =</span>&gt; <span class="cstat-no" title="statement not covered" >navigateTo('Projects') </span>: undefined}
         /&gt;
         &lt;StatCard 
-          title="Total Tasks" 
+          title={`Total ${labels.tasks}`} 
           value={totalTasksCount} 
           icon={&lt;TaskIcon /&gt;} 
           color="text-blue-400"
           onClick={navigateTo ? <span class="fstat-no" title="function not covered" >() =</span>&gt; <span class="cstat-no" title="statement not covered" >navigateTo('Tasks') </span>: undefined}
         /&gt;
         &lt;StatCard 
-          title="Pending Tasks" 
+          title={`Pending ${labels.tasks}`} 
           value={pendingTasksCount} 
           icon={&lt;PendingTaskIcon /&gt;} 
           color="text-yellow-400"
           onClick={navigateTo ? <span class="fstat-no" title="function not covered" >() =</span>&gt; <span class="cstat-no" title="statement not covered" >navigateTo('Tasks') </span>: undefined}
         /&gt;
         &lt;StatCard 
-          title="Urgent/High Priority Tasks" 
+          title={`Urgent/High Priority ${labels.tasks}`} 
           value={highPriorityTasksCount} 
           icon={&lt;HighPriorityIcon /&gt;} 
           color="text-red-400"
@@ -595,7 +601,7 @@ const Dashboard: React.FC&lt;DashboardProps&gt; = <span class="cstat-no" title="
       &lt;section className="bg-slate-800 p-6 rounded-xl shadow-lg mb-8"&gt;
         &lt;h2 className="text-2xl font-semibold text-sky-300 mb-4"&gt;Comprehensive Data Export&lt;/h2&gt;
         &lt;p className="text-slate-300 mb-6"&gt;
-          Generate a complete snapshot of your workspace, including projects, tasks, analytics,
+          Generate a complete snapshot of your workspace, including {labels.projects.toLowerCase()}, {labels.tasks.toLowerCase()}, analytics,
           and AI-generated strategic insights. This JSON file can be used for external analysis, backup, or with other AI tools.
         &lt;/p&gt;
         &lt;button
@@ -640,7 +646,7 @@ const Dashboard: React.FC&lt;DashboardProps&gt; = <span class="cstat-no" title="
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-08-09T16:38:52.785Z
+                at 2025-08-09T20:54:56.724Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

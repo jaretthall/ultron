@@ -25,28 +25,28 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/37</span>
+                <span class='fraction'>0/41</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/3</span>
+                <span class='fraction'>0/5</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/3</span>
+                <span class='fraction'>0/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/34</span>
+                <span class='fraction'>0/38</span>
             </div>
         
             
@@ -250,12 +250,32 @@
 <a name='L185'></a><a href='#L185'>185</a>
 <a name='L186'></a><a href='#L186'>186</a>
 <a name='L187'></a><a href='#L187'>187</a>
-<a name='L188'></a><a href='#L188'>188</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L188'></a><a href='#L188'>188</a>
+<a name='L189'></a><a href='#L189'>189</a>
+<a name='L190'></a><a href='#L190'>190</a>
+<a name='L191'></a><a href='#L191'>191</a>
+<a name='L192'></a><a href='#L192'>192</a>
+<a name='L193'></a><a href='#L193'>193</a>
+<a name='L194'></a><a href='#L194'>194</a>
+<a name='L195'></a><a href='#L195'>195</a>
+<a name='L196'></a><a href='#L196'>196</a>
+<a name='L197'></a><a href='#L197'>197</a>
+<a name='L198'></a><a href='#L198'>198</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -446,6 +466,16 @@ import {
 &nbsp;
 // All Claude API calls now go through serverless functions to avoid CORS issues
 &nbsp;
+// Helper to read current app mode from localStorage without React
+function <span class="fstat-no" title="function not covered" >getAppMode(</span>): 'business' | 'student' {
+<span class="cstat-no" title="statement not covered" >  try {</span>
+    const stored = <span class="cstat-no" title="statement not covered" >localStorage.getItem('ultron_app_mode');</span>
+<span class="cstat-no" title="statement not covered" >    return stored === 'student' ? 'student' : 'business';</span>
+  } catch {
+<span class="cstat-no" title="statement not covered" >    return 'business';</span>
+  }
+}
+&nbsp;
 // Claude strategic insights generation
 export const <span class="cstat-no" title="statement not covered" >generateClaudeInsights = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >a</span>sync </span>(</span>
   projects: Project[],
@@ -468,7 +498,7 @@ export const <span class="cstat-no" title="statement not covered" >generateClaud
       body: JSON.stringify({
         projects,
         tasks,
-        userPreferences
+        userPreferences: { ...userPreferences, app_mode: getAppMode() }
       })
     });
 &nbsp;
@@ -526,7 +556,7 @@ export const <span class="cstat-no" title="statement not covered" >generateClaud
         date: date.toISOString(),
         projects,
         tasks,
-        userPreferences: { ...userPreferences, ai_provider: 'claude' },
+        userPreferences: { ...userPreferences, ai_provider: 'claude', app_mode: getAppMode() },
         focusBlockData
       })
     });
@@ -595,7 +625,7 @@ export const <span class="cstat-no" title="statement not covered" >generateClaud
         action: 'workload-analysis',
         projects,
         tasks,
-        userPreferences: { ...userPreferences, ai_provider: 'claude' },
+        userPreferences: { ...userPreferences, ai_provider: 'claude', app_mode: getAppMode() },
         schedulingData
       })
     });
@@ -631,7 +661,7 @@ export const <span class="cstat-no" title="statement not covered" >generateClaud
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-08-09T16:38:52.785Z
+                at 2025-08-09T20:54:56.724Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

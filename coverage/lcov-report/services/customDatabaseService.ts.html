@@ -698,17 +698,17 @@ class CustomDatabaseService {
     });
   }
 &nbsp;
-  private <span class="fstat-no" title="function not covered" >getCurrentUser(</span>) {
-    const user = <span class="cstat-no" title="statement not covered" >getCustomAuthUser();</span>
+  private <span class="fstat-no" title="function not covered" >async </span>getCurrentUser() {
+    const user = <span class="cstat-no" title="statement not covered" >await getCustomAuthUser();</span>
 <span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (!user) {</span>
 <span class="cstat-no" title="statement not covered" >      throw new Error('User not authenticated');</span>
     }
 <span class="cstat-no" title="statement not covered" >    return user;</span>
   }
 &nbsp;
-  private <span class="fstat-no" title="function not covered" >getFromStorage&lt;</span>T&gt;(table: string): T[] {
+  private <span class="fstat-no" title="function not covered" >async </span>getFromStorage&lt;T&gt;(table: string): Promise&lt;T[]&gt; {
 <span class="cstat-no" title="statement not covered" >    try {</span>
-      const user = <span class="cstat-no" title="statement not covered" >this.getCurrentUser();</span>
+      const user = <span class="cstat-no" title="statement not covered" >await this.getCurrentUser();</span>
       const key = <span class="cstat-no" title="statement not covered" >this.getStorageKey(table, user.id);</span>
       const data = <span class="cstat-no" title="statement not covered" >localStorage.getItem(key);</span>
 <span class="cstat-no" title="statement not covered" >      return data ? JSON.parse(data) : [];</span>
@@ -718,9 +718,9 @@ class CustomDatabaseService {
     }
   }
 &nbsp;
-  private <span class="fstat-no" title="function not covered" >saveToStorage&lt;</span>T&gt;(table: string, data: T[]): void {
+  private <span class="fstat-no" title="function not covered" >async </span>saveToStorage&lt;T&gt;(table: string, data: T[]): Promise&lt;void&gt; {
 <span class="cstat-no" title="statement not covered" >    try {</span>
-      const user = <span class="cstat-no" title="statement not covered" >this.getCurrentUser();</span>
+      const user = <span class="cstat-no" title="statement not covered" >await this.getCurrentUser();</span>
       const key = <span class="cstat-no" title="statement not covered" >this.getStorageKey(table, user.id);</span>
 <span class="cstat-no" title="statement not covered" >      localStorage.setItem(key, JSON.stringify(data));</span>
     } catch (error) {
@@ -731,17 +731,17 @@ class CustomDatabaseService {
 &nbsp;
   // Projects Service
 <span class="fstat-no" title="function not covered" >  async </span>getAllProjects(): Promise&lt;Project[]&gt; {
-<span class="cstat-no" title="statement not covered" >    return this.getFromStorage&lt;Project&gt;('projects');</span>
+<span class="cstat-no" title="statement not covered" >    return await this.getFromStorage&lt;Project&gt;('projects');</span>
   }
 &nbsp;
 <span class="fstat-no" title="function not covered" >  async </span>getProjectById(id: string): Promise&lt;Project | null&gt; {
-    const projects = <span class="cstat-no" title="statement not covered" >this.getFromStorage&lt;Project&gt;('projects');</span>
+    const projects = <span class="cstat-no" title="statement not covered" >await this.getFromStorage&lt;Project&gt;('projects');</span>
 <span class="cstat-no" title="statement not covered" >    return projects.find(<span class="fstat-no" title="function not covered" >p </span>=&gt; <span class="cstat-no" title="statement not covered" >p.id === id)</span> || null;</span>
   }
 &nbsp;
 <span class="fstat-no" title="function not covered" >  async </span>createProject(project: Omit&lt;Project, 'id' | 'created_at' | 'updated_at' | 'user_id'&gt;): Promise&lt;Project&gt; {
-    const user = <span class="cstat-no" title="statement not covered" >this.getCurrentUser();</span>
-    const projects = <span class="cstat-no" title="statement not covered" >this.getFromStorage&lt;Project&gt;('projects');</span>
+    const user = <span class="cstat-no" title="statement not covered" >await this.getCurrentUser();</span>
+    const projects = <span class="cstat-no" title="statement not covered" >await this.getFromStorage&lt;Project&gt;('projects');</span>
     
     const newProject: Project = <span class="cstat-no" title="statement not covered" >{</span>
       ...project,
@@ -755,12 +755,12 @@ class CustomDatabaseService {
     };
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    projects.push(newProject);</span>
-<span class="cstat-no" title="statement not covered" >    this.saveToStorage('projects', projects);</span>
+<span class="cstat-no" title="statement not covered" >    await this.saveToStorage('projects', projects);</span>
 <span class="cstat-no" title="statement not covered" >    return newProject;</span>
   }
 &nbsp;
 <span class="fstat-no" title="function not covered" >  async </span>updateProject(id: string, updates: Partial&lt;Project&gt;): Promise&lt;Project&gt; {
-    const projects = <span class="cstat-no" title="statement not covered" >this.getFromStorage&lt;Project&gt;('projects');</span>
+    const projects = <span class="cstat-no" title="statement not covered" >await this.getFromStorage&lt;Project&gt;('projects');</span>
     const index = <span class="cstat-no" title="statement not covered" >projects.findIndex(<span class="fstat-no" title="function not covered" >p </span>=&gt; <span class="cstat-no" title="statement not covered" >p.id === id)</span>;</span>
     
 <span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (index === -1) {</span>
@@ -775,12 +775,12 @@ class CustomDatabaseService {
     };
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    projects[index] = updatedProject;</span>
-<span class="cstat-no" title="statement not covered" >    this.saveToStorage('projects', projects);</span>
+<span class="cstat-no" title="statement not covered" >    await this.saveToStorage('projects', projects);</span>
 <span class="cstat-no" title="statement not covered" >    return updatedProject;</span>
   }
 &nbsp;
 <span class="fstat-no" title="function not covered" >  async </span>deleteProject(id: string): Promise&lt;boolean&gt; {
-    const projects = <span class="cstat-no" title="statement not covered" >this.getFromStorage&lt;Project&gt;('projects');</span>
+    const projects = <span class="cstat-no" title="statement not covered" >await this.getFromStorage&lt;Project&gt;('projects');</span>
     const filteredProjects = <span class="cstat-no" title="statement not covered" >projects.filter(<span class="fstat-no" title="function not covered" >p </span>=&gt; <span class="cstat-no" title="statement not covered" >p.id !== id)</span>;</span>
     
 <span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (filteredProjects.length === projects.length) {</span>
@@ -788,32 +788,32 @@ class CustomDatabaseService {
     }
 &nbsp;
     // Also delete associated tasks
-    const tasks = <span class="cstat-no" title="statement not covered" >this.getFromStorage&lt;Task&gt;('tasks');</span>
+    const tasks = <span class="cstat-no" title="statement not covered" >await this.getFromStorage&lt;Task&gt;('tasks');</span>
     const filteredTasks = <span class="cstat-no" title="statement not covered" >tasks.filter(<span class="fstat-no" title="function not covered" >t </span>=&gt; <span class="cstat-no" title="statement not covered" >t.project_id !== id)</span>;</span>
-<span class="cstat-no" title="statement not covered" >    this.saveToStorage('tasks', filteredTasks);</span>
+<span class="cstat-no" title="statement not covered" >    await this.saveToStorage('tasks', filteredTasks);</span>
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    this.saveToStorage('projects', filteredProjects);</span>
+<span class="cstat-no" title="statement not covered" >    await this.saveToStorage('projects', filteredProjects);</span>
 <span class="cstat-no" title="statement not covered" >    return true;</span>
   }
 &nbsp;
   // Tasks Service
 <span class="fstat-no" title="function not covered" >  async </span>getAllTasks(): Promise&lt;Task[]&gt; {
-<span class="cstat-no" title="statement not covered" >    return this.getFromStorage&lt;Task&gt;('tasks');</span>
+<span class="cstat-no" title="statement not covered" >    return await this.getFromStorage&lt;Task&gt;('tasks');</span>
   }
 &nbsp;
 <span class="fstat-no" title="function not covered" >  async </span>getTaskById(id: string): Promise&lt;Task | null&gt; {
-    const tasks = <span class="cstat-no" title="statement not covered" >this.getFromStorage&lt;Task&gt;('tasks');</span>
+    const tasks = <span class="cstat-no" title="statement not covered" >await this.getFromStorage&lt;Task&gt;('tasks');</span>
 <span class="cstat-no" title="statement not covered" >    return tasks.find(<span class="fstat-no" title="function not covered" >t </span>=&gt; <span class="cstat-no" title="statement not covered" >t.id === id)</span> || null;</span>
   }
 &nbsp;
 <span class="fstat-no" title="function not covered" >  async </span>getTasksByProject(projectId: string): Promise&lt;Task[]&gt; {
-    const tasks = <span class="cstat-no" title="statement not covered" >this.getFromStorage&lt;Task&gt;('tasks');</span>
+    const tasks = <span class="cstat-no" title="statement not covered" >await this.getFromStorage&lt;Task&gt;('tasks');</span>
 <span class="cstat-no" title="statement not covered" >    return tasks.filter(<span class="fstat-no" title="function not covered" >t </span>=&gt; <span class="cstat-no" title="statement not covered" >t.project_id === projectId)</span>;</span>
   }
 &nbsp;
 <span class="fstat-no" title="function not covered" >  async </span>createTask(task: Omit&lt;Task, 'id' | 'created_at' | 'updated_at' | 'user_id'&gt;): Promise&lt;Task&gt; {
-    const user = <span class="cstat-no" title="statement not covered" >this.getCurrentUser();</span>
-    const tasks = <span class="cstat-no" title="statement not covered" >this.getFromStorage&lt;Task&gt;('tasks');</span>
+    const user = <span class="cstat-no" title="statement not covered" >await this.getCurrentUser();</span>
+    const tasks = <span class="cstat-no" title="statement not covered" >await this.getFromStorage&lt;Task&gt;('tasks');</span>
     
     const newTask: Task = <span class="cstat-no" title="statement not covered" >{</span>
       ...task,
@@ -826,12 +826,12 @@ class CustomDatabaseService {
     };
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    tasks.push(newTask);</span>
-<span class="cstat-no" title="statement not covered" >    this.saveToStorage('tasks', tasks);</span>
+<span class="cstat-no" title="statement not covered" >    await this.saveToStorage('tasks', tasks);</span>
 <span class="cstat-no" title="statement not covered" >    return newTask;</span>
   }
 &nbsp;
 <span class="fstat-no" title="function not covered" >  async </span>updateTask(id: string, updates: Partial&lt;Task&gt;): Promise&lt;Task&gt; {
-    const tasks = <span class="cstat-no" title="statement not covered" >this.getFromStorage&lt;Task&gt;('tasks');</span>
+    const tasks = <span class="cstat-no" title="statement not covered" >await this.getFromStorage&lt;Task&gt;('tasks');</span>
     const index = <span class="cstat-no" title="statement not covered" >tasks.findIndex(<span class="fstat-no" title="function not covered" >t </span>=&gt; <span class="cstat-no" title="statement not covered" >t.id === id)</span>;</span>
     
 <span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (index === -1) {</span>
@@ -846,31 +846,31 @@ class CustomDatabaseService {
     };
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    tasks[index] = updatedTask;</span>
-<span class="cstat-no" title="statement not covered" >    this.saveToStorage('tasks', tasks);</span>
+<span class="cstat-no" title="statement not covered" >    await this.saveToStorage('tasks', tasks);</span>
 <span class="cstat-no" title="statement not covered" >    return updatedTask;</span>
   }
 &nbsp;
 <span class="fstat-no" title="function not covered" >  async </span>deleteTask(id: string): Promise&lt;boolean&gt; {
-    const tasks = <span class="cstat-no" title="statement not covered" >this.getFromStorage&lt;Task&gt;('tasks');</span>
+    const tasks = <span class="cstat-no" title="statement not covered" >await this.getFromStorage&lt;Task&gt;('tasks');</span>
     const filteredTasks = <span class="cstat-no" title="statement not covered" >tasks.filter(<span class="fstat-no" title="function not covered" >t </span>=&gt; <span class="cstat-no" title="statement not covered" >t.id !== id)</span>;</span>
     
 <span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (filteredTasks.length === tasks.length) {</span>
 <span class="cstat-no" title="statement not covered" >      return false; </span>// No task was deleted
     }
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    this.saveToStorage('tasks', filteredTasks);</span>
+<span class="cstat-no" title="statement not covered" >    await this.saveToStorage('tasks', filteredTasks);</span>
 <span class="cstat-no" title="statement not covered" >    return true;</span>
   }
 &nbsp;
   // User Preferences Service
 <span class="fstat-no" title="function not covered" >  async </span>getUserPreferences(): Promise&lt;UserPreferences | null&gt; {
-    const preferences = <span class="cstat-no" title="statement not covered" >this.getFromStorage&lt;UserPreferences&gt;('user_preferences');</span>
+    const preferences = <span class="cstat-no" title="statement not covered" >await this.getFromStorage&lt;UserPreferences&gt;('user_preferences');</span>
 <span class="cstat-no" title="statement not covered" >    return preferences[0] || null;</span>
   }
 &nbsp;
 <span class="fstat-no" title="function not covered" >  async </span>updateUserPreferences(preferences: Partial&lt;UserPreferences&gt;): Promise&lt;UserPreferences&gt; {
-    const user = <span class="cstat-no" title="statement not covered" >this.getCurrentUser();</span>
-    const existingPrefs = <span class="cstat-no" title="statement not covered" >this.getFromStorage&lt;UserPreferences&gt;('user_preferences');</span>
+    const user = <span class="cstat-no" title="statement not covered" >await this.getCurrentUser();</span>
+    const existingPrefs = <span class="cstat-no" title="statement not covered" >await this.getFromStorage&lt;UserPreferences&gt;('user_preferences');</span>
     
     const defaultPrefs: UserPreferences = <span class="cstat-no" title="statement not covered" >{</span>
       id: this.generateUUID(),
@@ -895,18 +895,18 @@ class CustomDatabaseService {
       updated_at: new Date().toISOString()
     };
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    this.saveToStorage('user_preferences', [updatedPrefs]);</span>
+<span class="cstat-no" title="statement not covered" >    await this.saveToStorage('user_preferences', [updatedPrefs]);</span>
 <span class="cstat-no" title="statement not covered" >    return updatedPrefs;</span>
   }
 &nbsp;
   // Tags Service
 <span class="fstat-no" title="function not covered" >  async </span>getAllTags(): Promise&lt;Tag[]&gt; {
-<span class="cstat-no" title="statement not covered" >    return this.getFromStorage&lt;Tag&gt;('tags');</span>
+<span class="cstat-no" title="statement not covered" >    return await this.getFromStorage&lt;Tag&gt;('tags');</span>
   }
 &nbsp;
 <span class="fstat-no" title="function not covered" >  async </span>createTag(tag: Omit&lt;Tag, 'id' | 'created_at' | 'updated_at' | 'user_id'&gt;): Promise&lt;Tag&gt; {
-    const user = <span class="cstat-no" title="statement not covered" >this.getCurrentUser();</span>
-    const tags = <span class="cstat-no" title="statement not covered" >this.getFromStorage&lt;Tag&gt;('tags');</span>
+    const user = <span class="cstat-no" title="statement not covered" >await this.getCurrentUser();</span>
+    const tags = <span class="cstat-no" title="statement not covered" >await this.getFromStorage&lt;Tag&gt;('tags');</span>
     
     const newTag: Tag = <span class="cstat-no" title="statement not covered" >{</span>
       ...tag,
@@ -917,12 +917,12 @@ class CustomDatabaseService {
     };
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    tags.push(newTag);</span>
-<span class="cstat-no" title="statement not covered" >    this.saveToStorage('tags', tags);</span>
+<span class="cstat-no" title="statement not covered" >    await this.saveToStorage('tags', tags);</span>
 <span class="cstat-no" title="statement not covered" >    return newTag;</span>
   }
 &nbsp;
 <span class="fstat-no" title="function not covered" >  async </span>updateTag(id: string, updates: Partial&lt;Tag&gt;): Promise&lt;Tag&gt; {
-    const tags = <span class="cstat-no" title="statement not covered" >this.getFromStorage&lt;Tag&gt;('tags');</span>
+    const tags = <span class="cstat-no" title="statement not covered" >await this.getFromStorage&lt;Tag&gt;('tags');</span>
     const index = <span class="cstat-no" title="statement not covered" >tags.findIndex(<span class="fstat-no" title="function not covered" >t </span>=&gt; <span class="cstat-no" title="statement not covered" >t.id === id)</span>;</span>
     
 <span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (index === -1) {</span>
@@ -937,30 +937,30 @@ class CustomDatabaseService {
     };
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    tags[index] = updatedTag;</span>
-<span class="cstat-no" title="statement not covered" >    this.saveToStorage('tags', tags);</span>
+<span class="cstat-no" title="statement not covered" >    await this.saveToStorage('tags', tags);</span>
 <span class="cstat-no" title="statement not covered" >    return updatedTag;</span>
   }
 &nbsp;
 <span class="fstat-no" title="function not covered" >  async </span>deleteTag(id: string): Promise&lt;boolean&gt; {
-    const tags = <span class="cstat-no" title="statement not covered" >this.getFromStorage&lt;Tag&gt;('tags');</span>
+    const tags = <span class="cstat-no" title="statement not covered" >await this.getFromStorage&lt;Tag&gt;('tags');</span>
     const filteredTags = <span class="cstat-no" title="statement not covered" >tags.filter(<span class="fstat-no" title="function not covered" >t </span>=&gt; <span class="cstat-no" title="statement not covered" >t.id !== id)</span>;</span>
     
 <span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (filteredTags.length === tags.length) {</span>
 <span class="cstat-no" title="statement not covered" >      return false;</span>
     }
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    this.saveToStorage('tags', filteredTags);</span>
+<span class="cstat-no" title="statement not covered" >    await this.saveToStorage('tags', filteredTags);</span>
 <span class="cstat-no" title="statement not covered" >    return true;</span>
   }
 &nbsp;
   // Tag Categories Service
 <span class="fstat-no" title="function not covered" >  async </span>getAllTagCategories(): Promise&lt;TagCategory[]&gt; {
-<span class="cstat-no" title="statement not covered" >    return this.getFromStorage&lt;TagCategory&gt;('tag_categories');</span>
+<span class="cstat-no" title="statement not covered" >    return await this.getFromStorage&lt;TagCategory&gt;('tag_categories');</span>
   }
 &nbsp;
 <span class="fstat-no" title="function not covered" >  async </span>createTagCategory(category: Omit&lt;TagCategory, 'id' | 'created_at' | 'updated_at' | 'user_id'&gt;): Promise&lt;TagCategory&gt; {
-    const user = <span class="cstat-no" title="statement not covered" >this.getCurrentUser();</span>
-    const categories = <span class="cstat-no" title="statement not covered" >this.getFromStorage&lt;TagCategory&gt;('tag_categories');</span>
+    const user = <span class="cstat-no" title="statement not covered" >await this.getCurrentUser();</span>
+    const categories = <span class="cstat-no" title="statement not covered" >await this.getFromStorage&lt;TagCategory&gt;('tag_categories');</span>
     
     const newCategory: TagCategory = <span class="cstat-no" title="statement not covered" >{</span>
       ...category,
@@ -971,13 +971,13 @@ class CustomDatabaseService {
     };
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    categories.push(newCategory);</span>
-<span class="cstat-no" title="statement not covered" >    this.saveToStorage('tag_categories', categories);</span>
+<span class="cstat-no" title="statement not covered" >    await this.saveToStorage('tag_categories', categories);</span>
 <span class="cstat-no" title="statement not covered" >    return newCategory;</span>
   }
 &nbsp;
   // Clear all data for current user (useful for testing)
 <span class="fstat-no" title="function not covered" >  async </span>clearAllUserData(): Promise&lt;void&gt; {
-    const user = <span class="cstat-no" title="statement not covered" >this.getCurrentUser();</span>
+    const user = <span class="cstat-no" title="statement not covered" >await this.getCurrentUser();</span>
     const tables = <span class="cstat-no" title="statement not covered" >['projects', 'tasks', 'user_preferences', 'tags', 'tag_categories'];</span>
     
 <span class="cstat-no" title="statement not covered" >    tables.forEach(<span class="fstat-no" title="function not covered" >table </span>=&gt; {</span>
@@ -994,7 +994,7 @@ export const customDatabaseService = new CustomDatabaseService();</pre></td></tr
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-08-09T16:38:52.785Z
+                at 2025-08-09T20:54:56.724Z
             </div>
         <script src="../prettify.js"></script>
         <script>

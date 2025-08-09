@@ -74,7 +74,7 @@ export class CalendarIntegrationService {
   async forceRegenerateAISuggestions(startDate: Date, endDate: Date): Promise<CalendarViewData> {
     console.log('🤖 FORCE REGENERATING AI suggestions - ignoring existing work sessions');
     try {
-      const user = getCustomAuthUser();
+      const user = await getCustomAuthUser();
       if (!user?.id) throw new Error('User not authenticated');
 
       // Fetch all data sources
@@ -132,7 +132,7 @@ export class CalendarIntegrationService {
    */
   async getCalendarData(startDate: Date, endDate: Date): Promise<CalendarViewData> {
     try {
-      const user = getCustomAuthUser();
+      const user = await getCustomAuthUser();
       if (!user?.id) throw new Error('User not authenticated');
 
       console.log('Fetching calendar data for range:', { startDate, endDate });
@@ -746,7 +746,7 @@ export class CalendarIntegrationService {
     console.log('🤖 Resetting AI suggestions - clearing all pending and old suggestions');
     
     try {
-      const user = getCustomAuthUser();
+      const user = await getCustomAuthUser();
       if (!user?.id) {
         console.error('🤖 Cannot reset - user not authenticated');
         return;
@@ -1261,7 +1261,7 @@ export class CalendarIntegrationService {
    */
   async applySuggestion(suggestion: AIScheduleSuggestion): Promise<void> {
     try {
-      const user = getCustomAuthUser();
+      const user = await getCustomAuthUser();
       if (!user?.id) throw new Error('User not authenticated');
 
       let taskId = suggestion.taskId;
