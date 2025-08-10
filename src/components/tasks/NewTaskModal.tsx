@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { Task, TaskPriority, TaskStatus, Project } from '../../../types';
 import { useLabels } from '../../hooks/useLabels';
 import LoadingSpinner from '../LoadingSpinner';

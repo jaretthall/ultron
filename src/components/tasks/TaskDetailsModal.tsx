@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { Task, Project, TaskStatus, TaskPriority, /*UserPreferences*/ } from '../../../types';
 import { useAppState } from '../../contexts/AppStateContext';
 import { tasksService } from '../../../services/databaseService';
@@ -172,12 +173,17 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 bg-slate-900 bg-opacity-75 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-slate-800 rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center p-6 border-b border-slate-700">
+  const modalContent = (
+    <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 z-[9999]">
+      <div className="bg-white/[0.08] backdrop-blur-xl border border-white/[0.12] shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto relative">
+        {/* Glass reflection effects */}
+        <div className="absolute inset-0 rounded-2xl">
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+          <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-white/20 via-transparent to-transparent"></div>
+        </div>
+        <div className="relative flex justify-between items-center p-6 border-b border-white/10">
           <div>
-            <h2 className="text-2xl font-semibold text-sky-400">{task.title}</h2>
+            <h2 className="text-2xl font-semibold text-white/95">{task.title}</h2>
             <div className="flex items-center gap-3 mt-2">
               <span className={`px-2.5 py-0.5 text-xs font-semibold rounded-full ${getPriorityColor(task.priority)}`}>
                 {task.priority}
@@ -195,7 +201,7 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
           </div>
           <button 
             onClick={onClose} 
-            className="text-slate-400 hover:text-slate-200 transition-colors"
+            className="text-white/60 hover:text-white/90 hover:bg-white/10 p-2 rounded-lg transition-colors"
             disabled={isLoading}
             aria-label="Close task details modal"
             title="Close modal"
@@ -418,10 +424,10 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
           )}
         </div>
 
-        <div className="flex justify-end gap-3 p-6 border-t border-slate-700">
+        <div className="relative flex justify-end gap-3 p-6 border-t border-white/10">
           <button
             onClick={onClose}
-            className="px-6 py-2 text-slate-300 bg-slate-600 hover:bg-slate-500 rounded-lg transition-colors"
+            className="px-6 py-2 text-white/70 bg-white/10 hover:bg-white/20 rounded-xl transition-all backdrop-blur-sm"
             disabled={isLoading}
           >
             Close
@@ -430,6 +436,8 @@ const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 };
 
 export default TaskDetailsModal; 

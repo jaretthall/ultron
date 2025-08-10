@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Project, ProjectStatus, ProjectContext } from '../../../types';
 import { useLabels } from '../../hooks/useLabels';
 
@@ -137,22 +138,27 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
 
   const urgencyScore = getUrgencyScore();
 
-  return (
+  const modalContent = (
     <div
-        className="fixed inset-0 bg-slate-900 bg-opacity-75 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+        className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 z-[9999]"
         onClick={onClose}
         aria-modal="true"
         role="dialog"
         aria-labelledby="editProjectModalTitle"
     >
       <div
-        className="bg-slate-800 p-6 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+        className="bg-white/[0.08] backdrop-blur-xl border border-white/[0.12] shadow-[0_20px_50px_rgba(0,0,0,0.3)] p-6 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative"
         onClick={e => e.stopPropagation()}
       >
-        <div className="flex justify-between items-center mb-6">
-          <h2 id="editProjectModalTitle" className="text-2xl font-semibold text-sky-400">{labels.editProject}</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-200" aria-label="Close modal">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-7 h-7">
+        {/* Glass reflection effects */}
+        <div className="absolute inset-0 rounded-2xl">
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+          <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-white/20 via-transparent to-transparent"></div>
+        </div>
+        <div className="relative flex justify-between items-center mb-6">
+          <h2 id="editProjectModalTitle" className="text-2xl font-semibold text-white/95">{labels.editProject}</h2>
+          <button onClick={onClose} className="text-white/60 hover:text-white/90 hover:bg-white/10 p-2 rounded-lg transition-colors" aria-label="Close modal">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
@@ -160,9 +166,9 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
 
         {/* Urgency Indicator */}
         {deadline && (
-          <div className="mb-4 p-3 rounded-lg bg-slate-700">
+          <div className="relative mb-4 p-3 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm">
             <div className="flex items-center justify-between">
-              <span className="text-slate-300 text-sm">Urgency Score</span>
+              <span className="text-white/70 text-sm">Urgency Score</span>
               <span className={`font-bold ${
                 urgencyScore >= 80 ? 'text-red-400' :
                 urgencyScore >= 60 ? 'text-orange-400' :
@@ -172,7 +178,7 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
                 {urgencyScore}/100
               </span>
             </div>
-            <div className="w-full bg-slate-600 rounded-full h-2 mt-2">
+            <div className="w-full bg-white/20 rounded-full h-2 mt-2">
               <div 
                 className={`h-2 rounded-full transition-all duration-300 ${
                   urgencyScore >= 80 ? 'bg-red-500' :
@@ -385,6 +391,8 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
       )}
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 };
 
 export default EditProjectModal;

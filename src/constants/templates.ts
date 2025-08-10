@@ -16,190 +16,193 @@ export interface ProjectTemplate {
 
 export const PROJECT_TEMPLATES: ProjectTemplate[] = [
   {
-    id: 'web-development',
-    name: '🌐 Web Development Project',
-    description: 'Full-stack web application development',
-    context: 'Develop a modern web application with responsive design, user authentication, database integration, and deployment. Focus on clean code, user experience, and scalability.',
+    id: 'research-paper',
+    name: '📝 Research Paper Project',
+    description: 'Academic research paper with proper citations and analysis',
+    context: 'Complete a comprehensive research paper including literature review, thesis development, evidence gathering, and academic writing. Focus on critical thinking, proper citation, and clear argumentation.',
     goals: [
-      'Design and create wireframes',
-      'Set up development environment',
-      'Implement frontend user interface',
-      'Develop backend API and database',
-      'Integrate authentication system',
-      'Conduct testing and debugging',
-      'Deploy to production environment',
-      'Document codebase and API'
+      'Choose and refine research topic',
+      'Conduct literature review and source gathering',
+      'Develop thesis statement and outline',
+      'Write introduction and background sections',
+      'Develop main arguments with supporting evidence',
+      'Create conclusion and implications',
+      'Format citations and bibliography',
+      'Proofread and revise final draft'
     ],
-    tags: ['web', 'development', 'frontend', 'backend', 'full-stack'],
-    project_context: ProjectContext.BUSINESS,
-    business_relevance: 8,
-    preferred_time_slots: ['morning', 'afternoon'],
-    estimated_duration_weeks: 8
-  },
-  {
-    id: 'marketing-campaign',
-    name: '📢 Marketing Campaign',
-    description: 'Comprehensive marketing campaign planning and execution',
-    context: 'Plan and execute a multi-channel marketing campaign to increase brand awareness, generate leads, and drive conversions. Include content creation, social media strategy, and performance tracking.',
-    goals: [
-      'Define target audience and personas',
-      'Create content calendar and strategy',
-      'Design marketing materials and assets',
-      'Set up social media campaigns',
-      'Implement email marketing sequences',
-      'Track and analyze campaign performance',
-      'Optimize based on metrics and feedback',
-      'Report on ROI and campaign results'
-    ],
-    tags: ['marketing', 'campaign', 'social-media', 'content', 'analytics'],
-    project_context: ProjectContext.BUSINESS,
-    business_relevance: 9,
-    preferred_time_slots: ['morning', 'afternoon'],
-    estimated_duration_weeks: 6
-  },
-  {
-    id: 'client-onboarding',
-    name: '🤝 Client Onboarding Process',
-    description: 'Streamlined client onboarding and relationship setup',
-    context: 'Establish a systematic approach to onboarding new clients, including documentation, communication protocols, project setup, and relationship management to ensure successful project delivery.',
-    goals: [
-      'Create client onboarding checklist',
-      'Set up project communication channels',
-      'Gather client requirements and expectations',
-      'Establish project timelines and milestones',
-      'Create project documentation templates',
-      'Set up regular check-in schedules',
-      'Implement feedback collection system',
-      'Document best practices and lessons learned'
-    ],
-    tags: ['client', 'onboarding', 'process', 'documentation', 'communication'],
-    project_context: ProjectContext.BUSINESS,
+    tags: ['research', 'writing', 'academic', 'citations', 'analysis'],
+    project_context: ProjectContext.PERSONAL,
     business_relevance: 7,
-    preferred_time_slots: ['morning', 'midday'],
-    estimated_duration_weeks: 3
-  },
-  {
-    id: 'product-launch',
-    name: '🚀 Product Launch',
-    description: 'Comprehensive product launch strategy and execution',
-    context: 'Plan and execute a successful product launch including market research, positioning, launch strategy, marketing materials, and post-launch optimization.',
-    goals: [
-      'Conduct market research and competitor analysis',
-      'Define product positioning and messaging',
-      'Create launch timeline and milestones',
-      'Develop marketing and promotional materials',
-      'Set up analytics and tracking systems',
-      'Execute launch strategy across channels',
-      'Monitor performance and gather feedback',
-      'Iterate and optimize based on results'
-    ],
-    tags: ['product', 'launch', 'marketing', 'strategy', 'analytics'],
-    project_context: ProjectContext.BUSINESS,
-    business_relevance: 10,
-    preferred_time_slots: ['morning', 'afternoon'],
-    estimated_duration_weeks: 10
-  },
-  {
-    id: 'process-improvement',
-    name: '⚙️ Process Improvement Initiative',
-    description: 'Analyze and optimize existing business processes',
-    context: 'Systematically review current business processes, identify inefficiencies, design improvements, and implement optimized workflows to increase productivity and reduce costs.',
-    goals: [
-      'Map current processes and workflows',
-      'Identify bottlenecks and inefficiencies',
-      'Research best practices and solutions',
-      'Design improved process workflows',
-      'Create implementation plan and timeline',
-      'Train team on new processes',
-      'Monitor and measure improvements',
-      'Document new standard operating procedures'
-    ],
-    tags: ['process', 'improvement', 'optimization', 'efficiency', 'workflow'],
-    project_context: ProjectContext.BUSINESS,
-    business_relevance: 8,
-    preferred_time_slots: ['morning', 'afternoon'],
+    preferred_time_slots: ['afternoon', 'evening'],
     estimated_duration_weeks: 4
   },
   {
-    id: 'personal-learning',
-    name: '📚 Personal Learning Project',
-    description: 'Structured approach to learning new skills or knowledge',
-    context: 'Develop expertise in a new area through structured learning, practical application, and knowledge consolidation. Focus on building transferable skills and documenting progress.',
+    id: 'science-fair-project',
+    name: '🔬 Science Fair Project',
+    description: 'Complete science experiment with hypothesis and presentation',
+    context: 'Design and conduct a scientific experiment following the scientific method. Develop hypothesis, collect data, analyze results, and prepare presentation materials.',
     goals: [
-      'Define learning objectives and outcomes',
-      'Research and select learning resources',
-      'Create study schedule and milestones',
-      'Practice through hands-on projects',
-      'Join communities and seek mentorship',
-      'Document learning and create notes',
-      'Apply knowledge in real-world scenarios',
-      'Share learning and teach others'
+      'Research topic and develop hypothesis',
+      'Design experiment and gather materials',
+      'Conduct controlled experiments',
+      'Record and organize data',
+      'Analyze results and draw conclusions',
+      'Create visual displays and charts',
+      'Prepare presentation or poster',
+      'Practice presenting findings'
     ],
-    tags: ['learning', 'skill-development', 'personal', 'growth', 'education'],
+    tags: ['science', 'experiment', 'hypothesis', 'data', 'presentation'],
     project_context: ProjectContext.PERSONAL,
     business_relevance: 6,
-    preferred_time_slots: ['evening', 'early-morning'],
-    estimated_duration_weeks: 12
+    preferred_time_slots: ['afternoon', 'weekend'],
+    estimated_duration_weeks: 6
   },
   {
-    id: 'digital-transformation',
-    name: '🚀 Digital Transformation Initiative',
-    description: 'Modern digital infrastructure update to remain competitive',
-    context: 'Modern businesses require digital infrastructure updates to remain competitive. This template addresses the gap between current manual processes and automated solutions, directly impacting customer satisfaction and operational costs.',
+    id: 'group-presentation',
+    name: '👥 Group Presentation Project',
+    description: 'Collaborative presentation with research and multimedia',
+    context: 'Work with classmates to create and deliver a comprehensive presentation on an assigned topic. Coordinate research, create slides, and practice delivery as a team.',
     goals: [
-      'Audit current digital touchpoints and identify 5+ automation opportunities',
-      'Implement 3 key process automations with measurable time savings',
-      'Train 80% of team members on new digital tools within 4 weeks',
-      'Reduce manual data entry by 60% through system integration',
-      'Establish KPI dashboard for ongoing performance monitoring',
-      'Create documentation for 100% of new processes',
-      'Achieve 90% user adoption rate within 6 weeks of launch'
+      'Divide research topics among team members',
+      'Conduct individual research and fact-checking',
+      'Create consistent slide template and design',
+      'Combine research into cohesive narrative',
+      'Add visual elements and multimedia',
+      'Practice transitions between speakers',
+      'Prepare for Q&A session',
+      'Deliver final presentation to class'
     ],
-    tags: ['digital-transformation', 'automation', 'efficiency', 'roi-focused'],
-    project_context: ProjectContext.BUSINESS,
+    tags: ['presentation', 'teamwork', 'research', 'public-speaking', 'collaboration'],
+    project_context: ProjectContext.PERSONAL,
     business_relevance: 8,
-    preferred_time_slots: ['morning', 'tuesday', 'wednesday', 'thursday'],
-    estimated_duration_weeks: 10
+    preferred_time_slots: ['afternoon', 'evening'],
+    estimated_duration_weeks: 3
   },
   {
-    id: 'customer-experience',
-    name: '🎯 Customer Experience Optimization',
-    description: 'Data-driven improvements to customer touchpoints for revenue growth',
-    context: 'Customer experience directly correlates with revenue retention and growth. This template focuses on data-driven improvements to customer touchpoints, addressing pain points that impact business metrics.',
+    id: 'college-application',
+    name: '🎓 College Application Process',
+    description: 'Complete college applications with essays and requirements',
+    context: 'Navigate the college application process including essay writing, gathering recommendations, completing forms, and meeting deadlines. Focus on presenting your best self authentically.',
     goals: [
-      'Complete comprehensive customer journey mapping for 3 primary personas',
-      'Identify and prioritize 8-10 friction points in current experience',
-      'Implement 5 high-impact UX improvements with A/B testing',
-      'Reduce customer support tickets by 25% through proactive solutions',
-      'Increase Net Promoter Score by 15 points within 8 weeks',
-      'Launch customer feedback loop system with 70%+ response rate',
-      'Document best practices for ongoing CX optimization'
+      'Research colleges and application requirements',
+      'Request letters of recommendation',
+      'Write personal statement and essays',
+      'Complete application forms and profiles',
+      'Gather transcripts and test scores',
+      'Submit FAFSA and financial aid forms',
+      'Review and submit applications before deadlines',
+      'Follow up on missing materials'
     ],
-    tags: ['customer-experience', 'ux-optimization', 'revenue-growth', 'data-driven'],
-    project_context: ProjectContext.BUSINESS,
-    business_relevance: 9,
-    preferred_time_slots: ['afternoon', 'monday', 'tuesday', 'wednesday'],
+    tags: ['college', 'applications', 'essays', 'financial-aid', 'deadlines'],
+    project_context: ProjectContext.PERSONAL,
+    business_relevance: 10,
+    preferred_time_slots: ['evening', 'weekend'],
     estimated_duration_weeks: 8
   },
   {
-    id: 'operational-excellence',
-    name: '⚡ Operational Excellence Program',
-    description: 'Systematic process optimization and performance measurement',
-    context: 'Operational inefficiencies compound over time, creating hidden costs and employee frustration. This template systematically addresses process optimization, resource allocation, and performance measurement.',
+    id: 'semester-planning',
+    name: '📅 Semester Planning & Organization',
+    description: 'Plan and organize entire semester schedule and goals',
+    context: 'Create a comprehensive plan for academic success including course scheduling, assignment tracking, extracurricular activities, and personal goals. Build sustainable study habits.',
     goals: [
-      'Conduct time-and-motion studies for 5 core business processes',
-      'Eliminate or streamline 3 redundant processes completely',
-      'Implement standardized workflows for 80% of routine operations',
-      'Reduce average task completion time by 25% across key processes',
-      'Establish performance metrics dashboard with real-time visibility',
-      'Train team leads on process improvement methodologies',
-      'Create sustainable continuous improvement culture with monthly reviews'
+      'Review all course syllabi and requirements',
+      'Create master calendar with all due dates',
+      'Set up study schedule and routine',
+      'Plan major assignment and exam prep timeline',
+      'Schedule extracurricular and social activities',
+      'Set academic and personal goals',
+      'Organize physical and digital study spaces',
+      'Build system for tracking progress'
     ],
-    tags: ['operational-excellence', 'process-optimization', 'cost-reduction', 'productivity'],
-    project_context: ProjectContext.BUSINESS,
+    tags: ['planning', 'organization', 'schedule', 'goals', 'study-habits'],
+    project_context: ProjectContext.PERSONAL,
+    business_relevance: 9,
+    preferred_time_slots: ['evening', 'weekend'],
+    estimated_duration_weeks: 2
+  },
+  {
+    id: 'study-abroad-prep',
+    name: '🌍 Study Abroad Preparation',
+    description: 'Complete preparation for international study experience',
+    context: 'Prepare for studying abroad including applications, visa processes, housing, cultural preparation, and academic planning. Focus on maximizing the learning experience.',
+    goals: [
+      'Research programs and application requirements',
+      'Complete application and essay requirements',
+      'Apply for visas and travel documents',
+      'Arrange housing and accommodation',
+      'Plan course selection and credit transfers',
+      'Learn basic language skills if needed',
+      'Research culture and customs',
+      'Organize finances and budget planning'
+    ],
+    tags: ['study-abroad', 'travel', 'culture', 'applications', 'planning'],
+    project_context: ProjectContext.PERSONAL,
+    business_relevance: 8,
+    preferred_time_slots: ['evening', 'weekend'],
+    estimated_duration_weeks: 12
+  },
+  {
+    id: 'internship-search',
+    name: '💼 Internship Search & Applications',
+    description: 'Strategic internship search and application process',
+    context: 'Find and apply for internships that align with career goals. Includes networking, resume building, interview preparation, and professional development.',
+    goals: [
+      'Research companies and internship opportunities',
+      'Update resume and cover letter templates',
+      'Build professional LinkedIn profile',
+      'Network with professionals and alumni',
+      'Apply to target internship positions',
+      'Prepare for interviews and assessments',
+      'Follow up on applications professionally',
+      'Evaluate and accept internship offers'
+    ],
+    tags: ['internship', 'career', 'networking', 'applications', 'professional'],
+    project_context: ProjectContext.PERSONAL,
+    business_relevance: 9,
+    preferred_time_slots: ['afternoon', 'evening'],
+    estimated_duration_weeks: 8
+  },
+  {
+    id: 'final-project',
+    name: '🎆 Senior Capstone/Final Project',
+    description: 'Comprehensive final project demonstrating learned skills',
+    context: 'Complete a major capstone project that showcases your knowledge and skills from your program of study. Focus on creating something meaningful and professionally relevant.',
+    goals: [
+      'Define project scope and learning objectives',
+      'Conduct background research and literature review',
+      'Design methodology and project plan',
+      'Execute project phases with regular check-ins',
+      'Gather and analyze data or results',
+      'Create professional presentation materials',
+      'Prepare for final defense or presentation',
+      'Document lessons learned and next steps'
+    ],
+    tags: ['capstone', 'final-project', 'presentation', 'research', 'portfolio'],
+    project_context: ProjectContext.PERSONAL,
+    business_relevance: 10,
+    preferred_time_slots: ['morning', 'afternoon'],
+    estimated_duration_weeks: 12
+  },
+  {
+    id: 'club-organization',
+    name: '🏆 Student Club/Organization Project',
+    description: 'Plan and execute activities for student clubs or organizations',
+    context: 'Organize events, fundraisers, or initiatives for your student club or organization. Focus on leadership, teamwork, and creating memorable experiences for members.',
+    goals: [
+      'Define event or initiative objectives',
+      'Form planning committee and assign roles',
+      'Create budget and secure funding/sponsors',
+      'Plan logistics including venue and materials',
+      'Promote event and manage registration',
+      'Execute event with contingency planning',
+      'Gather feedback and measure success',
+      'Document process for future events'
+    ],
+    tags: ['leadership', 'events', 'teamwork', 'organization', 'community'],
+    project_context: ProjectContext.PERSONAL,
     business_relevance: 7,
-    preferred_time_slots: ['morning', 'thursday', 'friday'],
-    estimated_duration_weeks: 11
+    preferred_time_slots: ['evening', 'weekend'],
+    estimated_duration_weeks: 6
   }
 ];
 
@@ -627,97 +630,158 @@ const administrativeTemplates: TaskTemplate[] = [
 
 const learningTemplates: TaskTemplate[] = [
   {
-    id: "skill-development-session",
-    name: "🎓 Skill Development Session",
-    description: "Focused learning and practice sessions for developing new professional skills or deepening existing expertise.",
-    context: "Skill development requires sustained practice and reflection. This template structures learning to maximize retention while maintaining engagement through varied activities and progress tracking.",
-    priority: TaskPriority.MEDIUM,
-    estimated_hours: 2,
-    tags: ["learning", "skills", "development", "practice"],
-    project_context: ProjectContext.BUSINESS,
+    id: "test-preparation",
+    name: "📚 Test/Exam Preparation",
+    description: "Systematic study session to prepare for upcoming tests or exams using proven study strategies.",
+    context: "Test preparation requires structured review and active recall techniques. This template uses spaced repetition, practice testing, and focused review to maximize retention and performance.",
+    priority: TaskPriority.HIGH,
+    estimated_hours: 3,
+    tags: ["studying", "test", "exam", "review", "memorization"],
+    project_context: ProjectContext.PERSONAL,
     
-    microGoals: `1. Define specific skill objective for this session
-2. Review previous session notes and progress
-3. Identify 3 key concepts to focus on today
-4. Read/watch primary learning material for 30 minutes
-5. Take notes using active summarization technique
-6. Practice first concept with hands-on exercise
-7. Practice second concept with different application
-8. Practice third concept in realistic scenario
-9. Reflect on what clicked vs. what's still unclear
-10. Connect new learning to existing knowledge
-11. Plan practice opportunities for coming week
-12. Update learning log with progress and insights`,
+    microGoals: `1. Review test format and identify key topics to study
+2. Gather all study materials (notes, textbook, practice tests)
+3. Create topic priority list based on test weight/difficulty
+4. Review topic #1 using active reading (summarize each section)
+5. Test yourself on topic #1 without looking at materials
+6. Review topic #2 and create flashcards for key concepts
+7. Practice problems or sample questions for topic #2
+8. Review topic #3 and teach concepts out loud
+9. Take practice quiz covering all topics studied
+10. Identify weak areas and review them again
+11. Create final review sheet with key formulas/concepts
+12. Plan final review session before test day`,
+    
+    challengeLevel: 5,
+    engagementStrategy: "time-constraint",
+    minimumFlowHours: 2,
+    minimumFlowMinutes: 30,
+    energyLevel: 3,
+    procrastinationTips: "Test anxiety often leads to avoidance. Break study sessions into specific topics rather than 'studying everything.' Use active recall (testing yourself) rather than just re-reading - it's more effective and helps you feel more prepared."
+  },
+
+  {
+    id: "essay-writing-session",
+    name: "✍️ Essay Writing Session",
+    description: "Focused writing session to draft, revise, or complete academic essays with structured approach.",
+    context: "Essay writing benefits from breaking the process into manageable steps. This template guides you through brainstorming, outlining, drafting, and revising to produce clear, well-organized essays.",
+    priority: TaskPriority.HIGH,
+    estimated_hours: 2.5,
+    tags: ["writing", "essay", "academic", "research", "composition"],
+    project_context: ProjectContext.PERSONAL,
+    
+    microGoals: `1. Read essay prompt carefully and identify key requirements
+2. Brainstorm main ideas and supporting points (10 minutes)
+3. Research 2-3 credible sources if needed
+4. Create detailed outline with intro, body, conclusion
+5. Write thesis statement and topic sentences
+6. Draft introduction paragraph with hook and thesis
+7. Write first body paragraph with evidence and analysis
+8. Write remaining body paragraphs following same structure
+9. Draft conclusion that reinforces thesis without repeating
+10. Read entire essay aloud to check flow
+11. Revise for clarity, transitions, and argument strength
+12. Proofread for grammar, spelling, and formatting`,
+    
+    challengeLevel: 6,
+    engagementStrategy: "lower-hurdle",
+    minimumFlowHours: 2,
+    minimumFlowMinutes: 0,
+    energyLevel: 3,
+    procrastinationTips: "Writing procrastination often comes from perfectionism or not knowing how to start. Begin with a rough outline and terrible first draft - you can always revise. The goal is to get ideas on paper, not to write perfectly on the first try."
+  },
+
+  {
+    id: "quiz-study-session",
+    name: "⚡ Quiz Study Session",
+    description: "Quick, focused study session for upcoming quizzes using efficient review techniques.",
+    context: "Quiz preparation requires efficient review of recent material. This template uses active recall and spaced repetition to quickly reinforce key concepts from recent classes or readings.",
+    priority: TaskPriority.MEDIUM,
+    estimated_hours: 1.5,
+    tags: ["quiz", "review", "flashcards", "quick-study", "recall"],
+    project_context: ProjectContext.PERSONAL,
+    
+    microGoals: `1. Identify quiz topics from syllabus or class announcements
+2. Gather relevant notes, readings, and materials
+3. Review class notes from past week highlighting key points
+4. Create flashcards for definitions and key concepts
+5. Read assigned readings and summarize main points
+6. Test yourself on flashcards (active recall)
+7. Practice explaining concepts in your own words
+8. Review any formulas or procedures step-by-step
+9. Create quick reference sheet with most important info
+10. Do final flashcard review focusing on difficult items
+11. Get good sleep - avoid cramming late night
+12. Review reference sheet once more before quiz`,
     
     challengeLevel: 4,
     engagementStrategy: "time-constraint",
     minimumFlowHours: 1,
-    minimumFlowMinutes: 30,
-    energyLevel: 2,
-    procrastinationTips: "Learning procrastination often comes from information overwhelm or unclear progress. Focus on one specific skill per session and measure progress by what you can do, not just what you know. Apply learning immediately to make it stick."
-  },
-
-  {
-    id: "research-investigation",
-    name: "🔍 Research Investigation",
-    description: "Deep research into industry trends, competitive analysis, or knowledge gathering for informed decision-making.",
-    context: "Research can become endless browsing without clear objectives. This template provides structure to maintain focus while ensuring comprehensive coverage of important topics with actionable outcomes.",
-    priority: TaskPriority.MEDIUM,
-    estimated_hours: 3,
-    tags: ["research", "analysis", "investigation", "insights"],
-    project_context: ProjectContext.BUSINESS,
-    
-    microGoals: `1. Write clear research question in one sentence
-2. Define what "enough" research looks like
-3. Identify 5-7 key sources to investigate
-4. Create simple template for capturing findings
-5. Research source #1 and record 3 key insights
-6. Research source #2 and record 3 key insights
-7. Continue for remaining sources
-8. Look for patterns across sources
-9. Identify conflicting information and investigate
-10. Summarize findings in 5 main points
-11. Connect findings to original research question
-12. Identify 3 actionable next steps
-13. Create one-page summary for future reference`,
-    
-    challengeLevel: 5,
-    engagementStrategy: "response-inhibition",
-    minimumFlowHours: 2,
     minimumFlowMinutes: 0,
-    energyLevel: 3,
-    procrastinationTips: "Research procrastination happens when scope feels overwhelming or purpose is unclear. Start with a specific question and set a research limit (5 sources, 2 hours). Your brain will start connecting dots once you have some material to work with."
+    energyLevel: 2,
+    procrastinationTips: "Quiz studying feels less urgent than test prep, but consistency matters more than intensity. Even 30 minutes of focused review is better than 3 hours of distracted cramming. Use active recall rather than passive re-reading."
   },
 
   {
-    id: "best-practices-analysis",
-    name: "⭐ Best Practices Analysis",
-    description: "Study and adapt best practices from other organizations, industries, or successful implementations.",
-    context: "Best practice research requires balancing inspiration with practical application. This template ensures you extract actionable insights while avoiding the trap of copying without adapting to your context.",
-    priority: TaskPriority.LOW,
-    estimated_hours: 2.5,
-    tags: ["best-practices", "benchmarking", "improvement", "adaptation"],
-    project_context: ProjectContext.BUSINESS,
+    id: "reading-comprehension",
+    name: "📖 Reading Assignment",
+    description: "Strategic reading session to understand and retain information from academic texts or literature.",
+    context: "Academic reading requires active engagement and comprehension strategies. This template helps you read more efficiently while improving retention and understanding of complex material.",
+    priority: TaskPriority.MEDIUM,
+    estimated_hours: 2,
+    tags: ["reading", "comprehension", "textbook", "literature", "analysis"],
+    project_context: ProjectContext.PERSONAL,
     
-    microGoals: `1. Define current challenge or improvement area
-2. Identify 3-4 organizations known for excellence in this area
-3. Research organization #1's approach and methods
-4. Document specific practices and implementation details
-5. Identify what makes their approach successful
-6. Repeat for organizations #2-4
-7. Compare approaches and identify common elements
-8. Note unique factors that might not apply to your context
-9. Select 3 most promising practices to adapt
-10. Design pilot implementation for practice #1
-11. Identify resources needed and potential obstacles
-12. Create action plan with 30/60/90 day milestones`,
+    microGoals: `1. Preview reading assignment - scan headings and structure
+2. Identify purpose of reading and what you need to learn
+3. Read first section slowly and actively highlight key points
+4. Pause and summarize main ideas in your own words
+5. Continue reading next section using same approach
+6. Take notes on important concepts, definitions, examples
+7. Look up unfamiliar terms or concepts
+8. Connect new information to previous knowledge
+9. Answer any study questions or chapter review questions
+10. Create concept map or visual summary if helpful
+11. Review notes and identify areas that need re-reading
+12. Plan follow-up if reading connects to upcoming assignments`,
     
     challengeLevel: 4,
     engagementStrategy: "lower-hurdle",
-    minimumFlowHours: 2,
-    minimumFlowMinutes: 0,
+    minimumFlowHours: 1,
+    minimumFlowMinutes: 30,
     energyLevel: 2,
-    procrastinationTips: "Best practice research can feel like comparing yourself unfavorably to others. Focus on learning and adaptation rather than copying. Every organization adapted practices to their context - your job is intelligent adaptation, not replication."
+    procrastinationTips: "Reading procrastination often comes from dry or difficult material. Try the 'preview first' approach - scan headings and conclusions to get oriented before diving in. Set small goals like 'read 10 pages' rather than 'finish the chapter.'"
+  },
+
+  {
+    id: "homework-completion",
+    name: "📝 Homework/Problem Set",
+    description: "Focused session to complete homework assignments or problem sets with systematic approach.",
+    context: "Homework completion benefits from organization and strategic problem-solving. This template helps you work through assignments efficiently while ensuring you understand the material.",
+    priority: TaskPriority.HIGH,
+    estimated_hours: 2,
+    tags: ["homework", "problems", "assignments", "practice", "math"],
+    project_context: ProjectContext.PERSONAL,
+    
+    microGoals: `1. Review assignment instructions and requirements carefully
+2. Gather all necessary materials (textbook, notes, calculator)
+3. Organize workspace and eliminate distractions
+4. Start with easier problems to build confidence
+5. Work through each problem step-by-step, showing work
+6. Check answers using textbook examples or answer key
+7. If stuck, review relevant class notes or textbook sections
+8. Mark difficult problems to ask about in class
+9. Complete remaining problems using similar approach
+10. Review all answers and fix any obvious errors
+11. Organize completed work in proper format
+12. Pack assignment to turn in and update assignment tracker`,
+    
+    challengeLevel: 5,
+    engagementStrategy: "response-inhibition",
+    minimumFlowHours: 1,
+    minimumFlowMinutes: 30,
+    energyLevel: 2,
+    procrastinationTips: "Homework procrastination often comes from not knowing how to start difficult problems. Begin with problems you know how to do to build momentum. Don't aim for perfection - aim for completion and understanding. You can always ask questions in class."
   }
 ];
 

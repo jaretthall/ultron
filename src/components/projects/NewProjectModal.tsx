@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Project, ProjectStatus, ProjectContext } from '../../../types';
 import { PROJECT_TEMPLATES } from '../../constants/templates';
 import { useLabels } from '../../hooks/useLabels';
@@ -124,44 +125,49 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
     }
   };
 
-  return (
+  const modalContent = (
     <div
-        className="fixed inset-0 bg-slate-900 bg-opacity-75 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+        className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 z-[9999]"
         onClick={isSubmitting ? undefined : onClose}
         aria-modal="true"
         role="dialog"
         aria-labelledby="newProjectModalTitle"
     >
       <div
-        className="bg-slate-800 p-6 rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+        className="bg-white/[0.08] backdrop-blur-xl border border-white/[0.12] shadow-[0_20px_50px_rgba(0,0,0,0.3)] p-6 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto relative"
         onClick={e => e.stopPropagation()}
       >
-        <div className="flex justify-between items-center mb-6">
-          <h2 id="newProjectModalTitle" className="text-2xl font-semibold text-sky-400">{labels.newProject}</h2>
+        {/* Glass reflection effects */}
+        <div className="absolute inset-0 rounded-2xl">
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+          <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-white/20 via-transparent to-transparent"></div>
+        </div>
+        <div className="relative flex justify-between items-center mb-6">
+          <h2 id="newProjectModalTitle" className="text-2xl font-semibold text-white/95">{labels.newProject}</h2>
           <button 
             onClick={onClose} 
-            className="text-slate-400 hover:text-slate-200" 
+            className="text-white/60 hover:text-white/90 hover:bg-white/10 p-2 rounded-lg transition-colors" 
             aria-label="Close modal"
             disabled={isSubmitting}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-7 h-7">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
         {errorMessage && (
-          <div className="mb-4 p-3 bg-red-800/20 border border-red-600 rounded-lg">
-            <p className="text-red-400 text-sm">{errorMessage}</p>
+          <div className="relative mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl backdrop-blur-sm">
+            <p className="text-red-300 text-sm">{errorMessage}</p>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="relative space-y-4">
           {/* Template Selection */}
           <div>
-            <label htmlFor="projectTemplate" className="block text-sm font-medium text-slate-300 mb-1">
-{labels.project} Template
-              <span className="block text-xs text-slate-400 font-normal mt-0.5">
+            <label htmlFor="projectTemplate" className="block text-sm font-medium text-white/70 mb-1">
+              {labels.project} Template
+              <span className="block text-xs text-white/50 font-normal mt-0.5">
                 Choose a template to pre-fill common project types, or start from scratch.
               </span>
             </label>
@@ -169,7 +175,7 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
               id="projectTemplate"
               value={selectedTemplate}
               onChange={(e) => handleTemplateChange(e.target.value)}
-              className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
+              className="w-full bg-white/10 border border-white/20 text-white/90 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all backdrop-blur-sm"
               disabled={isSubmitting}
             >
               <option value="">Start from scratch</option>
@@ -180,8 +186,8 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
               ))}
             </select>
             {selectedTemplate && (
-              <div className="mt-2 p-3 bg-slate-700/50 rounded-md">
-                <p className="text-xs text-slate-300">
+              <div className="mt-2 p-3 bg-white/5 border border-white/10 rounded-xl backdrop-blur-sm">
+                <p className="text-xs text-white/70">
                   {PROJECT_TEMPLATES.find(t => t.id === selectedTemplate)?.description}
                 </p>
               </div>
@@ -189,13 +195,13 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
           </div>
 
           <div>
-            <label htmlFor="projectTitle" className="block text-sm font-medium text-slate-300 mb-1">Title <span className="text-red-500">*</span></label>
+            <label htmlFor="projectTitle" className="block text-sm font-medium text-white/70 mb-1">Title <span className="text-red-400">*</span></label>
             <input
               type="text"
               id="projectTitle"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
+              className="w-full bg-white/10 border border-white/20 text-white/90 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all backdrop-blur-sm placeholder-white/40"
               disabled={isSubmitting}
               required
               aria-required="true"
@@ -203,9 +209,9 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
           </div>
 
           <div>
-            <label htmlFor="projectDescription" className="block text-sm font-medium text-slate-300 mb-1">
-              Context <span className="text-sky-400">*</span>
-              <span className="block text-xs text-slate-400 font-normal mt-0.5">
+            <label htmlFor="projectDescription" className="block text-sm font-medium text-white/70 mb-1">
+              Context <span className="text-blue-400">*</span>
+              <span className="block text-xs text-white/50 font-normal mt-0.5">
                 Provide detailed context to help AI understand this project's purpose, goals, and any important background information.
               </span>
             </label>
@@ -215,32 +221,32 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
               onChange={(e) => setProjectDescription(e.target.value)}
               placeholder="Describe what this project involves, its objectives, constraints, stakeholders, and any context that would help the AI understand and prioritize this project effectively..."
               rows={4}
-              className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
+              className="w-full bg-white/10 border border-white/20 text-white/90 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all backdrop-blur-sm placeholder-white/40 resize-none"
               disabled={isSubmitting}
             />
           </div>
 
           <div>
-            <label htmlFor="projectGoals" className="block text-sm font-medium text-slate-300 mb-1">Goals (one goal per line)</label>
+            <label htmlFor="projectGoals" className="block text-sm font-medium text-white/70 mb-1">Goals (one goal per line)</label>
             <textarea
               id="projectGoals"
               value={goals}
               onChange={(e) => setGoals(e.target.value)}
               rows={4}
               placeholder="e.g., Finalize design mockups&#10;Develop core features&#10;User testing"
-              className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
+              className="w-full bg-white/10 border border-white/20 text-white/90 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all backdrop-blur-sm placeholder-white/40 resize-none"
               disabled={isSubmitting}
             />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="projectStatus" className="block text-sm font-medium text-slate-300 mb-1">Status</label>
+              <label htmlFor="projectStatus" className="block text-sm font-medium text-white/70 mb-1">Status</label>
               <select
                 id="projectStatus"
                 value={status}
                 onChange={(e) => setStatus(e.target.value as ProjectStatus)}
-                className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
+                className="w-full bg-white/10 border border-white/20 text-white/90 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all backdrop-blur-sm"
               disabled={isSubmitting}
               >
                 {Object.values(ProjectStatus).map((statusValue: string) => (
@@ -251,12 +257,12 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
               </select>
             </div>
             <div>
-              <label htmlFor="projectContext" className="block text-sm font-medium text-slate-300 mb-1">Type</label>
+              <label htmlFor="projectContext" className="block text-sm font-medium text-white/70 mb-1">Type</label>
               <select
                 id="projectContext"
                 value={projectContext}
                 onChange={(e) => setProjectContext(e.target.value as ProjectContext)}
-                className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
+                className="w-full bg-white/10 border border-white/20 text-white/90 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all backdrop-blur-sm"
               disabled={isSubmitting}
               >
                 {Object.values(ProjectContext).map((contextValue: string) => (
@@ -269,34 +275,34 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
           </div>
 
           <div>
-            <label htmlFor="projectTags" className="block text-sm font-medium text-slate-300 mb-1">Tags (comma separated)</label>
+            <label htmlFor="projectTags" className="block text-sm font-medium text-white/70 mb-1">Tags (comma separated)</label>
             <input
               type="text"
               id="projectTags"
               value={tags}
               onChange={(e) => setTags(e.target.value)}
               placeholder="e.g., web, development, urgent"
-              className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
+              className="w-full bg-white/10 border border-white/20 text-white/90 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all backdrop-blur-sm placeholder-white/40"
               disabled={isSubmitting}
             />
           </div>
 
           <div>
-            <label htmlFor="projectDeadline" className="block text-sm font-medium text-slate-300 mb-1">Deadline (optional)</label>
+            <label htmlFor="projectDeadline" className="block text-sm font-medium text-white/70 mb-1">Deadline (optional)</label>
             <input
               type="date"
               id="projectDeadline"
               value={deadline}
               onChange={(e) => setDeadline(e.target.value)}
-              className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
+              className="w-full bg-white/10 border border-white/20 text-white/90 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all backdrop-blur-sm"
               disabled={isSubmitting}
             />
           </div>
 
           <div>
-            <label htmlFor="businessRelevance" className="block text-sm font-medium text-slate-300 mb-1">
+            <label htmlFor="businessRelevance" className="block text-sm font-medium text-white/70 mb-1">
               Business Relevance (1-10)
-              <span className="block text-xs text-slate-400 font-normal mt-0.5">
+              <span className="block text-xs text-white/50 font-normal mt-0.5">
                 How important is this project to your business goals?
               </span>
             </label>
@@ -307,20 +313,20 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
               max="10"
               value={businessRelevance}
               onChange={(e) => setBusinessRelevance(Number(e.target.value))}
-              className="w-full h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer"
+              className="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer slider"
               disabled={isSubmitting}
             />
-            <div className="flex justify-between text-xs text-slate-400 mt-1">
+            <div className="flex justify-between text-xs text-white/50 mt-1">
               <span>1 (Low)</span>
-              <span className="text-sky-400 font-medium">{businessRelevance}</span>
+              <span className="text-blue-400 font-medium">{businessRelevance}</span>
               <span>10 (Critical)</span>
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-3">
+            <label className="block text-sm font-medium text-white/70 mb-3">
               Preferred Time Slots
-              <span className="block text-xs text-slate-400 font-normal mt-0.5">
+              <span className="block text-xs text-white/50 font-normal mt-0.5">
                 When do you work best on this type of project?
               </span>
             </label>
@@ -331,10 +337,10 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
                   type="button"
                   onClick={() => handleTimeSlotToggle(slot)}
                   disabled={isSubmitting}
-                  className={`p-2 text-sm rounded-md border transition-colors ${
+                  className={`p-2 text-sm rounded-xl border transition-all backdrop-blur-sm ${
                     preferredTimeSlots.includes(slot)
-                      ? 'bg-sky-600 text-white border-sky-500'
-                      : 'bg-slate-700 text-slate-300 border-slate-600 hover:bg-slate-600'
+                      ? 'bg-blue-600/80 text-white border-blue-500/50 shadow-lg'
+                      : 'bg-white/10 text-white/70 border-white/20 hover:bg-white/20 hover:text-white/90'
                   }`}
                 >
                   {slot.charAt(0).toUpperCase() + slot.slice(1).replace('-', ' ')}
@@ -348,14 +354,14 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="px-4 py-2 text-slate-400 hover:text-slate-200 transition-colors"
+              className="px-4 py-2 text-white/60 hover:text-white/90 hover:bg-white/10 rounded-xl transition-all backdrop-blur-sm"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+              className="px-4 py-2 bg-blue-600/80 hover:bg-blue-700/80 text-white rounded-xl transition-all backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 shadow-lg hover:shadow-xl"
             >
               {isSubmitting ? (
                 <>
@@ -374,6 +380,8 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 };
 
 export default NewProjectModal;
