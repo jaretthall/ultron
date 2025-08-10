@@ -18,6 +18,7 @@ const AIDashboard = lazy(() => import('./components/ai/AIDashboard'));
 const AnalyticsDashboard = lazy(() => import('./components/analytics/AnalyticsDashboard'));
 const GlobalSearch = lazy(() => import('./components/GlobalSearch'));
 import { AppStateProvider, useAppState } from './contexts/AppStateContext';
+import Footer from './components/common/Footer';
 // Phase 6: Production Readiness - Security & Monitoring
 import { 
   captureException, 
@@ -227,8 +228,12 @@ const AppWithAuthContent: React.FC = () => {
   // Error display
   const renderErrorDisplay = () => {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col justify-center">
-        <div className="max-w-md mx-auto bg-slate-800 rounded-lg shadow-lg p-6">
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-gray-900 to-slate-900 flex flex-col justify-center relative">
+        <div className="fixed inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-red-500/20 rounded-full blur-3xl"></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl"></div>
+        </div>
+        <div className="max-w-md mx-auto bg-white/[0.08] backdrop-blur-xl border border-white/[0.12] shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-2xl p-6 relative">
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <svg className="h-12 w-12 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -261,7 +266,11 @@ const AppWithAuthContent: React.FC = () => {
   // Show loading if loading
   if (state.loading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-gray-900 to-slate-900 flex items-center justify-center relative">
+        <div className="fixed inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/4 -right-40 w-80 h-80 bg-blue-500/15 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute -bottom-40 left-1/4 w-80 h-80 bg-slate-500/8 rounded-full blur-3xl animate-pulse"></div>
+        </div>
         <div className="text-center">
           <LoadingSpinner />
           <p className="mt-4 text-slate-400">Loading your workspace...</p>
@@ -271,7 +280,21 @@ const AppWithAuthContent: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-gray-900 to-slate-900 relative overflow-hidden">
+      {/* Glassmorphism Background Elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-r from-blue-500/15 to-sky-500/15 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute top-1/3 -left-40 w-80 h-80 bg-gradient-to-r from-slate-500/12 to-gray-500/12 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
+        <div className="absolute -bottom-40 right-1/3 w-72 h-72 bg-gradient-to-r from-blue-600/18 to-indigo-600/18 rounded-full blur-3xl animate-pulse" style={{animationDelay: '4s'}}></div>
+        <div className="absolute top-1/4 right-1/4 w-64 h-64 bg-gradient-to-r from-cyan-600/8 to-blue-500/8 rounded-full blur-3xl animate-pulse" style={{animationDelay: '6s'}}></div>
+        
+        {/* Subtle grid pattern overlay */}
+        <div className="absolute inset-0 opacity-[0.03]" style={{
+          backgroundImage: `radial-gradient(circle at 1px 1px, white 1px, transparent 0)`,
+          backgroundSize: '20px 20px'
+        }}></div>
+      </div>
+      
       <HeaderComponent 
         projectContextFilter={projectContextFilter}
         onProjectContextFilterChange={setProjectContextFilter}
@@ -359,6 +382,8 @@ const AppWithAuthContent: React.FC = () => {
           </Routes>
         </Suspense>
       </main>
+
+      <Footer />
 
       {/* Global Search Modal */}
       <GlobalSearch 

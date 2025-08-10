@@ -8,6 +8,7 @@ import { useAppMode } from '../../hooks/useLabels';
 import { IdGenerator } from '../../utils/idGeneration';
 import { projectsService, tasksService, schedulesService, tagsService, tagCategoriesService, notesService } from '../../../services/databaseService';
 import { useAuth } from '../../contexts/AuthContext';
+import { DEFAULT_QUICK_ACTIONS_PREFERENCES } from '../../types/userPreferences';
 
 const SettingsPage: React.FC = () => {
   const { state, updateUserPreferences } = useAppState();
@@ -66,7 +67,7 @@ const SettingsPage: React.FC = () => {
   }, [userPreferences]);
 
 
-  const tabs = ['AI Provider', 'Preferences', 'Sync', 'Security', 'Integrations', 'Advanced', 'Notes'];
+  const tabs = ['AI Provider', 'Preferences', 'Shortcuts', 'Sync', 'Security', 'Integrations', 'Advanced', 'Notes'];
 
   const handleSaveChanges = () => {
     const updatedPrefs: Partial<UserPreferences> = {
@@ -415,17 +416,24 @@ const SettingsPage: React.FC = () => {
     switch (activeTab) {
       case 'AI Provider':
         return (
-          <section className="p-6 bg-slate-800 rounded-lg">
-            <h3 className="text-xl font-semibold mb-6 text-slate-100">AI Provider Configuration</h3>
+          <section className="p-6 bg-white/[0.08] backdrop-blur-xl border border-white/[0.12] shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-2xl relative overflow-hidden">
+            {/* Glass reflection effects */}
+            <div className="absolute inset-0 rounded-2xl">
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+              <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-white/20 via-transparent to-transparent"></div>
+            </div>
+            
+            <div className="relative">
+              <h3 className="text-xl font-semibold mb-6 text-white/95">AI Provider Configuration</h3>
 
-            <div className="space-y-6">
-              <div>
-                <label htmlFor="aiProvider" className="block text-sm font-medium text-slate-300 mb-1">Choose AI Provider</label>
-                <select
-                  id="aiProvider"
-                  value={currentAiProvider}
-                  onChange={(e) => setCurrentAiProvider(e.target.value as AIProvider)}
-                  className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
+              <div className="space-y-6">
+                <div>
+                  <label htmlFor="aiProvider" className="block text-sm font-medium text-white/80 mb-2">Choose AI Provider</label>
+                  <select
+                    id="aiProvider"
+                    value={currentAiProvider}
+                    onChange={(e) => setCurrentAiProvider(e.target.value as AIProvider)}
+                    className="w-full bg-white/[0.08] backdrop-blur-md border border-white/[0.12] text-white rounded-xl p-3 focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 transition-all"
                 >
                   <option value="claude">Anthropic Claude</option>
                   <option value="openai">OpenAI GPT</option>
@@ -436,25 +444,25 @@ const SettingsPage: React.FC = () => {
               {currentAiProvider === 'claude' && (
                 <>
                   <div>
-                    <label htmlFor="claudeApiKey" className="block text-sm font-medium text-slate-300 mb-1">Anthropic Claude API Key</label>
+                    <label htmlFor="claudeApiKey" className="block text-sm font-medium text-white/80 mb-2">Anthropic Claude API Key</label>
                     <input
                       type="password"
                       id="claudeApiKey"
                       value={currentClaudeApiKey}
                       onChange={(e) => setCurrentClaudeApiKey(e.target.value)}
                       placeholder="Enter your Claude API Key"
-                      className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
+                      className="w-full bg-white/[0.08] backdrop-blur-md border border-white/[0.12] text-white placeholder-white/50 rounded-xl p-3 focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 transition-all"
                       aria-label="Anthropic Claude API Key"
                     />
                     <p className="text-xs text-slate-500 mt-1">Claude integration is experimental and not yet fully functional.</p>
                   </div>
                   <div>
-                    <label htmlFor="claudeModel" className="block text-sm font-medium text-slate-300 mb-1">Preferred Claude Model</label>
+                    <label htmlFor="claudeModel" className="block text-sm font-medium text-white/80 mb-2">Preferred Claude Model</label>
                     <select
                       id="claudeModel"
                       value={currentSelectedClaudeModel}
                       onChange={(e) => setCurrentSelectedClaudeModel(e.target.value)}
-                      className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
+                      className="w-full bg-white/[0.08] backdrop-blur-md border border-white/[0.12] text-white rounded-xl p-3 focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 transition-all"
                       disabled={!currentClaudeApiKey}
                     >
                       {AVAILABLE_CLAUDE_MODELS.map(model => (
@@ -476,7 +484,7 @@ const SettingsPage: React.FC = () => {
                       value={currentOpenaiApiKey}
                       onChange={(e) => setCurrentOpenaiApiKey(e.target.value)}
                       placeholder="Enter your OpenAI API Key"
-                      className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
+                      className="w-full bg-white/[0.08] backdrop-blur-md border border-white/[0.12] text-white rounded-xl p-3 focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 transition-all"
                       aria-label="OpenAI API Key"
                     />
                     <p className="text-xs text-slate-500 mt-1">OpenAI integration is experimental and not yet fully functional.</p>
@@ -487,7 +495,7 @@ const SettingsPage: React.FC = () => {
                       id="openaiModel"
                       value={currentSelectedOpenaiModel}
                       onChange={(e) => setCurrentSelectedOpenaiModel(e.target.value)}
-                      className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
+                      className="w-full bg-white/[0.08] backdrop-blur-md border border-white/[0.12] text-white rounded-xl p-3 focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 transition-all"
                       disabled={!currentOpenaiApiKey}
                     >
                       {AVAILABLE_OPENAI_MODELS.map(model => (
@@ -505,12 +513,19 @@ const SettingsPage: React.FC = () => {
                     Save AI Preferences
                   </button>
             </div>
+            </div>
           </section>
         );
       case 'Preferences':
         return (
-          <section className="p-6 bg-slate-800 rounded-lg">
-            <h3 className="text-xl font-semibold mb-6 text-slate-100">Application Preferences</h3>
+          <section className="p-6 bg-white/[0.08] backdrop-blur-xl border border-white/[0.12] shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-2xl relative overflow-hidden">
+            {/* Glass reflection effects */}
+            <div className="absolute inset-0 rounded-2xl">
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+              <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-white/20 via-transparent to-transparent"></div>
+            </div>
+            <div className="relative">
+            <h3 className="text-xl font-semibold mb-6 text-white/95">Application Preferences</h3>
             
             <div className="space-y-6">
               {/* Working Hours */}
@@ -524,7 +539,7 @@ const SettingsPage: React.FC = () => {
                       id="workingHoursStart"
                       value={workingHoursStart}
                       onChange={(e) => setWorkingHoursStart(e.target.value)}
-                      className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
+                      className="w-full bg-white/[0.08] backdrop-blur-md border border-white/[0.12] text-white rounded-xl p-3 focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 transition-all"
                     />
                   </div>
                   <div>
@@ -534,7 +549,7 @@ const SettingsPage: React.FC = () => {
                       id="workingHoursEnd"
                       value={workingHoursEnd}
                       onChange={(e) => setWorkingHoursEnd(e.target.value)}
-                      className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
+                      className="w-full bg-white/[0.08] backdrop-blur-md border border-white/[0.12] text-white rounded-xl p-3 focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 transition-all"
                     />
                   </div>
                 </div>
@@ -553,7 +568,7 @@ const SettingsPage: React.FC = () => {
                       onChange={(e) => setFocusBlockDuration(Number(e.target.value))}
                       min="15"
                       max="240"
-                      className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
+                      className="w-full bg-white/[0.08] backdrop-blur-md border border-white/[0.12] text-white rounded-xl p-3 focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 transition-all"
                     />
                   </div>
                   <div>
@@ -565,7 +580,7 @@ const SettingsPage: React.FC = () => {
                       onChange={(e) => setBreakDuration(Number(e.target.value))}
                       min="5"
                       max="60"
-                      className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
+                      className="w-full bg-white/[0.08] backdrop-blur-md border border-white/[0.12] text-white rounded-xl p-3 focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 transition-all"
                     />
                   </div>
                 </div>
@@ -640,7 +655,7 @@ const SettingsPage: React.FC = () => {
                     onChange={(e) => setContextSwitchBuffer(Number(e.target.value))}
                     min="0"
                     max="60"
-                    className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-sky-500 focus:border-sky-500"
+                    className="w-full bg-white/[0.08] backdrop-blur-md border border-white/[0.12] text-white rounded-xl p-3 focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 transition-all"
                   />
                   <p className="text-xs text-slate-400 mt-1">
                     Time buffer automatically added when switching between business and personal tasks.
@@ -655,19 +670,112 @@ const SettingsPage: React.FC = () => {
                 Save Preferences
               </button>
             </div>
+            </div>
+          </section>
+        );
+      case 'Shortcuts':
+        return (
+          <section className="p-6 bg-white/[0.08] backdrop-blur-xl border border-white/[0.12] shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-2xl relative overflow-hidden">
+            {/* Glass reflection effects */}
+            <div className="absolute inset-0 rounded-2xl">
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+              <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-white/20 via-transparent to-transparent"></div>
+            </div>
+
+            <div className="relative">
+              <h3 className="text-xl font-semibold mb-6 text-white/95">Event Shortcuts</h3>
+              
+              <div className="space-y-6">
+                <p className="text-sm text-white/70">
+                  Create customizable shortcuts for quickly adding events to your calendar. These shortcuts appear as buttons in the calendar view and can automatically create accompanying tasks.
+                </p>
+
+                <div className="grid gap-4">
+                  {DEFAULT_QUICK_ACTIONS_PREFERENCES.eventShortcuts.map((shortcut) => (
+                    <div key={shortcut.id} className="p-4 bg-white/5 border border-white/10 rounded-xl hover:bg-white/8 transition-colors">
+                      <div className="flex items-start gap-4">
+                        {/* Icon and Color */}
+                        <div className="flex items-center gap-2">
+                          <span className="text-2xl">{shortcut.icon}</span>
+                          <div className={`w-4 h-4 rounded-full bg-${shortcut.color}-500/50 border border-${shortcut.color}-500/70`}></div>
+                        </div>
+
+                        {/* Shortcut Details */}
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h4 className="font-medium text-white/90">{shortcut.name}</h4>
+                            <span className={`px-2 py-1 text-xs rounded-full ${shortcut.isActive ? 'bg-emerald-500/20 text-emerald-300' : 'bg-gray-500/20 text-gray-400'}`}>
+                              {shortcut.isActive ? 'Active' : 'Inactive'}
+                            </span>
+                          </div>
+                          
+                          <div className="text-sm text-white/60 space-y-1">
+                            <p><span className="text-white/80">Event:</span> {shortcut.eventTitle} ({shortcut.eventDuration} min)</p>
+                            {shortcut.createTask && (
+                              <p><span className="text-white/80">Creates task:</span> {shortcut.taskTitle} ({shortcut.taskPriority} priority)</p>
+                            )}
+                            {shortcut.taskTags.length > 0 && (
+                              <p><span className="text-white/80">Tags:</span> {shortcut.taskTags.join(', ')}</p>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex gap-2">
+                          <button className="p-2 text-white/60 hover:text-white/90 hover:bg-white/10 rounded-lg transition-colors">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                          </button>
+                          <button className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Add New Shortcut */}
+                <button className="w-full p-4 border-2 border-dashed border-white/20 hover:border-white/30 rounded-xl text-white/60 hover:text-white/80 transition-colors flex items-center justify-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  <span>Add New Shortcut</span>
+                </button>
+
+                <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+                  <h4 className="font-medium text-blue-300 mb-2">💡 How Shortcuts Work</h4>
+                  <ul className="text-sm text-blue-200/80 space-y-1">
+                    <li>• Shortcuts appear as buttons in your calendar view</li>
+                    <li>• Click a shortcut to instantly create an event at the current date/time</li>
+                    <li>• Optionally create accompanying tasks with custom priorities and tags</li>
+                    <li>• Perfect for recurring activities like meetings, counseling sessions, or focus blocks</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
           </section>
         );
       case 'Sync':
          return (
-          <>
-            <section className="mb-8 p-6 bg-slate-800 rounded-lg">
-              <h3 className="text-xl font-semibold mb-6 text-slate-100">Data Synchronization</h3>
+          <div>
+            <section className="mb-8 p-6 bg-white/[0.08] backdrop-blur-xl border border-white/[0.12] shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-2xl relative overflow-hidden">
+            {/* Glass reflection effects */}
+            <div className="absolute inset-0 rounded-2xl">
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+              <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-white/20 via-transparent to-transparent"></div>
+            </div>
+            <div className="relative">
+              <h3 className="text-xl font-semibold mb-6 text-white/95">Data Synchronization</h3>
               
               <div className="space-y-6">
                 {/* Sync Status */}
                 <div>
                   <h4 className="text-lg font-medium text-slate-200 mb-4">Sync Status</h4>
-                  <div className="bg-slate-700 p-4 rounded-lg">
+                  <div className="bg-white/[0.08] backdrop-blur-md border border-white/[0.10] rounded-xl p-4">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
                       <div className="text-center">
                         <div className="text-2xl font-bold text-green-400 mb-1">✓</div>
@@ -695,7 +803,7 @@ const SettingsPage: React.FC = () => {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h5 className="text-sm font-medium text-slate-100">Real-time Sync</h5>
+                        <h5 className="text-sm font-medium text-white/90">Real-time Sync</h5>
                         <p className="text-xs text-slate-400">Automatically sync changes as they happen</p>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
@@ -706,7 +814,7 @@ const SettingsPage: React.FC = () => {
                     
                     <div className="flex items-center justify-between">
                       <div>
-                        <h5 className="text-sm font-medium text-slate-100">Offline Mode</h5>
+                        <h5 className="text-sm font-medium text-white/90">Offline Mode</h5>
                         <p className="text-xs text-slate-400">Allow app to work without internet connection</p>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
@@ -717,7 +825,7 @@ const SettingsPage: React.FC = () => {
 
                     <div className="flex items-center justify-between">
                       <div>
-                        <h5 className="text-sm font-medium text-slate-100">Conflict Resolution</h5>
+                        <h5 className="text-sm font-medium text-white/90">Conflict Resolution</h5>
                         <p className="text-xs text-slate-400">How to handle data conflicts during sync</p>
                       </div>
                       <select className="bg-slate-600 border-slate-500 text-slate-100 rounded-md px-3 py-1 text-sm">
@@ -734,7 +842,7 @@ const SettingsPage: React.FC = () => {
                 <div>
                   <h4 className="text-lg font-medium text-slate-200 mb-4">Manual Actions</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <button className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium rounded-md transition-colors">
+                    <button className="px-4 py-2 bg-sky-500/80 hover:bg-sky-500 backdrop-blur-md border border-sky-500/30 text-white text-sm font-medium rounded-xl transition-all hover:shadow-sky-500/25 shadow-lg">
                       Force Full Sync
                     </button>
                     <button className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-md transition-colors">
@@ -749,9 +857,16 @@ const SettingsPage: React.FC = () => {
                   </div>
                 </div>
               </div>
+            </div>
             </section>
 
-            <section className="mb-8 p-6 bg-slate-800 rounded-lg">
+            <section className="mb-8 p-6 bg-white/[0.08] backdrop-blur-xl border border-white/[0.12] shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-2xl relative overflow-hidden">
+            {/* Glass reflection effects */}
+            <div className="absolute inset-0 rounded-2xl">
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+              <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-white/20 via-transparent to-transparent"></div>
+            </div>
+            <div className="relative">
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-xl font-semibold text-slate-100">Tag & Category Management</h3>
                     <button 
@@ -767,34 +882,42 @@ const SettingsPage: React.FC = () => {
                     Create categories, manage tags, and analyze usage patterns.
                   </p>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                    <div className="bg-slate-700 p-3 rounded">
-                      <h4 className="font-medium text-slate-100 mb-1">Create & Edit Tags</h4>
+                    <div className="bg-white/[0.08] backdrop-blur-md border border-white/[0.10] rounded-xl p-3">
+                      <h4 className="font-medium text-white/90 mb-2">Create & Edit Tags</h4>
                       <p className="text-slate-400">Add custom tags with colors and categories</p>
                     </div>
-                    <div className="bg-slate-700 p-3 rounded">
-                      <h4 className="font-medium text-slate-100 mb-1">Tag Analytics</h4>
+                    <div className="bg-white/[0.08] backdrop-blur-md border border-white/[0.10] rounded-xl p-3">
+                      <h4 className="font-medium text-white/90 mb-2">Tag Analytics</h4>
                       <p className="text-slate-400">View usage statistics and cleanup suggestions</p>
                     </div>
-                    <div className="bg-slate-700 p-3 rounded">
-                      <h4 className="font-medium text-slate-100 mb-1">Category Organization</h4>
+                    <div className="bg-white/[0.08] backdrop-blur-md border border-white/[0.10] rounded-xl p-3">
+                      <h4 className="font-medium text-white/90 mb-2">Category Organization</h4>
                       <p className="text-slate-400">Group tags into meaningful categories</p>
                     </div>
                   </div>
                 </div>
+            </div>
+            </div>
             </section>
-          </>
+          </div>
         );
       case 'Security':
         return (
-          <section className="p-6 bg-slate-800 rounded-lg">
-            <h3 className="text-xl font-semibold mb-6 text-slate-100">Security & Privacy</h3>
+          <section className="p-6 bg-white/[0.08] backdrop-blur-xl border border-white/[0.12] shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-2xl relative overflow-hidden">
+            {/* Glass reflection effects */}
+            <div className="absolute inset-0 rounded-2xl">
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+              <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-white/20 via-transparent to-transparent"></div>
+            </div>
+            <div className="relative">
+            <h3 className="text-xl font-semibold mb-6 text-white/95">Security & Privacy</h3>
             
             <div className="space-y-6">
               {/* API Key Management */}
               <div>
                 <h4 className="text-lg font-medium text-slate-200 mb-4">API Key Management</h4>
                 <div className="space-y-4">
-                  <div className="bg-slate-700 p-4 rounded-lg">
+                  <div className="bg-white/[0.08] backdrop-blur-md border border-white/[0.10] rounded-xl p-4">
                     <div className="flex justify-between items-start mb-3">
                       <div>
                         <h5 className="font-medium text-slate-100">Claude API Key</h5>
@@ -811,7 +934,7 @@ const SettingsPage: React.FC = () => {
                     )}
                   </div>
                   
-                  <div className="bg-slate-700 p-4 rounded-lg">
+                  <div className="bg-white/[0.08] backdrop-blur-md border border-white/[0.10] rounded-xl p-4">
                     <div className="flex justify-between items-start mb-3">
                       <div>
                         <h5 className="font-medium text-slate-100">OpenAI API Key</h5>
@@ -833,7 +956,7 @@ const SettingsPage: React.FC = () => {
               {/* Session Management */}
               <div>
                 <h4 className="text-lg font-medium text-slate-200 mb-4">Session Management</h4>
-                <div className="bg-slate-700 p-4 rounded-lg space-y-3">
+                <div className="bg-white/[0.08] backdrop-blur-md border border-white/[0.10] rounded-xl p-4 space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-slate-300">Current Session</span>
                     <span className="text-sm text-green-400">Active</span>
@@ -883,7 +1006,7 @@ const SettingsPage: React.FC = () => {
               {/* Data Security */}
               <div>
                 <h4 className="text-lg font-medium text-slate-200 mb-4">Data Security</h4>
-                <div className="bg-slate-700 p-4 rounded-lg space-y-3">
+                <div className="bg-white/[0.08] backdrop-blur-md border border-white/[0.10] rounded-xl p-4 space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-slate-300">Data Encryption</span>
                     <span className="text-sm text-green-400">AES-256 Enabled</span>
@@ -901,12 +1024,19 @@ const SettingsPage: React.FC = () => {
 
               {/* Data Management moved to Advanced tab */}
             </div>
+            </div>
           </section>
         );
       case 'Integrations':
         return (
-          <section className="p-6 bg-slate-800 rounded-lg">
-            <h3 className="text-xl font-semibold mb-6 text-slate-100">External Integrations</h3>
+          <section className="p-6 bg-white/[0.08] backdrop-blur-xl border border-white/[0.12] shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-2xl relative overflow-hidden">
+            {/* Glass reflection effects */}
+            <div className="absolute inset-0 rounded-2xl">
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+              <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-white/20 via-transparent to-transparent"></div>
+            </div>
+            <div className="relative">
+            <h3 className="text-xl font-semibold mb-6 text-white/95">External Integrations</h3>
             
             <div className="space-y-6">
               {/* Calendar Integrations */}
@@ -914,7 +1044,7 @@ const SettingsPage: React.FC = () => {
                 <h4 className="text-lg font-medium text-slate-200 mb-4">Calendar Integrations</h4>
                 <div className="space-y-4">
                   {/* Outlook Calendar */}
-                  <div className="bg-slate-700 p-4 rounded-lg">
+                  <div className="bg-white/[0.08] backdrop-blur-md border border-white/[0.10] rounded-xl p-4">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center space-x-3">
                         <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
@@ -951,7 +1081,7 @@ const SettingsPage: React.FC = () => {
                   </div>
 
                   {/* Apple Calendar */}
-                  <div className="bg-slate-700 p-4 rounded-lg">
+                  <div className="bg-white/[0.08] backdrop-blur-md border border-white/[0.10] rounded-xl p-4">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center space-x-3">
                         <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
@@ -992,7 +1122,7 @@ const SettingsPage: React.FC = () => {
                 <h4 className="text-lg font-medium text-slate-200 mb-4">Cloud Storage & Backup</h4>
                 <div className="space-y-4">
                   {/* OneDrive */}
-                  <div className="bg-slate-700 p-4 rounded-lg">
+                  <div className="bg-white/[0.08] backdrop-blur-md border border-white/[0.10] rounded-xl p-4">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center space-x-3">
                         <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
@@ -1020,7 +1150,7 @@ const SettingsPage: React.FC = () => {
                         </ul>
                       </div>
                       <div className="grid grid-cols-2 gap-3">
-                        <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors">
+                        <button className="px-4 py-2 bg-blue-500/80 hover:bg-blue-500 backdrop-blur-md border border-blue-500/30 text-white text-sm font-medium rounded-xl transition-all hover:shadow-blue-500/25 shadow-lg">
                           Connect OneDrive
                         </button>
                         <button className="px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white text-sm font-medium rounded-md transition-colors">
@@ -1097,12 +1227,19 @@ const SettingsPage: React.FC = () => {
                 </div>
               </div>
             </div>
+            </div>
           </section>
         );
       case 'Notes':
         return (
-          <section className="p-6 bg-slate-800 rounded-lg">
-            <h3 className="text-xl font-semibold mb-6 text-slate-100">Notes & Documentation</h3>
+          <section className="p-6 bg-white/[0.08] backdrop-blur-xl border border-white/[0.12] shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-2xl relative overflow-hidden">
+            {/* Glass reflection effects */}
+            <div className="absolute inset-0 rounded-2xl">
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+              <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-white/20 via-transparent to-transparent"></div>
+            </div>
+            <div className="relative">
+            <h3 className="text-xl font-semibold mb-6 text-white/95">Notes & Documentation</h3>
             
             <div className="space-y-6">
               {/* Notes Management */}
@@ -1149,7 +1286,7 @@ const SettingsPage: React.FC = () => {
               <div>
                 <h4 className="text-lg font-medium text-slate-200 mb-4">Note Templates</h4>
                 <div className="space-y-3">
-                  <div className="bg-slate-700 p-4 rounded-lg">
+                  <div className="bg-white/[0.08] backdrop-blur-md border border-white/[0.10] rounded-xl p-4">
                     <h5 className="font-medium text-slate-100 mb-2">Available Templates</h5>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <div className="bg-slate-600 p-3 rounded">
@@ -1270,19 +1407,26 @@ const SettingsPage: React.FC = () => {
                 </div>
               </div>
             </div>
+            </div>
           </section>
         );
       case 'Advanced':
         return (
-          <section className="p-6 bg-slate-800 rounded-lg">
-            <h3 className="text-xl font-semibold mb-6 text-slate-100">Advanced Settings</h3>
+          <section className="p-6 bg-white/[0.08] backdrop-blur-xl border border-white/[0.12] shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-2xl relative overflow-hidden">
+            {/* Glass reflection effects */}
+            <div className="absolute inset-0 rounded-2xl">
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+              <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-white/20 via-transparent to-transparent"></div>
+            </div>
+            <div className="relative">
+            <h3 className="text-xl font-semibold mb-6 text-white/95">Advanced Settings</h3>
             
             <div className="space-y-6">
               {/* Data Backup and Restore */}
               <div>
                 <h4 className="text-lg font-medium text-slate-200 mb-4">Data Backup & Restore</h4>
                 <div className="space-y-4">
-                  <div className="bg-slate-700 p-4 rounded-lg">
+                  <div className="bg-white/[0.08] backdrop-blur-md border border-white/[0.10] rounded-xl p-4">
                     <h5 className="font-medium text-slate-100 mb-2">Export Data</h5>
                     <p className="text-sm text-slate-400 mb-3">Download all your data as a JSON file for backup or migration</p>
                     <button
@@ -1294,7 +1438,7 @@ const SettingsPage: React.FC = () => {
                     </button>
                   </div>
                   
-                  <div className="bg-slate-700 p-4 rounded-lg">
+                  <div className="bg-white/[0.08] backdrop-blur-md border border-white/[0.10] rounded-xl p-4">
                     <h5 className="font-medium text-slate-100 mb-2">Import Data</h5>
                     <p className="text-sm text-slate-400 mb-3">Restore data from a previously exported JSON file</p>
                     <input
@@ -1470,7 +1614,7 @@ const SettingsPage: React.FC = () => {
                     </label>
                   </div>
 
-                  <div className="bg-slate-700 p-4 rounded-lg">
+                  <div className="bg-white/[0.08] backdrop-blur-md border border-white/[0.10] rounded-xl p-4">
                     <h5 className="font-medium text-slate-100 mb-2">Database Maintenance</h5>
                     <p className="text-sm text-slate-400 mb-3">Clean up and optimize database performance</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -1531,7 +1675,7 @@ const SettingsPage: React.FC = () => {
               {/* System Information */}
               <div>
                 <h4 className="text-lg font-medium text-slate-200 mb-4">System Information</h4>
-                <div className="bg-slate-700 p-4 rounded-lg space-y-3">
+                <div className="bg-white/[0.08] backdrop-blur-md border border-white/[0.10] rounded-xl p-4 space-y-3">
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-slate-300">Application Version</span>
                     <span className="text-slate-400">{APP_VERSION}</span>
@@ -1569,40 +1713,64 @@ const SettingsPage: React.FC = () => {
                 </div>
               </div>
             </div>
+            </div>
           </section>
         );
       default:
         return (
-            <section className="p-6 bg-slate-800 rounded-lg">
+            <section className="p-6 bg-white/[0.08] backdrop-blur-xl border border-white/[0.12] shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-2xl relative overflow-hidden">
+            {/* Glass reflection effects */}
+            <div className="absolute inset-0 rounded-2xl">
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+              <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-white/20 via-transparent to-transparent"></div>
+            </div>
+            <div className="relative">
                 <h3 className="text-xl font-semibold mb-4 text-slate-100">{activeTab} Settings</h3>
                 <p className="text-slate-400">Configuration for {activeTab} is under development.</p>
+            </div>
             </section>
         );
     }
   };
 
   return (
-    <div className="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto bg-slate-900 text-slate-100">
+    <div className="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto text-white">
       <div className="flex flex-wrap justify-between items-center mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Settings</h1>
-          <p className="text-slate-400 mt-1">Manage your account and application preferences.</p>
+          <h1 className="text-3xl font-bold text-white">Settings</h1>
+          <p className="text-white/70 mt-1">Manage your account and application preferences.</p>
         </div>
       </div>
 
       <div className="flex flex-col md:flex-row gap-6">
-        <nav className="md:w-1/5 space-y-1 shrink-0" aria-label="Settings Tabs">
-          {tabs.map(tab => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`w-full text-left px-3 py-2.5 rounded-md text-sm font-medium transition-colors
-                ${activeTab === tab ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
-              aria-current={activeTab === tab ? 'page' : undefined}
-            >
-              {tab}
-            </button>
-          ))}
+        <nav className="md:w-1/5 shrink-0" aria-label="Settings Tabs">
+          <div className="bg-white/[0.08] backdrop-blur-xl border border-white/[0.12] shadow-[0_12px_40px_rgba(0,0,0,0.25)] rounded-2xl p-4 relative overflow-hidden">
+            {/* Glass reflection effects */}
+            <div className="absolute inset-0 rounded-2xl">
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+              <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-white/20 via-transparent to-transparent"></div>
+            </div>
+            
+            <div className="relative space-y-1">
+              {tabs.map(tab => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group relative overflow-hidden
+                    ${activeTab === tab 
+                      ? 'bg-white/[0.12] text-white shadow-lg border border-white/[0.18]' 
+                      : 'text-white/70 hover:bg-white/[0.08] hover:text-white/90 hover:border-white/[0.12] border border-transparent'}`}
+                  aria-current={activeTab === tab ? 'page' : undefined}
+                >
+                  {/* Active tab glow effect */}
+                  {activeTab === tab && (
+                    <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/5 via-sky-500/5 to-slate-400/5 opacity-100"></div>
+                  )}
+                  <span className="relative">{tab}</span>
+                </button>
+              ))}
+            </div>
+          </div>
         </nav>
 
         <div className="flex-1">
@@ -1618,7 +1786,13 @@ const SettingsPage: React.FC = () => {
       {/* Calendar Import Modal */}
       {showCalendarImport && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-slate-800 rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
+          <div className="bg-white/[0.08] backdrop-blur-xl border border-white/[0.12] shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-2xl w-full max-w-md mx-4 p-6 relative overflow-hidden">
+            {/* Glass reflection effects */}
+            <div className="absolute inset-0 rounded-2xl">
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+              <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-white/20 via-transparent to-transparent"></div>
+            </div>
+            <div className="relative">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-slate-100">Import Calendar Events</h3>
               <button

@@ -3,6 +3,7 @@ import { Task, Schedule } from '../../../types';
 import { useAppState } from '../../contexts/AppStateContext';
 import { useAppMode } from '../../hooks/useLabels';
 import { calendarIntegrationService, CalendarEvent, AIScheduleSuggestion } from '../../services/calendarIntegrationService';
+import { EventShortcut, DEFAULT_QUICK_ACTIONS_PREFERENCES } from '../../types/userPreferences';
 import { formatDateForInput } from '../../utils/dateUtils';
 
 // Import existing modals
@@ -19,6 +20,7 @@ import CompactMonthView from './views/CompactMonthView';
 // import DayView from './views/DayView';
 import AISuggestionsPanel from './views/AISuggestionsPanel';
 import EnhancedDayView from './EnhancedDayView';
+import GlassPanel from '../common/GlassPanel';
 
 // Icons
 const CalendarIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5" }) => (
@@ -84,6 +86,7 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
   const [showEditEventModal, setShowEditEventModal] = useState(false);
   const [showEditWorkSessionModal, setShowEditWorkSessionModal] = useState(false);
   const [showCounselingModal, setShowCounselingModal] = useState(false);
+  const [activeShortcuts] = useState<EventShortcut[]>(DEFAULT_QUICK_ACTIONS_PREFERENCES.eventShortcuts);
   const [showFeaturesModal, setShowFeaturesModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Schedule | null>(null);
   const [selectedWorkSession, setSelectedWorkSession] = useState<CalendarEvent | null>(null);
@@ -478,6 +481,44 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
     });
   }, [currentDate]);
 
+  // Handle shortcut button click
+  const handleShortcutClick = useCallback(async (shortcut: EventShortcut) => {
+    if (shortcut.id === 'counseling') {
+      setShowCounselingModal(true);
+      return;
+    }
+
+    // For other shortcuts, create event directly
+    const newEvent: Omit<Schedule, 'id' | 'created_at' | 'updated_at' | 'user_id'> = {
+      title: shortcut.eventTitle,
+      context: `Event created from ${shortcut.name} shortcut`,
+      start_date: formatDateForInput(currentDate),
+      end_date: formatDateForInput(new Date(currentDate.getTime() + shortcut.eventDuration * 60000)),
+      location: '',
+      tags: []
+    };
+
+    await addSchedule(newEvent);
+
+    // Create accompanying task if specified
+    if (shortcut.createTask && shortcut.taskTitle) {
+      const newTask: Omit<Task, 'id' | 'created_at' | 'updated_at' | 'user_id'> = {
+        title: shortcut.taskTitle.replace('{eventName}', shortcut.eventTitle),
+        description: `Follow-up task for ${shortcut.eventTitle}`,
+        context: `Task automatically created from ${shortcut.name} shortcut for ${shortcut.eventTitle}`,
+        priority: shortcut.taskPriority as any,
+        status: 'TODO' as any,
+        due_date: formatDateForInput(new Date(currentDate.getTime() + 24 * 60 * 60000)), // Due next day
+        estimated_hours: 0,
+        dependencies: [],
+        tags: shortcut.taskTags,
+        project_id: undefined
+      };
+
+      await addTask(newTask);
+    }
+  }, [currentDate, addSchedule, addTask]);
+
   // Filtered events for current view
   const filteredEvents = useMemo(() => {
     const { startDate, endDate } = getDateRangeForView(currentDate, viewType);
@@ -493,9 +534,9 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
   }, [aiSuggestions]);
 
   return (
-    <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900">
+    <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-2 md:px-4 py-2 md:py-4">
+      <GlassPanel className="mx-2 md:mx-4 mt-3">
         <div className="flex flex-col gap-3">
           {/* Title and Date Range - Mobile optimized */}
           <div className="flex items-center justify-between">
@@ -622,42 +663,60 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
 
               {/* Add Buttons */}
               <div className="flex gap-1 sm:gap-2">
+                {/* Core actions */}
                 <button
                   onClick={() => setShowNewTaskModal(true)}
-                  className={`${isMobile ? 'px-2 py-1.5' : 'px-3 py-2'} rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors flex items-center gap-1 flex-shrink-0`}
+                  className={`${isMobile ? 'px-2 py-1.5' : 'px-3 py-2'} rounded-xl bg-white/[0.08] backdrop-blur-xl border border-white/[0.12] text-white hover:bg-white/[0.12] hover:border-white/[0.18] transition-all flex items-center gap-1 flex-shrink-0 group`}
                 >
-                  <PlusIcon className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
+                  <PlusIcon className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} group-hover:scale-110 transition-transform`} />
                   {!isMobile && <span>Task</span>}
                 </button>
                 
                 <button
                   onClick={() => setShowNewEventModal(true)}
-                  className={`${isMobile ? 'px-2 py-1.5' : 'px-3 py-2'} rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors flex items-center gap-1 flex-shrink-0`}
+                  className={`${isMobile ? 'px-2 py-1.5' : 'px-3 py-2'} rounded-xl bg-white/[0.08] backdrop-blur-xl border border-white/[0.12] text-white hover:bg-white/[0.12] hover:border-white/[0.18] transition-all flex items-center gap-1 flex-shrink-0 group`}
                 >
-                  <PlusIcon className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
+                  <PlusIcon className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} group-hover:scale-110 transition-transform`} />
                   {!isMobile && <span>Event</span>}
                 </button>
                 
-                {appMode === 'business' && (
-                  <button
-                    onClick={() => setShowCounselingModal(true)}
-                    className={`${isMobile ? 'px-2 py-1.5' : 'px-3 py-2'} rounded-lg bg-teal-600 text-white hover:bg-teal-700 transition-colors flex items-center gap-1 flex-shrink-0`}
-                    title="Schedule counseling session with automatic progress note"
-                  >
-                    <PlusIcon className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
-                    {!isMobile && <span>Counsel</span>}
-                  </button>
-                )}
+                {/* Dynamic shortcut buttons */}
+                {activeShortcuts
+                  .filter(shortcut => shortcut.isActive && (appMode === 'business' || shortcut.id !== 'counseling'))
+                  .map((shortcut) => {
+                    const colorClasses = {
+                      teal: 'hover:shadow-cyan-500/30',
+                      blue: 'hover:shadow-blue-500/30',
+                      slate: 'hover:shadow-slate-400/30',
+                      emerald: 'hover:shadow-sky-500/30',
+                      orange: 'hover:shadow-slate-400/30'
+                    }[shortcut.color] || 'hover:shadow-blue-500/30';
+
+                    return (
+                      <button
+                        key={shortcut.id}
+                        onClick={() => handleShortcutClick(shortcut)}
+                        className={`${isMobile ? 'px-2 py-1.5' : 'px-3 py-2'} rounded-xl bg-white/[0.08] backdrop-blur-xl border border-white/[0.12] text-white hover:bg-white/[0.12] hover:border-white/[0.18] ${colorClasses} transition-all flex items-center gap-1 flex-shrink-0 group`}
+                        title={`${shortcut.eventTitle}${shortcut.createTask ? ' with automatic task creation' : ''}`}
+                      >
+                        <span className={`${isMobile ? 'text-xs' : 'text-sm'} group-hover:scale-110 transition-transform`}>
+                          {shortcut.icon}
+                        </span>
+                        {!isMobile && <span>{shortcut.name}</span>}
+                      </button>
+                    );
+                  })
+                }
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </GlassPanel>
 
       {/* Content Area */}
-      <div className="flex-1 flex overflow-hidden relative">
+      <div className="flex-1 flex overflow-hidden relative p-2 md:p-4 gap-3">
         {/* Main Calendar View */}
-        <div className="flex-1 overflow-auto">
+        <GlassPanel className="flex-1 overflow-auto">
           {isLoading && (
             <div className="flex items-center justify-center h-32">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -694,7 +753,7 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
               {/* Week view removed */}
             </>
           )}
-        </div>
+        </GlassPanel>
 
 
         {/* AI Suggestions Sidebar - Responsive */}
@@ -708,7 +767,7 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
               />
             )}
             <div className={`
-              bg-white border-l border-gray-200 overflow-auto
+              bg-white/5 backdrop-blur-xl border-l border-white/10 overflow-auto
               ${isMobile 
                 ? 'fixed right-0 top-0 h-full w-full max-w-sm z-50 md:relative md:w-80' 
                 : 'w-80 xl:w-96'

@@ -3,6 +3,7 @@ import React, { useState, useMemo } from 'react';
 import { Task, Project, TaskStatus } from '../../../types';
 import { useLabels } from '../../hooks/useLabels';
 import NewTaskModal from './NewTaskModal';
+import GlassPanel from '../common/GlassPanel';
 import TaskItem from './TaskItem';
 import TaskCard from './TaskCard';
 // import TaskDetailsModal from './TaskDetailsModal';
@@ -130,23 +131,21 @@ const TaskManagementPage: React.FC<TaskManagementPageProps> = ({
 
 
   return (
-    <div className="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto bg-slate-900 text-slate-100 flex flex-col">
-      <div className="flex justify-between items-center mb-6 shrink-0">
-        <div>
-          <h1 className="text-3xl font-bold">{labels.taskManagement}</h1>
-          <p className="text-slate-400 mt-1">Organize and prioritize your tasks.</p>
-        </div>
+    <div className="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto text-slate-100 flex flex-col">
+      <div className="flex justify-between items-center mb-4 shrink-0">
+        <h1 className="text-xl sm:text-2xl font-semibold text-white/90">{labels.taskManagement}</h1>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="bg-sky-600 hover:bg-sky-700 text-white font-medium py-2 px-4 rounded-lg flex items-center text-sm"
+          className="bg-sky-600/80 hover:bg-sky-600 text-white font-medium py-2 px-4 rounded-xl flex items-center text-sm backdrop-blur"
           aria-label={labels.newTask}
         >
           <PlusIcon /> <span className="ml-2">{labels.newTask}</span>
         </button>
       </div>
 
-      {/* Filters Section */}
-      <div className="mb-6 flex flex-wrap gap-3 items-center shrink-0">
+      <GlassPanel className="mb-4">
+        {/* Filters Section */}
+        <div className="flex flex-wrap gap-3 items-center">
         <div className="relative flex-grow sm:flex-grow-0 sm:w-64">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <SearchIcon />
@@ -221,9 +220,10 @@ const TaskManagementPage: React.FC<TaskManagementPageProps> = ({
               <GridIcon />
             </button>
           </div>
-      </div>
+        </div>
+      </GlassPanel>
 
-      <div className="flex-1 overflow-y-auto">
+      <GlassPanel className="flex-1">
         {filteredTasks.length === 0 ? (
           <div className="text-center py-20">
             <EmptyTasksIcon />
@@ -264,7 +264,7 @@ const TaskManagementPage: React.FC<TaskManagementPageProps> = ({
             </div>
           )
         )}
-      </div>
+      </GlassPanel>
       {isModalOpen && (
         <NewTaskModal
           isOpen={isModalOpen}

@@ -2,7 +2,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import LeftSidebarComponent from './LeftSidebarComponent';
 import MainProjectContentComponent from './MainProjectContentComponent';
-import RightSidebarComponent from './RightSidebarComponent';
+// import RightSidebarComponent from './RightSidebarComponent';
+import GlassPanel from '../common/GlassPanel';
 import { useScreenSize } from '../ResponsiveLayout';
 import { Project, Task } from '../../../types';
 
@@ -70,22 +71,19 @@ const ProjectDashboardPage: React.FC<ProjectDashboardPageProps> = ({
 
   const { isMobile, isTablet } = useScreenSize();
 
-  // Mobile layout: stack components vertically
+  // Mobile layout: stack components vertically with glass panels
   if (isMobile) {
     return (
-      <div className="flex flex-col flex-1 overflow-hidden">
-        {/* Mobile Project Selector */}
-        <div className="flex-shrink-0 bg-slate-800 border-b border-slate-600">
+      <div className="flex flex-col flex-1 overflow-hidden p-3 gap-3">
+        <GlassPanel>
           <LeftSidebarComponent
             projects={filteredProjects}
             selectedProjectId={selectedProjectId}
             onSelectProject={handleSelectProject}
             onAddProject={onAddProject}
           />
-        </div>
-        
-        {/* Main Content */}
-        <div className="flex-1 overflow-auto">
+        </GlassPanel>
+        <GlassPanel className="flex-1">
           <MainProjectContentComponent
             project={selectedProjectData}
             tasks={selectedProjectTasks}
@@ -97,12 +95,7 @@ const ProjectDashboardPage: React.FC<ProjectDashboardPageProps> = ({
             onDeleteTask={onDeleteTask}
             allProjects={projects}
           />
-        </div>
-        
-        {/* Mobile Right Sidebar - collapsed by default */}
-        <div className="flex-shrink-0 bg-slate-800 border-t border-slate-600">
-          <RightSidebarComponent />
-        </div>
+        </GlassPanel>
       </div>
     );
   }
@@ -110,16 +103,16 @@ const ProjectDashboardPage: React.FC<ProjectDashboardPageProps> = ({
   // Tablet layout: hide right sidebar, keep left sidebar
   if (isTablet) {
     return (
-      <div className="flex flex-1 overflow-hidden">
-        <div className="w-56 flex-shrink-0 border-r border-slate-600">
+      <div className="grid grid-cols-3 gap-3 p-4 flex-1 overflow-hidden">
+        <GlassPanel className="col-span-1 min-w-0 overflow-hidden">
           <LeftSidebarComponent
             projects={filteredProjects}
             selectedProjectId={selectedProjectId}
             onSelectProject={handleSelectProject}
             onAddProject={onAddProject}
           />
-        </div>
-        <div className="flex-1 min-w-0 overflow-hidden">
+        </GlassPanel>
+        <GlassPanel className="col-span-2 min-w-0 overflow-hidden">
           <MainProjectContentComponent
             project={selectedProjectData}
             tasks={selectedProjectTasks}
@@ -131,32 +124,35 @@ const ProjectDashboardPage: React.FC<ProjectDashboardPageProps> = ({
             onDeleteTask={onDeleteTask}
             allProjects={projects}
           />
-        </div>
+        </GlassPanel>
       </div>
     );
   }
 
   // Desktop layout: original three-column layout
   return (
-    <div className="flex flex-1 overflow-hidden">
-      <LeftSidebarComponent
-        projects={filteredProjects}
-        selectedProjectId={selectedProjectId}
-        onSelectProject={handleSelectProject}
-        onAddProject={onAddProject}
-      />
-      <MainProjectContentComponent
-        project={selectedProjectData}
-        tasks={selectedProjectTasks}
-        allTasksForProjectContext={tasks}
-        onAddTask={handleAddTask}
-        onUpdateProject={handleUpdateProject}
-        onDeleteProject={onDeleteProject}
-        onEditTaskRequest={onEditTaskRequest}
-        onDeleteTask={onDeleteTask}
-        allProjects={projects}
-      />
-      <RightSidebarComponent />
+    <div className="grid grid-cols-12 gap-4 p-6 flex-1 overflow-hidden">
+      <GlassPanel className="col-span-4 min-w-0 overflow-hidden">
+        <LeftSidebarComponent
+          projects={filteredProjects}
+          selectedProjectId={selectedProjectId}
+          onSelectProject={handleSelectProject}
+          onAddProject={onAddProject}
+        />
+      </GlassPanel>
+      <GlassPanel className="col-span-8 min-w-0 overflow-hidden">
+        <MainProjectContentComponent
+          project={selectedProjectData}
+          tasks={selectedProjectTasks}
+          allTasksForProjectContext={tasks}
+          onAddTask={handleAddTask}
+          onUpdateProject={handleUpdateProject}
+          onDeleteProject={onDeleteProject}
+          onEditTaskRequest={onEditTaskRequest}
+          onDeleteTask={onDeleteTask}
+          allProjects={projects}
+        />
+      </GlassPanel>
     </div>
   );
 };

@@ -82,19 +82,19 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, projectTitle, onEditTaskReque
   const isClinical = isClinicalNote(task);
   const taskOverdue = isOverdue(task);
   
-  // Special styling for clinical notes
+  // Special styling for clinical notes with glassmorphism
   const getCardClasses = () => {
-    let baseClasses = `p-4 rounded-lg shadow-md transition-all border-l-4 flex flex-col justify-between min-h-[200px] hover:scale-[1.02] group`;
+    let baseClasses = `p-4 rounded-xl shadow-md transition-all border-l-4 flex flex-col justify-between min-h-[200px] hover:scale-[1.02] group backdrop-blur-xl border border-white/10 relative overflow-hidden`;
     
     if (isClinical) {
       if (taskOverdue && task.status !== TaskStatus.COMPLETED) {
-        return `${baseClasses} bg-red-900/30 border-red-400 hover:shadow-red-400/50 shadow-red-500/20 animate-pulse ring-2 ring-red-500/30`;
+        return `${baseClasses} bg-red-900/20 border-l-red-400 hover:shadow-red-400/50 shadow-red-500/20 animate-pulse ring-2 ring-red-500/30 hover:bg-red-900/30`;
       } else if (task.status !== TaskStatus.COMPLETED) {
-        return `${baseClasses} bg-blue-900/30 border-blue-400 hover:shadow-blue-400/50 shadow-blue-500/20 ring-1 ring-blue-500/20`;
+        return `${baseClasses} bg-blue-900/20 border-l-blue-400 hover:shadow-blue-400/50 shadow-blue-500/20 ring-1 ring-blue-500/20 hover:bg-blue-900/30`;
       }
     }
     
-    return `${baseClasses} bg-slate-800 hover:shadow-sky-500/30 hover:bg-slate-750 ${getStatusBorderClass(task.status)}`;
+    return `${baseClasses} bg-white/[0.08] hover:shadow-sky-500/30 hover:bg-white/[0.12] border-l-white/30 ${getStatusBorderClass(task.status)}`;
   };
 
   return (
@@ -102,7 +102,13 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, projectTitle, onEditTaskReque
       className={getCardClasses()}
       aria-label={`Task: ${task.title}`}
     >
-      <div>
+      {/* Glass reflection effects */}
+      <div className="absolute inset-0 rounded-xl">
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+        <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-white/20 via-transparent to-transparent"></div>
+      </div>
+      
+      <div className="relative">
         <div className="flex justify-between items-start mb-1">
           <div className="flex items-start space-x-2 flex-1 min-w-0">
             {isClinical && (
