@@ -1,4 +1,6 @@
 
+import { UserSchedulingPreferences } from './src/types/userPreferences';
+
 // Basic Status & Priority Enums
 export enum ProjectStatus {
   ACTIVE = 'active',
@@ -113,6 +115,7 @@ export interface UserPreferences {
   focus_blocks?: string[];
   preferred_time_slots?: string[];
   business_relevance_default?: number;
+  scheduling_preferences?: UserSchedulingPreferences;
   created_at?: string; // DateTime
   updated_at?: string; // DateTime
 }

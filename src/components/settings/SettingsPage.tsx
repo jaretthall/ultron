@@ -8,7 +8,7 @@ import { useAppMode } from '../../hooks/useLabels';
 import { IdGenerator } from '../../utils/idGeneration';
 import { projectsService, tasksService, schedulesService, tagsService, tagCategoriesService, notesService } from '../../../services/databaseService';
 import { useAuth } from '../../contexts/AuthContext';
-import { DEFAULT_QUICK_ACTIONS_PREFERENCES } from '../../types/userPreferences';
+import { DEFAULT_QUICK_ACTIONS_PREFERENCES, EventShortcut, DEFAULT_SCHEDULING_PREFERENCES } from '../../types/userPreferences';
 
 const SettingsPage: React.FC = () => {
   const { state, updateUserPreferences } = useAppState();
@@ -45,6 +45,12 @@ const SettingsPage: React.FC = () => {
   const [importedEvents, setImportedEvents] = useState<any[]>([]);
   const [isImporting, setIsImporting] = useState(false);
 
+  // Shortcuts state
+  const [eventShortcuts, setEventShortcuts] = useState<EventShortcut[]>(
+    userPreferences?.scheduling_preferences?.quickActions?.eventShortcuts || DEFAULT_QUICK_ACTIONS_PREFERENCES.eventShortcuts
+  );
+  const [editingShortcut, setEditingShortcut] = useState<string | null>(null);
+
   useEffect(() => {
     if (userPreferences) {
       setCurrentAiProvider(userPreferences.ai_provider);
@@ -63,6 +69,9 @@ const SettingsPage: React.FC = () => {
       setPriorityWeightEffort(userPreferences.priority_weight_effort || 0.3);
       setPriorityWeightDeps(userPreferences.priority_weight_deps || 0.3);
       setContextSwitchBuffer(userPreferences.context_switch_buffer_minutes || 10);
+      
+      // Update shortcuts state
+      setEventShortcuts(userPreferences.scheduling_preferences?.quickActions?.eventShortcuts || DEFAULT_QUICK_ACTIONS_PREFERENCES.eventShortcuts);
     }  
   }, [userPreferences]);
 
@@ -78,6 +87,56 @@ const SettingsPage: React.FC = () => {
         selected_openai_model: currentSelectedOpenaiModel,
     };
     updateUserPreferences(updatedPrefs);
+  };
+
+  // Shortcut management functions
+  const handleSaveShortcuts = () => {
+    const updatedPrefs: Partial<UserPreferences> = {
+      scheduling_preferences: {
+        ...DEFAULT_SCHEDULING_PREFERENCES,
+        ...userPreferences?.scheduling_preferences,
+        quickActions: {
+          ...DEFAULT_QUICK_ACTIONS_PREFERENCES,
+          ...userPreferences?.scheduling_preferences?.quickActions,
+          eventShortcuts: eventShortcuts
+        }
+      }
+    };
+    updateUserPreferences(updatedPrefs);
+    setEditingShortcut(null);
+  };
+
+  const handleEditShortcut = (shortcutId: string) => {
+    setEditingShortcut(shortcutId);
+  };
+
+  const handleDeleteShortcut = (shortcutId: string) => {
+    setEventShortcuts(eventShortcuts.filter(s => s.id !== shortcutId));
+  };
+
+  const handleAddShortcut = () => {
+    const newShortcut: EventShortcut = {
+      id: IdGenerator.generateId(),
+      name: 'New Shortcut',
+      icon: '📅',
+      color: 'blue',
+      eventTitle: 'New Event',
+      eventDuration: 60,
+      createTask: false,
+      taskPriority: 'MEDIUM',
+      taskTags: [],
+      isActive: true
+    };
+    setEventShortcuts([...eventShortcuts, newShortcut]);
+    setEditingShortcut(newShortcut.id);
+  };
+
+  const handleShortcutChange = (shortcutId: string, field: keyof EventShortcut, value: any) => {
+    setEventShortcuts(eventShortcuts.map(shortcut => 
+      shortcut.id === shortcutId 
+        ? { ...shortcut, [field]: value }
+        : shortcut
+    ));
   };
 
   const handleSavePreferences = () => {
@@ -454,7 +513,15 @@ const SettingsPage: React.FC = () => {
                       className="w-full bg-white/[0.08] backdrop-blur-md border border-white/[0.12] text-white placeholder-white/50 rounded-xl p-3 focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 transition-all"
                       aria-label="Anthropic Claude API Key"
                     />
-                    <p className="text-xs text-slate-500 mt-1">Claude integration is experimental and not yet fully functional.</p>
+                    <div className="mt-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+                      <p className="text-xs text-amber-300 font-medium mb-1">🔐 Security Notice:</p>
+                      <ul className="text-xs text-amber-200/80 space-y-1">
+                        <li>• API keys are encrypted and stored securely in the database</li>
+                        <li>• Keys are never logged or exposed in browser tools</li>
+                        <li>• Only you have access to your API keys</li>
+                        <li>• Claude integration is experimental and not yet fully functional</li>
+                      </ul>
+                    </div>
                   </div>
                   <div>
                     <label htmlFor="claudeModel" className="block text-sm font-medium text-white/80 mb-2">Preferred Claude Model</label>
@@ -487,7 +554,15 @@ const SettingsPage: React.FC = () => {
                       className="w-full bg-white/[0.08] backdrop-blur-md border border-white/[0.12] text-white rounded-xl p-3 focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 transition-all"
                       aria-label="OpenAI API Key"
                     />
-                    <p className="text-xs text-slate-500 mt-1">OpenAI integration is experimental and not yet fully functional.</p>
+                    <div className="mt-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+                      <p className="text-xs text-amber-300 font-medium mb-1">🔐 Security Notice:</p>
+                      <ul className="text-xs text-amber-200/80 space-y-1">
+                        <li>• API keys are encrypted and stored securely in the database</li>
+                        <li>• Keys are never logged or exposed in browser tools</li>
+                        <li>• Only you have access to your API keys</li>
+                        <li>• OpenAI integration is experimental and not yet fully functional</li>
+                      </ul>
+                    </div>
                   </div>
                   <div>
                     <label htmlFor="openaiModel" className="block text-sm font-medium text-slate-300 mb-1">Preferred OpenAI Model</label>
@@ -691,60 +766,240 @@ const SettingsPage: React.FC = () => {
                 </p>
 
                 <div className="grid gap-4">
-                  {DEFAULT_QUICK_ACTIONS_PREFERENCES.eventShortcuts.map((shortcut) => (
+                  {eventShortcuts.map((shortcut) => (
                     <div key={shortcut.id} className="p-4 bg-white/5 border border-white/10 rounded-xl hover:bg-white/8 transition-colors">
-                      <div className="flex items-start gap-4">
-                        {/* Icon and Color */}
-                        <div className="flex items-center gap-2">
-                          <span className="text-2xl">{shortcut.icon}</span>
-                          <div className={`w-4 h-4 rounded-full bg-${shortcut.color}-500/50 border border-${shortcut.color}-500/70`}></div>
-                        </div>
+                      {editingShortcut === shortcut.id ? (
+                        // Edit Mode
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Name and Icon */}
+                            <div>
+                              <label className="block text-sm font-medium text-white/70 mb-2">Name</label>
+                              <input
+                                type="text"
+                                value={shortcut.name}
+                                onChange={(e) => handleShortcutChange(shortcut.id, 'name', e.target.value)}
+                                className="w-full p-2 bg-white/10 border border-white/20 rounded-lg text-white/90 placeholder-white/50 focus:border-white/40 focus:outline-none focus:ring-2 focus:ring-white/20"
+                              />
+                            </div>
+                            
+                            <div>
+                              <label className="block text-sm font-medium text-white/70 mb-2">Icon (emoji)</label>
+                              <input
+                                type="text"
+                                value={shortcut.icon}
+                                onChange={(e) => handleShortcutChange(shortcut.id, 'icon', e.target.value)}
+                                className="w-full p-2 bg-white/10 border border-white/20 rounded-lg text-white/90 placeholder-white/50 focus:border-white/40 focus:outline-none focus:ring-2 focus:ring-white/20"
+                                placeholder="📅"
+                              />
+                            </div>
 
-                        {/* Shortcut Details */}
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <h4 className="font-medium text-white/90">{shortcut.name}</h4>
-                            <span className={`px-2 py-1 text-xs rounded-full ${shortcut.isActive ? 'bg-emerald-500/20 text-emerald-300' : 'bg-gray-500/20 text-gray-400'}`}>
-                              {shortcut.isActive ? 'Active' : 'Inactive'}
-                            </span>
+                            {/* Event Title and Duration */}
+                            <div>
+                              <label className="block text-sm font-medium text-white/70 mb-2">Event Title</label>
+                              <input
+                                type="text"
+                                value={shortcut.eventTitle}
+                                onChange={(e) => handleShortcutChange(shortcut.id, 'eventTitle', e.target.value)}
+                                className="w-full p-2 bg-white/10 border border-white/20 rounded-lg text-white/90 placeholder-white/50 focus:border-white/40 focus:outline-none focus:ring-2 focus:ring-white/20"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-sm font-medium text-white/70 mb-2">Duration (minutes)</label>
+                              <input
+                                type="number"
+                                value={shortcut.eventDuration}
+                                onChange={(e) => handleShortcutChange(shortcut.id, 'eventDuration', parseInt(e.target.value))}
+                                className="w-full p-2 bg-white/10 border border-white/20 rounded-lg text-white/90 placeholder-white/50 focus:border-white/40 focus:outline-none focus:ring-2 focus:ring-white/20"
+                                min="1"
+                              />
+                            </div>
+
+                            {/* Color */}
+                            <div>
+                              <label className="block text-sm font-medium text-white/70 mb-2">Color Theme</label>
+                              <select
+                                value={shortcut.color}
+                                onChange={(e) => handleShortcutChange(shortcut.id, 'color', e.target.value)}
+                                className="w-full p-2 bg-white/10 border border-white/20 rounded-lg text-white/90 focus:border-white/40 focus:outline-none focus:ring-2 focus:ring-white/20"
+                              >
+                                <option value="blue">Blue</option>
+                                <option value="teal">Teal</option>
+                                <option value="slate">Slate</option>
+                                <option value="emerald">Emerald</option>
+                                <option value="purple">Purple</option>
+                                <option value="amber">Amber</option>
+                                <option value="red">Red</option>
+                              </select>
+                            </div>
+
+                            {/* Active Toggle */}
+                            <div className="flex items-center space-x-3">
+                              <input
+                                type="checkbox"
+                                id={`active-${shortcut.id}`}
+                                checked={shortcut.isActive}
+                                onChange={(e) => handleShortcutChange(shortcut.id, 'isActive', e.target.checked)}
+                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-white/20 rounded bg-white/10"
+                              />
+                              <label htmlFor={`active-${shortcut.id}`} className="text-sm font-medium text-white/70">
+                                Active
+                              </label>
+                            </div>
                           </div>
-                          
-                          <div className="text-sm text-white/60 space-y-1">
-                            <p><span className="text-white/80">Event:</span> {shortcut.eventTitle} ({shortcut.eventDuration} min)</p>
+
+                          {/* Task Creation Settings */}
+                          <div className="border-t border-white/10 pt-4">
+                            <div className="flex items-center space-x-3 mb-4">
+                              <input
+                                type="checkbox"
+                                id={`create-task-${shortcut.id}`}
+                                checked={shortcut.createTask}
+                                onChange={(e) => handleShortcutChange(shortcut.id, 'createTask', e.target.checked)}
+                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-white/20 rounded bg-white/10"
+                              />
+                              <label htmlFor={`create-task-${shortcut.id}`} className="text-sm font-medium text-white/70">
+                                Create accompanying task
+                              </label>
+                            </div>
+
                             {shortcut.createTask && (
-                              <p><span className="text-white/80">Creates task:</span> {shortcut.taskTitle} ({shortcut.taskPriority} priority)</p>
-                            )}
-                            {shortcut.taskTags.length > 0 && (
-                              <p><span className="text-white/80">Tags:</span> {shortcut.taskTags.join(', ')}</p>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ml-7">
+                                <div>
+                                  <label className="block text-sm font-medium text-white/70 mb-2">Task Title</label>
+                                  <input
+                                    type="text"
+                                    value={shortcut.taskTitle || ''}
+                                    onChange={(e) => handleShortcutChange(shortcut.id, 'taskTitle', e.target.value)}
+                                    className="w-full p-2 bg-white/10 border border-white/20 rounded-lg text-white/90 placeholder-white/50 focus:border-white/40 focus:outline-none focus:ring-2 focus:ring-white/20"
+                                    placeholder="Task title (use {clientName} for placeholders)"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="block text-sm font-medium text-white/70 mb-2">Priority</label>
+                                  <select
+                                    value={shortcut.taskPriority}
+                                    onChange={(e) => handleShortcutChange(shortcut.id, 'taskPriority', e.target.value)}
+                                    className="w-full p-2 bg-white/10 border border-white/20 rounded-lg text-white/90 focus:border-white/40 focus:outline-none focus:ring-2 focus:ring-white/20"
+                                  >
+                                    <option value="LOW">Low</option>
+                                    <option value="MEDIUM">Medium</option>
+                                    <option value="HIGH">High</option>
+                                    <option value="URGENT">Urgent</option>
+                                  </select>
+                                </div>
+
+                                <div className="md:col-span-2">
+                                  <label className="block text-sm font-medium text-white/70 mb-2">Tags (comma-separated)</label>
+                                  <input
+                                    type="text"
+                                    value={shortcut.taskTags.join(', ')}
+                                    onChange={(e) => handleShortcutChange(shortcut.id, 'taskTags', e.target.value.split(',').map(t => t.trim()).filter(t => t))}
+                                    className="w-full p-2 bg-white/10 border border-white/20 rounded-lg text-white/90 placeholder-white/50 focus:border-white/40 focus:outline-none focus:ring-2 focus:ring-white/20"
+                                    placeholder="progress-note, therapy, documentation"
+                                  />
+                                </div>
+                              </div>
                             )}
                           </div>
-                        </div>
 
-                        {/* Actions */}
-                        <div className="flex gap-2">
-                          <button className="p-2 text-white/60 hover:text-white/90 hover:bg-white/10 rounded-lg transition-colors">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
-                          </button>
-                          <button className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                          </button>
+                          {/* Edit Actions */}
+                          <div className="flex gap-2 pt-4 border-t border-white/10">
+                            <button
+                              onClick={handleSaveShortcuts}
+                              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center gap-2"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                              Save Changes
+                            </button>
+                            <button
+                              onClick={() => setEditingShortcut(null)}
+                              className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white/90 rounded-lg transition-colors"
+                            >
+                              Cancel
+                            </button>
+                          </div>
                         </div>
-                      </div>
+                      ) : (
+                        // Display Mode
+                        <div className="flex items-start gap-4">
+                          {/* Icon and Color */}
+                          <div className="flex items-center gap-2">
+                            <span className="text-2xl">{shortcut.icon}</span>
+                            <div className={`w-4 h-4 rounded-full bg-${shortcut.color}-500/50 border border-${shortcut.color}-500/70`}></div>
+                          </div>
+
+                          {/* Shortcut Details */}
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <h4 className="font-medium text-white/90">{shortcut.name}</h4>
+                              <span className={`px-2 py-1 text-xs rounded-full ${shortcut.isActive ? 'bg-emerald-500/20 text-emerald-300' : 'bg-gray-500/20 text-gray-400'}`}>
+                                {shortcut.isActive ? 'Active' : 'Inactive'}
+                              </span>
+                            </div>
+                            
+                            <div className="text-sm text-white/60 space-y-1">
+                              <p><span className="text-white/80">Event:</span> {shortcut.eventTitle} ({shortcut.eventDuration} min)</p>
+                              {shortcut.createTask && (
+                                <p><span className="text-white/80">Creates task:</span> {shortcut.taskTitle} ({shortcut.taskPriority} priority)</p>
+                              )}
+                              {shortcut.taskTags.length > 0 && (
+                                <p><span className="text-white/80">Tags:</span> {shortcut.taskTags.join(', ')}</p>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Actions */}
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleEditShortcut(shortcut.id)}
+                              className="p-2 text-white/60 hover:text-white/90 hover:bg-white/10 rounded-lg transition-colors"
+                              title="Edit shortcut"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={() => handleDeleteShortcut(shortcut.id)}
+                              className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors"
+                              title="Delete shortcut"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
 
                 {/* Add New Shortcut */}
-                <button className="w-full p-4 border-2 border-dashed border-white/20 hover:border-white/30 rounded-xl text-white/60 hover:text-white/80 transition-colors flex items-center justify-center gap-2">
+                <button
+                  onClick={handleAddShortcut}
+                  className="w-full p-4 border-2 border-dashed border-white/20 hover:border-white/30 rounded-xl text-white/60 hover:text-white/80 transition-colors flex items-center justify-center gap-2"
+                >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                   </svg>
                   <span>Add New Shortcut</span>
                 </button>
+                
+                {/* Save Changes Button */}
+                {(editingShortcut || eventShortcuts.length !== DEFAULT_QUICK_ACTIONS_PREFERENCES.eventShortcuts.length) && (
+                  <button
+                    onClick={handleSaveShortcuts}
+                    className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors font-medium"
+                  >
+                    Save All Shortcuts
+                  </button>
+                )}
 
                 <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
                   <h4 className="font-medium text-blue-300 mb-2">💡 How Shortcuts Work</h4>

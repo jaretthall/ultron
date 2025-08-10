@@ -515,7 +515,7 @@ export const checkAIProviderHealth = async (userPreferences: UserPreferences): P
     available: claudeAvailable,
     configured: claudeConfigured,
     error: !claudeConfigured ? 'API key not configured' : (!claudeAvailable ? 'API key invalid or service unavailable' : undefined),
-    debug: `API Key: ${userPreferences.claude_api_key ? `Present (${userPreferences.claude_api_key.substring(0, 8)}...)` : 'Missing'}`
+    debug: `API Key: ${userPreferences.claude_api_key ? 'Present (***masked***)' : 'Missing'}`
   };
   
   // Check OpenAI - consider configured if API key is present
@@ -525,7 +525,7 @@ export const checkAIProviderHealth = async (userPreferences: UserPreferences): P
     available: openaiAvailable,
     configured: openaiConfigured,
     error: !openaiConfigured ? 'API key not configured' : (!openaiAvailable ? 'API key invalid or service unavailable' : undefined),
-    debug: `API Key: ${userPreferences.openai_api_key ? `Present (${userPreferences.openai_api_key.substring(0, 8)}...)` : 'Missing'}`
+    debug: `API Key: ${userPreferences.openai_api_key ? 'Present (***masked***)' : 'Missing'}`
   };
   
   // Auto-migrate from Gemini to Claude
