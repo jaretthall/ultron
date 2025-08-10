@@ -5,7 +5,7 @@
 
 import React, { createContext, useContext, useReducer, useEffect, useCallback, ReactNode } from 'react';
 import { Project } from '../../types';
-import { useCustomAuth } from './CustomAuthContext';
+import { useAuth } from './AuthContext';
 import { projectsService } from '../../services/databaseService';
 import { subscriptions } from '../../services/databaseService';
 import { performanceMonitor } from '../utils/performanceMonitoring';
@@ -99,7 +99,7 @@ const ProjectsContext = createContext<ProjectsContextType | undefined>(undefined
 // Provider Component
 export const ProjectsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(projectsReducer, initialState);
-  const { user, isAuthenticated } = useCustomAuth();
+  const { user, isAuthenticated } = useAuth();
 
   // Load projects
   const loadProjects = useCallback(async () => {

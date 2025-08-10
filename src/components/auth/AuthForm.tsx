@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useCustomAuth } from '../../contexts/CustomAuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface AuthFormProps {
   onSuccess?: () => void;
@@ -14,7 +14,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const { signIn, signUp, loading } = useCustomAuth();
+  const { signIn, signUp, loading } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,21 +51,13 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
 
     try {
       if (isLogin) {
-        const result = await signIn(email, password);
-        if (result.success) {
-          setSuccessMessage('Successfully signed in!');
-          onSuccess?.();
-        } else {
-          setError(result.error || 'Sign in failed');
-        }
+        await signIn(email, password);
+        setSuccessMessage('Successfully signed in!');
+        onSuccess?.();
       } else {
-        const result = await signUp(email, password);
-        if (result.success) {
-          setSuccessMessage('Account created successfully');
-          onSuccess?.();
-        } else {
-          setError(result.error || 'Sign up failed');
-        }
+        await signUp(email, password);
+        setSuccessMessage('Account created successfully');
+        onSuccess?.();
       }
     } catch (error: any) {
       console.error('Authentication error:', error);

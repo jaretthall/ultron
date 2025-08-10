@@ -91,7 +91,8 @@ const initializeSupabase = () => {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
-          'Prefer': 'return=representation'
+          'Prefer': 'return=representation',
+          'apikey': supabaseAnonKey
         }
       },
       db: {
@@ -363,3 +364,21 @@ if (typeof window !== 'undefined') {
   (window as any).clearAuthState = clearAuthState;
   console.log('🌐 Exposed Supabase client to window object');
 }
+
+// Lightweight helper to get the current authenticated user for use in services
+export const getAuthUser = async (): Promise<{ id: string; email?: string; created_at?: string } | null> => {
+  try {
+    if (!supabase) return null;
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error) return null;
+    const u = session?.user;
+    if (!u) return null;
+    return {
+      id: u.id,
+      email: u.email ?? undefined,
+      created_at: (u as any).created_at ?? undefined
+    };
+  } catch {
+    return null;
+  }
+};

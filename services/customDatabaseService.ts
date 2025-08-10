@@ -1,4 +1,4 @@
-import { getCustomAuthUser } from '../src/contexts/CustomAuthContext';
+import { getAuthUser } from '../lib/supabaseClient';
 import {
   Project, Task, UserPreferences, Tag, TagCategory
 } from '../types';
@@ -18,7 +18,7 @@ class CustomDatabaseService {
   }
 
   private async getCurrentUser() {
-    const user = await getCustomAuthUser();
+    const user = await getAuthUser();
     if (!user) {
       throw new Error('User not authenticated');
     }

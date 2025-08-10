@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { authService } from '../../services/databaseService';
+export { getAuthUser } from '../../lib/supabaseClient';
 
 interface AuthContextType {
   user: User | null;
@@ -136,3 +137,7 @@ export const withAuth = <P extends object>(Component: React.ComponentType<P>) =>
     return <Component {...props} />;
   };
 }; 
+
+// Helper function to get current auth user for non-React modules (services)
+// Supabase-only implementation without localStorage fallbacks
+// getAuthUser is re-exported above from lib to avoid circular imports in services

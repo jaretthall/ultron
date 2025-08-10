@@ -1,6 +1,12 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
 import { customDatabaseService } from './customDatabaseService';
-import { projectsService as supabaseProjectsService } from './databaseService';
+import { 
+  projectsService as supabaseProjectsService, 
+  tasksService as supabaseTasksService,
+  userPreferencesService as supabaseUserPreferencesService,
+  tagsService as supabaseTagsService,
+  tagCategoriesService as supabaseTagCategoriesService
+} from './databaseService';
 import {
   Project, Task, UserPreferences, Tag, TagCategory
 } from '../types';
@@ -96,10 +102,7 @@ class AdaptiveDatabaseService {
   async getAllTasks(): Promise<Task[]> {
     if (this.useSupabase()) {
       try {
-        // Note: We'd need to implement this in the original databaseService
-        // For now, fall back to localStorage
-        this.logFallback('getAllTasks');
-        return await customDatabaseService.getAllTasks();
+        return await supabaseTasksService.getAll();
       } catch (error) {
         console.error('Supabase tasks fetch failed, falling back to localStorage:', error);
         this.logFallback('getAllTasks');
@@ -114,9 +117,7 @@ class AdaptiveDatabaseService {
   async getTaskById(id: string): Promise<Task | null> {
     if (this.useSupabase()) {
       try {
-        // Fall back to localStorage for now
-        this.logFallback('getTaskById');
-        return await customDatabaseService.getTaskById(id);
+        return await supabaseTasksService.getById(id);
       } catch (error) {
         console.error('Supabase task fetch failed, falling back to localStorage:', error);
         this.logFallback('getTaskById');
@@ -131,9 +132,7 @@ class AdaptiveDatabaseService {
   async getTasksByProject(projectId: string): Promise<Task[]> {
     if (this.useSupabase()) {
       try {
-        // Fall back to localStorage for now
-        this.logFallback('getTasksByProject');
-        return await customDatabaseService.getTasksByProject(projectId);
+        return await supabaseTasksService.getByProject(projectId);
       } catch (error) {
         console.error('Supabase tasks fetch failed, falling back to localStorage:', error);
         this.logFallback('getTasksByProject');
@@ -148,9 +147,7 @@ class AdaptiveDatabaseService {
   async createTask(task: Omit<Task, 'id' | 'created_at' | 'updated_at' | 'user_id'>): Promise<Task> {
     if (this.useSupabase()) {
       try {
-        // Fall back to localStorage for now
-        this.logFallback('createTask');
-        return await customDatabaseService.createTask(task);
+        return await supabaseTasksService.create(task);
       } catch (error) {
         console.error('Supabase task creation failed, falling back to localStorage:', error);
         this.logFallback('createTask');
@@ -165,9 +162,7 @@ class AdaptiveDatabaseService {
   async updateTask(id: string, updates: Partial<Task>): Promise<Task> {
     if (this.useSupabase()) {
       try {
-        // Fall back to localStorage for now
-        this.logFallback('updateTask');
-        return await customDatabaseService.updateTask(id, updates);
+        return await supabaseTasksService.update(id, updates);
       } catch (error) {
         console.error('Supabase task update failed, falling back to localStorage:', error);
         this.logFallback('updateTask');
@@ -182,9 +177,8 @@ class AdaptiveDatabaseService {
   async deleteTask(id: string): Promise<boolean> {
     if (this.useSupabase()) {
       try {
-        // Fall back to localStorage for now
-        this.logFallback('deleteTask');
-        return await customDatabaseService.deleteTask(id);
+        await supabaseTasksService.delete(id);
+        return true;
       } catch (error) {
         console.error('Supabase task deletion failed, falling back to localStorage:', error);
         this.logFallback('deleteTask');
@@ -200,9 +194,7 @@ class AdaptiveDatabaseService {
   async getUserPreferences(): Promise<UserPreferences | null> {
     if (this.useSupabase()) {
       try {
-        // Fall back to localStorage for now
-        this.logFallback('getUserPreferences');
-        return await customDatabaseService.getUserPreferences();
+        return await supabaseUserPreferencesService.get();
       } catch (error) {
         console.error('Supabase preferences fetch failed, falling back to localStorage:', error);
         this.logFallback('getUserPreferences');
@@ -217,9 +209,15 @@ class AdaptiveDatabaseService {
   async updateUserPreferences(preferences: Partial<UserPreferences>): Promise<UserPreferences> {
     if (this.useSupabase()) {
       try {
-        // Fall back to localStorage for now
-        this.logFallback('updateUserPreferences');
-        return await customDatabaseService.updateUserPreferences(preferences);
+        // Try to get existing preferences first
+        const existing = await supabaseUserPreferencesService.get();
+        if (existing) {
+          return await supabaseUserPreferencesService.update(preferences);
+        } else {
+          // Create if doesn't exist
+          const { id, user_id, ...prefsWithoutIds } = preferences as UserPreferences;
+          return await supabaseUserPreferencesService.create(prefsWithoutIds);
+        }
       } catch (error) {
         console.error('Supabase preferences update failed, falling back to localStorage:', error);
         this.logFallback('updateUserPreferences');
@@ -235,9 +233,7 @@ class AdaptiveDatabaseService {
   async getAllTags(): Promise<Tag[]> {
     if (this.useSupabase()) {
       try {
-        // Fall back to localStorage for now
-        this.logFallback('getAllTags');
-        return await customDatabaseService.getAllTags();
+        return await supabaseTagsService.getAll();
       } catch (error) {
         console.error('Supabase tags fetch failed, falling back to localStorage:', error);
         this.logFallback('getAllTags');
@@ -252,9 +248,7 @@ class AdaptiveDatabaseService {
   async createTag(tag: Omit<Tag, 'id' | 'created_at' | 'updated_at' | 'user_id'>): Promise<Tag> {
     if (this.useSupabase()) {
       try {
-        // Fall back to localStorage for now
-        this.logFallback('createTag');
-        return await customDatabaseService.createTag(tag);
+        return await supabaseTagsService.create(tag);
       } catch (error) {
         console.error('Supabase tag creation failed, falling back to localStorage:', error);
         this.logFallback('createTag');
@@ -269,9 +263,7 @@ class AdaptiveDatabaseService {
   async updateTag(id: string, updates: Partial<Tag>): Promise<Tag> {
     if (this.useSupabase()) {
       try {
-        // Fall back to localStorage for now
-        this.logFallback('updateTag');
-        return await customDatabaseService.updateTag(id, updates);
+        return await supabaseTagsService.update(id, updates);
       } catch (error) {
         console.error('Supabase tag update failed, falling back to localStorage:', error);
         this.logFallback('updateTag');
@@ -286,9 +278,8 @@ class AdaptiveDatabaseService {
   async deleteTag(id: string): Promise<boolean> {
     if (this.useSupabase()) {
       try {
-        // Fall back to localStorage for now
-        this.logFallback('deleteTag');
-        return await customDatabaseService.deleteTag(id);
+        await supabaseTagsService.delete(id);
+        return true;
       } catch (error) {
         console.error('Supabase tag deletion failed, falling back to localStorage:', error);
         this.logFallback('deleteTag');
@@ -304,9 +295,7 @@ class AdaptiveDatabaseService {
   async getAllTagCategories(): Promise<TagCategory[]> {
     if (this.useSupabase()) {
       try {
-        // Fall back to localStorage for now
-        this.logFallback('getAllTagCategories');
-        return await customDatabaseService.getAllTagCategories();
+        return await supabaseTagCategoriesService.getAll();
       } catch (error) {
         console.error('Supabase tag categories fetch failed, falling back to localStorage:', error);
         this.logFallback('getAllTagCategories');
@@ -321,9 +310,7 @@ class AdaptiveDatabaseService {
   async createTagCategory(category: Omit<TagCategory, 'id' | 'created_at' | 'updated_at' | 'user_id'>): Promise<TagCategory> {
     if (this.useSupabase()) {
       try {
-        // Fall back to localStorage for now
-        this.logFallback('createTagCategory');
-        return await customDatabaseService.createTagCategory(category);
+        return await supabaseTagCategoriesService.create(category);
       } catch (error) {
         console.error('Supabase tag category creation failed, falling back to localStorage:', error);
         this.logFallback('createTagCategory');

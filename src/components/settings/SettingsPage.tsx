@@ -7,7 +7,7 @@ import TagManager from '../tags/TagManager';
 import { useAppMode } from '../../hooks/useLabels';
 import { IdGenerator } from '../../utils/idGeneration';
 import { projectsService, tasksService, schedulesService, tagsService, tagCategoriesService, notesService } from '../../../services/databaseService';
-import { useCustomAuth } from '../../contexts/CustomAuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 const SettingsPage: React.FC = () => {
   const { state, updateUserPreferences } = useAppState();
@@ -25,7 +25,7 @@ const SettingsPage: React.FC = () => {
   const [isExporting, setIsExporting] = useState(false);
   const [isImportingData, setIsImportingData] = useState(false);
   const [importProgress, setImportProgress] = useState('');
-  const { user } = useCustomAuth();
+  const { user } = useAuth();
 
   // Preferences state
   const [workingHoursStart, setWorkingHoursStart] = useState(userPreferences?.working_hours_start || '09:00');

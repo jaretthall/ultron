@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect, useCallback, ReactNode } from 'react';
 import { Project, Task, UserPreferences, Tag, TagCategory, Schedule } from '../../types';
-import { useCustomAuth } from './CustomAuthContext';
+import { useAuth } from './AuthContext';
 import { adaptiveDatabaseService } from '../../services/adaptiveDatabaseService';
 import { 
   tasksService, 
@@ -329,7 +329,7 @@ interface AppStateProviderProps {
 
 export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(appStateReducer, initialState);
-  const { user, isAuthenticated } = useCustomAuth();
+  const { user, isAuthenticated } = useAuth();
 
   // Utility function to generate operation IDs
   const generateOperationId = () => `op_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;

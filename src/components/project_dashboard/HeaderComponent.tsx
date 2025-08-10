@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useCustomAuth } from '../../contexts/CustomAuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { useLabels } from '../../hooks/useLabels';
 import { Menu, X } from 'lucide-react';
 
@@ -14,7 +14,7 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
   onProjectContextFilterChange 
 }) => {
   const location = useLocation();
-  const { signOut } = useCustomAuth();
+  const { signOut } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const labels = useLabels();
 

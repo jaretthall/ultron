@@ -26,6 +26,10 @@ All UI components and features must work seamlessly on both desktop and mobile d
 - Fixed Jest configuration conflict (removed duplicate config from package.json, kept jest.config.js)
 - Fixed TypeScript errors in aiService.ts with proper error handling
 - Fixed schedule saving functionality with enhanced error handling and custom auth compatibility
+- **Fixed Supabase RLS policies** - All tables now have proper row-level security policies for user data isolation
+- **Fixed adaptive database service** - Tasks, user preferences, and tags now properly use Supabase instead of falling back to localStorage
+- **Fixed Supabase client headers** - Added proper API key header for authentication
+- **MAJOR: Migrated to pure Supabase authentication** - Removed custom auth system, migrated all user data, now using standard Supabase auth flows
 
 ### Key File Locations
 - AI Services: `src/services/aiService.ts`
