@@ -897,7 +897,6 @@ const SettingsPage: React.FC = () => {
                   </div>
                 </div>
             </div>
-            </div>
             </section>
           </div>
         );
@@ -1793,7 +1792,7 @@ const SettingsPage: React.FC = () => {
               <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-white/20 via-transparent to-transparent"></div>
             </div>
             <div className="relative">
-            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-slate-100">Import Calendar Events</h3>
               <button
                 onClick={() => setShowCalendarImport(false)}
@@ -1863,6 +1862,7 @@ const SettingsPage: React.FC = () => {
               >
                 Cancel
               </button>
+            </div>
             </div>
           </div>
         </div>
