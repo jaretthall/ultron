@@ -3,9 +3,12 @@ import {
   Project, Task, UserPreferences, Tag, TagCategory, Note, Schedule, DocumentFile, Plan
 } from '../types'; // Path should be correct if types.ts is in src/
 
-// Supabase configuration - Prioritize environment variables
+// Supabase configuration - Support both legacy anon keys and new publishable keys
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
+// Try publishable key first (new format), fallback to anon key (legacy format)
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || 
+                       import.meta.env.VITE_SUPABASE_ANON_KEY || 
+                       import.meta.env.VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
 
 // Check if we're on Vercel or similar IPv4-only platform
 const isIPv4OnlyPlatform = () => {
@@ -356,13 +359,51 @@ export interface Database {
   };
 }
 
+// Helper to check JWT signing algorithm
+export const checkJWTAlgorithm = async () => {
+  if (!supabase) {
+    console.error('❌ Supabase client not initialized');
+    return null;
+  }
+
+  try {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    
+    if (error || !session) {
+      console.error('❌ No active session found');
+      return null;
+    }
+
+    // Decode JWT header to check algorithm
+    const token = session.access_token;
+    const headerBase64 = token.split('.')[0];
+    const header = JSON.parse(atob(headerBase64));
+    
+    console.log('🔐 JWT Algorithm:', header.alg);
+    console.log('📝 JWT Details:', {
+      algorithm: header.alg,
+      type: header.typ,
+      isSymmetric: header.alg === 'HS256',
+      isAsymmetric: header.alg === 'ES256' || header.alg === 'RS256',
+      performance: header.alg === 'HS256' ? '~300-1200ms (requires network)' : '~2-3ms (local verification)'
+    });
+    
+    return header.alg;
+  } catch (error) {
+    console.error('❌ Error checking JWT algorithm:', error);
+    return null;
+  }
+};
+
 // Expose debug functions globally for browser console access
 if (typeof window !== 'undefined') {
   (window as any).supabase = supabase;
   (window as any).debugUsersTable = debugUsersTable;
   (window as any).testSupabaseConnection = testSupabaseConnection;
   (window as any).clearAuthState = clearAuthState;
+  (window as any).checkJWTAlgorithm = checkJWTAlgorithm;
   console.log('🌐 Exposed Supabase client to window object');
+  console.log('💡 New: Run checkJWTAlgorithm() to see your JWT signing algorithm');
 }
 
 // Lightweight helper to get the current authenticated user for use in services
