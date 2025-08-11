@@ -6,7 +6,7 @@ import { useAppState } from '../../contexts/AppStateContext';
 import TagManager from '../tags/TagManager';
 import { useAppMode } from '../../hooks/useLabels';
 import { IdGenerator } from '../../utils/idGeneration';
-import { projectsService, tasksService, schedulesService, tagsService, tagCategoriesService, notesService } from '../../../services/databaseService';
+import { projectsService, tasksService, schedulesService, tagsService, tagCategoriesService, notesService, userPreferencesService } from '../../../services/databaseService';
 import { useAuth } from '../../contexts/AuthContext';
 import { DEFAULT_QUICK_ACTIONS_PREFERENCES, EventShortcut, DEFAULT_SCHEDULING_PREFERENCES } from '../../types/userPreferences';
 
@@ -376,13 +376,12 @@ const SettingsPage: React.FC = () => {
       if (tagCategories?.length) {
         setImportProgress('Importing tag categories...');
         for (const category of tagCategories) {
-          const newId = IdGenerator.generateCategoryId();
-          categoryIdMap.set(category.id, newId);
-          await tagCategoriesService.create({
+          // Let the service/database assign the ID; then record it
+          const createdCategory = await tagCategoriesService.create({
             ...category,
-            id: newId,
             user_id: currentUserId,
-          });
+          } as any);
+          categoryIdMap.set(category.id, createdCategory.id);
         }
       }
 
@@ -390,14 +389,12 @@ const SettingsPage: React.FC = () => {
       if (tags?.length) {
         setImportProgress('Importing tags...');
         for (const tag of tags) {
-          const newId = IdGenerator.generateTagId();
-          tagIdMap.set(tag.id, newId);
-          await tagsService.create({
+          const createdTag = await tagsService.create({
             ...tag,
-            id: newId,
             user_id: currentUserId,
             category_id: tag.category_id ? categoryIdMap.get(tag.category_id) || tag.category_id : null,
-          });
+          } as any);
+          tagIdMap.set(tag.id, createdTag.id);
         }
       }
 
@@ -405,14 +402,13 @@ const SettingsPage: React.FC = () => {
       if (projects?.length) {
         setImportProgress('Importing projects...');
         for (const project of projects) {
-          const newId = IdGenerator.generateProjectId();
-          projectIdMap.set(project.id, newId);
-          await projectsService.create({
+          // Create and capture the actual DB id, then map original->new
+          const createdProject = await projectsService.create({
             ...project,
-            id: newId,
             user_id: currentUserId,
             tags: project.tags?.map((tagId: string) => tagIdMap.get(tagId) || tagId) || [],
-          });
+          } as any);
+          projectIdMap.set(project.id, createdProject.id);
         }
       }
 
@@ -424,9 +420,9 @@ const SettingsPage: React.FC = () => {
           taskIdMap.set(task.id, newId);
           await tasksService.create({
             ...task,
-            id: newId,
             user_id: currentUserId,
-            project_id: task.project_id ? projectIdMap.get(task.project_id) || task.project_id : null,
+            // Remap to the actual created project id; if not found, null to avoid FK violations
+            project_id: task.project_id ? projectIdMap.get(task.project_id) || null : null,
             tags: task.tags?.map((tagId: string) => tagIdMap.get(tagId) || tagId) || [],
           });
         }
@@ -463,7 +459,8 @@ const SettingsPage: React.FC = () => {
       // Update user preferences if provided
       if (importedPrefs) {
         setImportProgress('Importing preferences...');
-        await updateUserPreferences(importedPrefs);
+        // Use upsert to satisfy RLS (inserts for current auth user are allowed by policy)
+        await userPreferencesService.upsert(importedPrefs as any);
       }
 
       setImportProgress('Import completed successfully!');
