@@ -270,6 +270,13 @@ const SettingsPage: React.FC = () => {
     // For now, just log the events - in production this would use the database service
   };
 
+  // Ensure date strings are parseable by JS Date: trim fractional seconds to max 3 digits
+  const normalizeIsoFraction = (value?: string | null): string | undefined => {
+    if (!value || typeof value !== 'string') return value ?? undefined;
+    // Replace cases like .0000+00:00 -> .000+00:00 (keep timezone if present)
+    return value.replace(/(\.\d{3})\d+/, '$1');
+  };
+
   const handleExportData = async () => {
     setIsExporting(true);
     try {
@@ -341,6 +348,24 @@ const SettingsPage: React.FC = () => {
 
       const { projects, tasks, schedules, tags, tagCategories, notes, userPreferences: importedPrefs } = importData.data;
 
+      // Normalize incoming data to be resilient to older export formats
+      const normalizedTasks = Array.isArray(tasks)
+        ? tasks.map((t: any) => ({
+            ...t,
+            due_date: normalizeIsoFraction(t?.due_date) || t?.due_date,
+            tags: Array.isArray(t?.tags) ? t.tags : [],
+          }))
+        : [];
+
+      const normalizedSchedules = Array.isArray(schedules)
+        ? schedules.map((s: any) => ({
+            ...s,
+            start_date: normalizeIsoFraction(s?.start_date) || s?.start_date,
+            end_date: normalizeIsoFraction(s?.end_date) || s?.end_date,
+            tags: Array.isArray(s?.tags) ? s.tags : [],
+          }))
+        : [];
+
       // Generate new IDs to avoid conflicts
       const projectIdMap = new Map<string, string>();
       const taskIdMap = new Map<string, string>();
@@ -392,9 +417,9 @@ const SettingsPage: React.FC = () => {
       }
 
       // Import tasks
-      if (tasks?.length) {
+      if (normalizedTasks.length) {
         setImportProgress('Importing tasks...');
-        for (const task of tasks) {
+        for (const task of normalizedTasks) {
           const newId = IdGenerator.generateTaskId();
           taskIdMap.set(task.id, newId);
           await tasksService.create({
@@ -408,9 +433,9 @@ const SettingsPage: React.FC = () => {
       }
 
       // Import schedules
-      if (schedules?.length) {
+      if (normalizedSchedules.length) {
         setImportProgress('Importing schedules...');
-        for (const schedule of schedules) {
+        for (const schedule of normalizedSchedules) {
           await schedulesService.create({
             ...schedule,
             id: IdGenerator.generateScheduleId(),
@@ -450,7 +475,8 @@ const SettingsPage: React.FC = () => {
     } catch (error) {
       console.error('Import failed:', error);
       setImportProgress('');
-      alert('Failed to import data. Please check the file format and try again.');
+      const message = error instanceof Error ? error.message : String(error);
+      alert(`Failed to import data. ${message}`);
     } finally {
       setIsImportingData(false);
       if (fileInputRef.current) {
