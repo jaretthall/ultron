@@ -25,3 +25,7 @@ dist-ssr
 
 .vercel
 .env*.local
+
+# Block backup JSONs that may contain secrets
+docs/ultron-backup-*.json
+
