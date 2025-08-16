@@ -58,23 +58,19 @@ export interface Task extends UniversalSyncFields {
   project_id?: string; // Reference to projects.id
   title: string;
   description?: string;
-  context: string; // AI context - detailed description for AI understanding
+  context: string; // Combined context, goals, and purpose in one field
   priority: TaskPriority;
   estimated_hours: number; // Float
   status: TaskStatus;
   progress?: number; // 0-100 percentage of task completion
   dependencies: string[]; // JSON array of task IDs
-  due_date?: string; // DateTime
-  deadline?: string;
+  due_date?: string; // DateTime - single due date/time field
   tags: string[];
   category?: string;
   task_context?: 'personal' | 'business' | 'inherited';
   energy_level?: 'low' | 'medium' | 'high';
   notes?: string;
   completion_notes?: string;
-  work_session_scheduled_start?: string; // DateTime for scheduled work session
-  work_session_scheduled_end?: string; // DateTime for scheduled work session
-  ai_suggested?: boolean; // Whether work session was suggested by AI
   scheduled_start?: string; // DateTime for user-scheduled task time
   scheduled_end?: string; // DateTime for user-scheduled task time
   is_time_blocked?: boolean; // Whether this task blocks time on the calendar

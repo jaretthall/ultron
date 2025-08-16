@@ -2,7 +2,7 @@
 
 This file tracks significant changes and version updates made by Claude during development of the Ultron Productivity Command Center.
 
-## Current Version: 3.1.2
+## Current Version: 3.3.4
 
 ## Version Management Protocol
 
@@ -56,6 +56,14 @@ Use semantic versioning: `3.x.y`
 ```
 
 ## Version History
+
+### Version 3.3.4 (2025-08-10)
+UI Refresh – Minimal Glass Dashboard
+- Introduced reusable `GlassPanel` for consistent glassmorphism containers
+- Simplified `HomePage` to a clean three-panel layout: Projects, Tasks, Calendar
+- Added subtle gradient/glass background and compact calendar embed
+- Added `Footer` component displaying current version
+- Updated versions across app and docs
 
 ### Version 3.1.0 (2025-01-09) 🎉
 **MAJOR BREAKTHROUGH - Database Connectivity FULLY RESTORED!**

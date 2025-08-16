@@ -3,7 +3,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Task, TaskPriority, TaskStatus, Project } from '../../../types';
 import { useLabels } from '../../hooks/useLabels';
 import LoadingSpinner from '../LoadingSpinner';
-import { TASK_TEMPLATES } from '../../constants/templates';
 // Phase 6: Security and monitoring integration
 import { InputValidator } from '../../utils/securityUtils';
 import { trackUserInteraction, captureException, ErrorCategory, ErrorSeverity } from '../../services/monitoringService';
@@ -46,73 +45,15 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
   const [scheduledStartTime, setScheduledStartTime] = useState('');
   const [scheduledEndTime, setScheduledEndTime] = useState('');
   const [tags, setTags] = useState('');
-  const [estimatedHours, setEstimatedHours] = useState<number | string>(0);
-  const [progress, setProgress] = useState(0);
-  const [selectedTemplate, setSelectedTemplate] = useState<string>('');
+  const [estimatedHours, setEstimatedHours] = useState<number | string>(1);
   const [formErrors, setFormErrors] = useState<TaskFormErrors>({});
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Flow-based fields for new tasks
-  const [microGoals, setMicroGoals] = useState('');
-  const [challengeLevel, setChallengeLevel] = useState(5);
-  const [engagementStrategy, setEngagementStrategy] = useState('sleep-to-flow');
-  const [minimumFlowHours, setMinimumFlowHours] = useState(2);
-  const [minimumFlowMinutes, setMinimumFlowMinutes] = useState(0);
-  const [energyLevel, setEnergyLevel] = useState(2);
   
   const labels = useLabels();
 
   // Filter out temporary projects (those with IDs starting with 'temp_')
   const availableProjects = useMemo(() => projects.filter(p => !p.id.startsWith('temp_')), [projects]);
-
-  // Get relevant task templates based on selected project
-  const relevantTemplates = useMemo(() => {
-    if (selectedProjectIdState === 'standalone') {
-      return TASK_TEMPLATES;
-    }
-    
-    const selectedProject = availableProjects.find(p => p.id === selectedProjectIdState);
-    if (!selectedProject) return TASK_TEMPLATES;
-    
-    // Filter templates based on project type and context
-    return TASK_TEMPLATES.filter(template => {
-      // Show all templates for business projects
-      if (selectedProject.project_context === 'business') {
-        return true;
-      }
-      
-      // For personal projects, show templates that don't require business context
-      return !template.project_context || template.project_context === selectedProject.project_context;
-    });
-  }, [selectedProjectIdState, availableProjects]);
-
-  // Helper functions for flow-based features
-  const getChallengeDisplayText = (level: number): string => {
-    const messages: { [key: number]: string } = {
-      1: "Way too easy (will cause boredom)",
-      2: "Too easy (might lose interest)", 
-      3: "Slightly easy (good warm-up)",
-      4: "Just right (flow sweet spot!)",
-      5: "Perfect challenge (4% stretch)",
-      6: "Slightly challenging (perfect for flow)",
-      7: "Moderately hard (still manageable)",
-      8: "Getting difficult (anxiety risk)",
-      9: "Too hard (likely overwhelm)",
-      10: "Extremely difficult (will cause anxiety)"
-    };
-    return messages[level] || "Unknown level";
-  };
-
-  const getEngagementTip = (strategy: string): string => {
-    const tips: { [key: string]: string } = {
-      'sleep-to-flow': '⚡ Strategy: Wake up and start this task within 60 seconds, no time to procrastinate',
-      'lower-hurdle': '🎯 Strategy: Start with the easiest possible version to build momentum',
-      'time-constraint': '⏰ Strategy: Set artificial deadline pressure to increase challenge level',
-      'response-inhibition': '🚀 Strategy: Commit to starting before you can think about it'
-    };
-    return tips[strategy] || '';
-  };
 
   useEffect(() => {
     if (isOpen) {
@@ -124,79 +65,16 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
         setContext('');
         setPriority(TaskPriority.MEDIUM);
         setTags('');
-        setEstimatedHours(0);
-        setProgress(0);
-        setSelectedTemplate('');
+        setEstimatedHours(1);
         setFormErrors({});
         setErrorMessage('');
-        // Reset flow-based fields
-        setMicroGoals('');
-        setChallengeLevel(5);
-        setEngagementStrategy('sleep-to-flow');
-        setMinimumFlowHours(2);
-        setMinimumFlowMinutes(0);
-        setEnergyLevel(2);
-    } else {
-        setTitle('');
-        setContext('');
-        setPriority(TaskPriority.MEDIUM);
-        setSelectedProjectIdState(
-            defaultProjectId && availableProjects.find(p => p.id === defaultProjectId) ? defaultProjectId : 'standalone'
-        );
-        setDueDate(defaultDueDate || '');
-        setTags('');
-        setEstimatedHours(0);
-        setProgress(0);
-        setSelectedTemplate('');
-        setFormErrors({});
-        setErrorMessage('');
-        // Reset flow-based fields (also in else block)
-        setMicroGoals('');
-        setChallengeLevel(5);
-        setEngagementStrategy('sleep-to-flow');
-        setMinimumFlowHours(2);
-        setMinimumFlowMinutes(0);
-        setEnergyLevel(2);
+        setIsTimeBlocked(false);
+        setScheduledDate('');
+        setScheduledStartTime('');
+        setScheduledEndTime('');
+        setDueTime('');
     }
   }, [isOpen, defaultProjectId, defaultDueDate, availableProjects]);
-
-  const handleTemplateChange = (templateId: string) => {
-    setSelectedTemplate(templateId);
-    
-    if (templateId === '') {
-      // Reset to defaults
-      setTitle('');
-      setContext('');
-      setPriority(TaskPriority.MEDIUM);
-      setTags('');
-      setEstimatedHours(0);
-      // Reset flow-based fields
-      setMicroGoals('');
-      setChallengeLevel(5);
-      setEngagementStrategy('sleep-to-flow');
-      setMinimumFlowHours(2);
-      setMinimumFlowMinutes(0);
-      setEnergyLevel(2);
-      return;
-    }
-
-    const template = TASK_TEMPLATES.find(t => t.id === templateId);
-    if (template) {
-      setTitle(template.name);
-      setContext(template.context);
-      setPriority(template.priority);
-      setTags(template.tags.join(', '));
-      setEstimatedHours(template.estimated_hours);
-      
-      // Populate flow-based fields from template
-      setMicroGoals(template.microGoals);
-      setChallengeLevel(template.challengeLevel);
-      setEngagementStrategy(template.engagementStrategy);
-      setMinimumFlowHours(template.minimumFlowHours);
-      setMinimumFlowMinutes(template.minimumFlowMinutes);
-      setEnergyLevel(template.energyLevel);
-    }
-  };
 
   if (!isOpen) return null;
 
@@ -229,16 +107,8 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
     setScheduledStartTime('');
     setScheduledEndTime('');
     setTags('');
-    setProgress(0);
-    setSelectedTemplate('');
+    setEstimatedHours(1);
     setErrorMessage('');
-    // Reset flow-based fields
-    setMicroGoals('');
-    setChallengeLevel(5);
-    setEngagementStrategy('sleep-to-flow');
-    setMinimumFlowHours(2);
-    setMinimumFlowMinutes(0);
-    setEnergyLevel(2);
     onClose();
   };
 
@@ -324,15 +194,14 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
         scheduled_end: combinedScheduledEnd,
         is_time_blocked: isTimeBlocked,
         tags: sanitizedTags,
-        progress: progress,
+        progress: 0,
       };
 
       trackUserInteraction('task_creation_attempted', 'new_task_modal', { 
         priority, 
         hasProject: !!newTaskData.project_id,
         estimatedHours: estimatedHoursNum,
-        tagCount: sanitizedTags.length,
-        templateUsed: selectedTemplate
+        tagCount: sanitizedTags.length
       });
 
       await onAddTask(newTaskData);
@@ -395,50 +264,15 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto">
-            {/* Basic Information Section */}
-            <div className="space-y-3">
-              <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-600 pb-2">
-                Basic Information
-              </div>
-
-              {/* Task Template Selection */}
-              <div>
-                <label htmlFor="taskTemplate" className="block text-sm font-medium text-slate-300 mb-1">
-                  Task Template
-                  <span className="block text-xs text-slate-400 font-normal mt-0.5">
-                    Choose a template to pre-fill common task types, or start from scratch.
-                  </span>
-                </label>
-                <select
-                  id="taskTemplate"
-                  value={selectedTemplate}
-                  onChange={(e) => handleTemplateChange(e.target.value)}
-                  className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-purple-500 focus:border-purple-500"
-                  disabled={isSubmitting}
-                >
-                  <option value="">Start from scratch</option>
-                  {relevantTemplates.map((template) => (
-                    <option key={template.id} value={template.id}>
-                      {template.name}
-                    </option>
-                  ))}
-                </select>
-                {selectedTemplate && (
-                  <div className="mt-2 p-3 bg-slate-700/50 rounded-md">
-                    <p className="text-xs text-slate-300 mb-2">
-                      {TASK_TEMPLATES.find(t => t.id === selectedTemplate)?.description}
-                    </p>
-                    <div className="text-xs text-slate-400">
-                      <p><strong>Flow Optimization:</strong> Challenge Level {TASK_TEMPLATES.find(t => t.id === selectedTemplate)?.challengeLevel}/10 • {TASK_TEMPLATES.find(t => t.id === selectedTemplate)?.engagementStrategy.replace('-', ' ')} strategy</p>
-                      <p className="mt-1"><strong>💡 Anti-Procrastination Tip:</strong> {TASK_TEMPLATES.find(t => t.id === selectedTemplate)?.procrastinationTips}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
+          <form onSubmit={handleSubmit} className="space-y-6 max-h-[70vh] overflow-y-auto">
+            {/* Basic Information */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium text-slate-300 border-b border-slate-600 pb-2">
+                Task Details
+              </h3>
 
               <div>
-                <label htmlFor="taskTitle" className="block text-sm font-medium text-slate-300 mb-1">
+                <label htmlFor="taskTitle" className="block text-sm font-medium text-slate-300 mb-2">
                   Task Title <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -446,8 +280,8 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
                   id="taskTitle"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-purple-500 focus:border-purple-500"
-                  placeholder="Enter task title..."
+                  className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-3 focus:ring-purple-500 focus:border-purple-500"
+                  placeholder="What needs to be done?"
                   required
                   disabled={isSubmitting}
                   aria-required="true"
@@ -458,48 +292,30 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
               </div>
 
               <div>
-                <label htmlFor="microGoals" className="block text-sm font-medium text-slate-300 mb-1">
-                  Clear Micro-Goals
-                </label>
-                <textarea
-                  id="microGoals"
-                  value={microGoals}
-                  onChange={(e) => setMicroGoals(e.target.value)}
-                  rows={3}
-                  className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-purple-500 focus:border-purple-500 text-sm"
-                  placeholder="Break this down into ridiculously specific steps:&#10;1. Open laptop&#10;2. Navigate to folder&#10;3. Open template&#10;4. Write first bullet point..."
-                  disabled={isSubmitting}
-                />
-                <div className="text-xs text-slate-400 mt-1">
-                  ✨ <strong>Flow Tip:</strong> Make each step so easy your brain has nothing to resist
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="taskContext" className="block text-sm font-medium text-slate-300 mb-1">
-                  Context & Why
-                  <span className="block text-xs text-slate-400 font-normal mt-0.5">
-                    Why does this matter? What's the bigger purpose?
+                <label htmlFor="taskContext" className="block text-sm font-medium text-slate-300 mb-2">
+                  Description & Context
+                  <span className="block text-xs text-slate-400 font-normal mt-1">
+                    Describe what needs to be done, why it matters, and any important details.
                   </span>
                 </label>
                 <textarea
                   id="taskContext"
                   value={context}
                   onChange={(e) => setContext(e.target.value)}
-                  rows={3}
-                  className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-purple-500 focus:border-purple-500 text-sm"
-                  placeholder="Why does this matter? What's the bigger purpose? How does it connect to your goals?"
+                  rows={4}
+                  className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-3 focus:ring-purple-500 focus:border-purple-500"
+                  placeholder="Provide context, goals, and any important details about this task..."
                   disabled={isSubmitting}
                 />
               </div>
 
               <div>
-                <label htmlFor="taskProject" className="block text-sm font-medium text-slate-300 mb-1">Project</label>
+                <label htmlFor="taskProject" className="block text-sm font-medium text-slate-300 mb-2">Project</label>
                 <select
                   id="taskProject"
                   value={selectedProjectIdState}
                   onChange={(e) => setSelectedProjectIdState(e.target.value)}
-                  className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-purple-500 focus:border-purple-500"
+                  className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-3 focus:ring-purple-500 focus:border-purple-500"
                   disabled={isSubmitting}
                 >
                   <option value="standalone">Standalone Task</option>
@@ -512,123 +328,14 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
               </div>
             </div>
 
-            {/* Flow Optimization Section */}
-            <div className="space-y-3">
-              <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-600 pb-2">
-                Flow Optimization
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">
-                  Challenge Level (Sweet Spot Finder)
-                </label>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-xs text-slate-400">
-                    <span>Too Easy (Boredom)</span>
-                    <span className="text-green-400 font-semibold">4% Sweet Spot</span>
-                    <span>Too Hard (Anxiety)</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="1"
-                    max="10"
-                    value={challengeLevel}
-                    onChange={(e) => setChallengeLevel(Number(e.target.value))}
-                    className="w-full h-2 bg-gradient-to-r from-red-500 via-green-500 to-red-500 rounded-lg appearance-none cursor-pointer"
-                    disabled={isSubmitting}
-                  />
-                  <div className="text-center text-sm text-slate-300 font-medium">
-                    {getChallengeDisplayText(challengeLevel)}
-                  </div>
-                </div>
-                <div className="text-xs text-slate-400 mt-1">
-                  🎯 <strong>Flow Tip:</strong> Sweet spot is 4% beyond your current skill level
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">
-                  Engagement Strategy
-                </label>
-                <select
-                  value={engagementStrategy}
-                  onChange={(e) => setEngagementStrategy(e.target.value)}
-                  className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-purple-500 focus:border-purple-500"
-                  disabled={isSubmitting}
-                >
-                  <option value="sleep-to-flow">Sleep-to-Flow (Morning, within 60 seconds)</option>
-                  <option value="lower-hurdle">Lower the Hurdle (Start with easier version)</option>
-                  <option value="time-constraint">Time Constraint (Artificial deadline pressure)</option>
-                  <option value="response-inhibition">Response Inhibition (Bypass thinking)</option>
-                </select>
-                <div className="text-xs text-slate-400 mt-1">
-                  {getEngagementTip(engagementStrategy)}
-                </div>
-              </div>
-
-              <div>
-                <div className="text-sm font-medium text-slate-300 mb-2">Minimum Flow Block</div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="text-center">
-                    <input
-                      type="number"
-                      value={minimumFlowHours}
-                      onChange={(e) => setMinimumFlowHours(Number(e.target.value))}
-                      min="1"
-                      max="8"
-                      className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-purple-500 focus:border-purple-500 text-center"
-                      disabled={isSubmitting}
-                    />
-                    <label className="block text-xs text-slate-400 mt-1">Hours</label>
-                  </div>
-                  <div className="text-center">
-                    <input
-                      type="number"
-                      value={minimumFlowMinutes}
-                      onChange={(e) => setMinimumFlowMinutes(Number(e.target.value))}
-                      min="0"
-                      max="59"
-                      step="15"
-                      className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-purple-500 focus:border-purple-500 text-center"
-                      disabled={isSubmitting}
-                    />
-                    <label className="block text-xs text-slate-400 mt-1">Minutes</label>
-                  </div>
-                </div>
-                <div className="text-xs text-slate-400 mt-1">
-                  🌊 <strong>Flow Payoff:</strong> Minimum uninterrupted time needed to make struggle worthwhile
-                </div>
-                
-                <div className="mt-3">
-                  <div className="text-xs text-slate-400 mb-2">Energy Level Required</div>
-                  <div className="flex gap-2">
-                    {[1, 2, 3].map((level) => (
-                      <button
-                        key={level}
-                        type="button"
-                        onClick={() => setEnergyLevel(level)}
-                        className={`w-3 h-3 rounded-full border-2 transition-colors ${
-                          energyLevel >= level 
-                            ? 'border-purple-500 bg-purple-500' 
-                            : 'border-slate-500 hover:border-purple-400'
-                        }`}
-                        title={level === 1 ? 'Low energy' : level === 2 ? 'Medium energy' : 'High energy'}
-                        disabled={isSubmitting}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Priority & Scheduling Section */}
-            <div className="space-y-3">
-              <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-600 pb-2">
+            {/* Priority & Scheduling */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium text-slate-300 border-b border-slate-600 pb-2">
                 Priority & Scheduling
-              </div>
+              </h3>
               
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">
+                <label className="block text-sm font-medium text-slate-300 mb-2">
                   Priority Level
                 </label>
                 <div className="grid grid-cols-4 gap-2">
@@ -656,39 +363,50 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label htmlFor="taskDueDate" className="block text-sm font-medium text-slate-300 mb-1">
-                    Due Date (optional)
+                  <label htmlFor="estimatedHours" className="block text-sm font-medium text-slate-300 mb-2">
+                    Estimated Hours
+                  </label>
+                  <input
+                    type="number"
+                    id="estimatedHours"
+                    value={estimatedHours}
+                    onChange={(e) => setEstimatedHours(e.target.value)}
+                    min="0.25"
+                    max="24"
+                    step="0.25"
+                    className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-3 focus:ring-purple-500 focus:border-purple-500"
+                    disabled={isSubmitting}
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="taskDueDate" className="block text-sm font-medium text-slate-300 mb-2">
+                    Due Date
                   </label>
                   <input
                     type="date"
                     id="taskDueDate"
                     value={dueDate}
                     onChange={(e) => setDueDate(e.target.value)}
-                    className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-purple-500 focus:border-purple-500"
+                    className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-3 focus:ring-purple-500 focus:border-purple-500"
                     disabled={isSubmitting}
                   />
-                  {formErrors.due_date && (
-                    <p className="mt-1 text-sm text-red-400">{formErrors.due_date}</p>
-                  )}
                 </div>
                 
                 <div>
-                  <label htmlFor="taskDueTime" className="block text-sm font-medium text-slate-300 mb-1">
-                    Due Time (optional)
+                  <label htmlFor="taskDueTime" className="block text-sm font-medium text-slate-300 mb-2">
+                    Due Time
                   </label>
                   <input
                     type="time"
                     id="taskDueTime"
                     value={dueTime}
                     onChange={(e) => setDueTime(e.target.value)}
-                    className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-purple-500 focus:border-purple-500"
+                    className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-3 focus:ring-purple-500 focus:border-purple-500"
                     disabled={isSubmitting || !dueDate}
                   />
-                  <p className="mt-1 text-xs text-slate-400">
-                    {dueDate && !dueTime ? 'Defaults to end of day (11:59 PM)' : dueTime ? 'Deadline will be set for this specific time' : 'Select a date first'}
-                  </p>
                 </div>
               </div>
 
@@ -711,12 +429,13 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
                 {isTimeBlocked && (
                   <div className="space-y-4">
                     <p className="text-xs text-slate-400">
-                      This will block time on your calendar and show as a red bar in the week view. AI will schedule around this time.
+                      This will block time on your calendar and show as a scheduled work session.
                     </p>
                     
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <label htmlFor="taskScheduledDate" className="block text-sm font-medium text-slate-300 mb-1">
-                        Scheduled Date
+                          Date
                       </label>
                       <input
                         type="date"
@@ -729,7 +448,6 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
                       />
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label htmlFor="taskScheduledStartTime" className="block text-sm font-medium text-slate-300 mb-1">
                           Start Time
@@ -747,7 +465,7 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
                       
                       <div>
                         <label htmlFor="taskScheduledEndTime" className="block text-sm font-medium text-slate-300 mb-1">
-                          End Time (optional)
+                          End Time
                         </label>
                         <input
                           type="time"
@@ -767,7 +485,7 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
               </div>
 
               <div>
-                <label htmlFor="taskTags" className="block text-sm font-medium text-slate-300 mb-1">
+                <label htmlFor="taskTags" className="block text-sm font-medium text-slate-300 mb-2">
                   Tags (comma separated)
                 </label>
                 <input
@@ -775,8 +493,8 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
                   id="taskTags"
                   value={tags}
                   onChange={(e) => setTags(e.target.value)}
-                  placeholder="e.g., progress-note, therapy, documentation"
-                  className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-2.5 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                  placeholder="e.g., urgent, meeting, research"
+                  className="w-full bg-slate-700 border-slate-600 text-slate-100 rounded-md p-3 focus:ring-purple-500 focus:border-purple-500"
                   disabled={isSubmitting}
                 />
               </div>
@@ -787,14 +505,14 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
                 type="button"
                 onClick={handleCloseModal}
                 disabled={isSubmitting}
-                className="px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white rounded font-medium transition-colors disabled:opacity-50"
+                className="px-6 py-2.5 bg-slate-600 hover:bg-slate-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                className="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
               >
                 {isSubmitting ? (
                   <>
@@ -802,7 +520,7 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({
                     <span>Creating...</span>
                   </>
                 ) : (
-                  <span>{labels.newTask}</span>
+                  <span>Create Task</span>
                 )}
               </button>
             </div>

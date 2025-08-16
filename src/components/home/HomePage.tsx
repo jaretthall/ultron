@@ -51,8 +51,8 @@ const HomePage: React.FC<HomePageProps> = () => {
     setEditingTask(task);
   };
 
-  // Data for dashboard widgets
-  const recentProjects = projects.filter((p: Project) => p.context === ProjectContext.BUSINESS).slice(0, 5);
+  // Data for dashboard widgets - show all projects, not just business ones
+  const recentProjects = projects.slice(0, 5);
   const urgentTasks = tasks.filter((t: Task) => t.priority === TaskPriority.URGENT && t.status === TaskStatus.TODO).slice(0, 5);
   const inProgressTasks = tasks.filter((t: Task) => t.status === TaskStatus.IN_PROGRESS).slice(0, 5);
 
