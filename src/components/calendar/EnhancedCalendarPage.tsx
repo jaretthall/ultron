@@ -402,8 +402,8 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
             } else {
               // Update work session schedule for work session events
               await updateTask(event.taskId, {
-                work_session_scheduled_start: newStart.toISOString(),
-                work_session_scheduled_end: newEnd.toISOString()
+                scheduled_start: newStart.toISOString(),
+                scheduled_end: newEnd.toISOString()
               });
             }
           }
@@ -429,10 +429,10 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
               scheduled_end: updatedEvent.end.toISOString()
             });
           } else {
-            // Update work_session_scheduled_start/end for AI/manual work sessions
+            // Update scheduled_start/end for AI/manual work sessions
             await updateTask(updatedEvent.taskId, {
-              work_session_scheduled_start: updatedEvent.start.toISOString(),
-              work_session_scheduled_end: updatedEvent.end.toISOString()
+              scheduled_start: updatedEvent.start.toISOString(),
+              scheduled_end: updatedEvent.end.toISOString()
             });
           }
           await loadCalendarData(); // Reload calendar data to reflect changes
@@ -458,11 +458,10 @@ const EnhancedCalendarPage: React.FC<EnhancedCalendarPageProps> = ({ onTaskClick
               is_time_blocked: false
             });
           } else {
-            // Clear work_session_scheduled_start/end for AI/manual work sessions
+            // Clear scheduled_start/end for AI/manual work sessions
             await updateTask(event.taskId, {
-              work_session_scheduled_start: undefined,
-              work_session_scheduled_end: undefined,
-              ai_suggested: false
+              scheduled_start: undefined,
+              scheduled_end: undefined
             });
           }
           await loadCalendarData(); // Reload calendar data to reflect changes

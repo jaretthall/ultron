@@ -74,7 +74,7 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({ isOpen, onClose, onAd
       setProjectDescription(template.context);
       setGoals(template.goals.join('\n'));
       setTags(template.tags.join(', '));
-      setProjectContext(template.project_context);
+      setProjectContext(template.project_context || ProjectContext.BUSINESS);
       setBusinessRelevance(template.business_relevance);
       setPreferredTimeSlots(template.preferred_time_slots);
     }

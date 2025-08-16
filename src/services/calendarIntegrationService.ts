@@ -238,15 +238,15 @@ export class CalendarIntegrationService {
       }
 
       // Add work session event if task has scheduled work time
-      if (task.work_session_scheduled_start && task.work_session_scheduled_end) {
+      if (task.scheduled_start && task.scheduled_end) {
         events.push({
           id: `work-${task.id}`,
           title: `🔨 ${task.title}`,
-          start: new Date(task.work_session_scheduled_start),
-          end: new Date(task.work_session_scheduled_end),
+          start: new Date(task.scheduled_start),
+          end: new Date(task.scheduled_end),
           type: 'work_session',
-          source: (task.ai_suggested || false) ? 'ai_generated' : 'manual',
-          editable: task.ai_suggested || false, // AI can modify its own suggestions
+          source: 'manual', // All tasks are manually scheduled now
+          editable: true, // All work sessions can be edited
           priority: task.priority,
           taskId: task.id,
           projectId: task.project_id,
@@ -254,7 +254,7 @@ export class CalendarIntegrationService {
             estimatedHours: task.estimated_hours,
             energyLevel: task.energy_level,
             progress: task.progress,
-            aiSuggested: task.ai_suggested || false
+            aiSuggested: false
           }
         });
       }
@@ -756,15 +756,15 @@ export class CalendarIntegrationService {
       const tasks = await tasksService.getAll();
       console.log(`🤖 Found ${tasks.length} tasks to potentially reset`);
 
-      // Clear work_session_scheduled_start for all tasks that have it
-      const tasksToReset = tasks.filter(task => !!task.work_session_scheduled_start);
-      console.log(`🤖 Resetting work sessions for ${tasksToReset.length} tasks`);
+      // Clear scheduled_start for all tasks that have it (but keep user-scheduled ones)
+      const tasksToReset = tasks.filter(task => !!task.scheduled_start && !task.is_time_blocked);
+      console.log(`🤖 Resetting AI work sessions for ${tasksToReset.length} tasks`);
 
       for (const task of tasksToReset) {
-        console.log(`🤖 Clearing work session for task: "${task.title}"`);
+        console.log(`🤖 Clearing AI work session for task: "${task.title}"`);
         await tasksService.update(task.id, {
-          work_session_scheduled_start: undefined,
-          work_session_scheduled_end: undefined
+          scheduled_start: undefined,
+          scheduled_end: undefined
         });
       }
 
@@ -791,13 +791,13 @@ export class CalendarIntegrationService {
       title: t.title,
       status: t.status,
       estimated_hours: t.estimated_hours,
-      work_session_scheduled_start: t.work_session_scheduled_start,
+      scheduled_start: t.scheduled_start,
       id: t.id
     })));
     
     // Find tasks that need work sessions scheduled
     const unscheduledTasks = tasks.filter(task => {
-      const hasWorkSession = !!task.work_session_scheduled_start;
+      const hasWorkSession = !!task.scheduled_start;
       const isCompleted = task.status === TaskStatus.COMPLETED;
       const hasEstimatedHours = task.estimated_hours > 0;
       
@@ -811,7 +811,7 @@ export class CalendarIntegrationService {
         estimatedHours: task.estimated_hours,
         isProgressNote: this.isProgressNote(task),
         status: task.status,
-        workSessionStart: task.work_session_scheduled_start
+        workSessionStart: task.scheduled_start
       });
       
       return shouldInclude;
@@ -1216,8 +1216,8 @@ export class CalendarIntegrationService {
       }
       
       // Include tasks with scheduled work sessions in range
-      if (task.work_session_scheduled_start) {
-        const workStart = new Date(task.work_session_scheduled_start);
+      if (task.scheduled_start) {
+        const workStart = new Date(task.scheduled_start);
         if (workStart >= startDate && workStart <= endDate) return true;
       }
       

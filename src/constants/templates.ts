@@ -91,6 +91,9 @@ export interface ScheduleTemplate {
   id: string;
   name: string;
   description: string;
+  theme: string;
+  tags: string[];
+  schedule: string;
   time_blocks: {
     start_time: string;
     end_time: string;
@@ -105,6 +108,9 @@ export const SCHEDULE_TEMPLATES: ScheduleTemplate[] = [
     id: 'focused-work-day',
     name: '🎯 Focused Work Day',
     description: 'Deep work blocks with strategic breaks for maximum productivity',
+    theme: 'productivity',
+    tags: ['focus', 'deep-work', 'productivity'],
+    schedule: '09:00-11:00 Deep Work\n11:00-11:15 Break\n11:15-12:30 Meetings\n12:30-13:30 Lunch\n13:30-15:30 Deep Work\n15:30-15:45 Break\n15:45-17:00 Admin Tasks',
     time_blocks: [
       { start_time: '09:00', end_time: '11:00', activity: 'Deep Work Block 1', type: 'work' },
       { start_time: '11:00', end_time: '11:15', activity: 'Break', type: 'break' },
@@ -119,6 +125,9 @@ export const SCHEDULE_TEMPLATES: ScheduleTemplate[] = [
     id: 'balanced-day',
     name: '⚖️ Balanced Work-Life Day',
     description: 'Balanced schedule mixing work, personal time, and wellness',
+    theme: 'balance',
+    tags: ['work-life-balance', 'wellness', 'flexible'],
+    schedule: '08:00-09:00 Morning Routine\n09:00-12:00 Work Block\n12:00-13:00 Lunch\n13:00-16:00 Work Block\n16:00-16:15 Break\n16:15-17:30 Wrap-up\n17:30-19:00 Personal Time',
     time_blocks: [
       { start_time: '08:00', end_time: '09:00', activity: 'Morning Routine', type: 'personal' },
       { start_time: '09:00', end_time: '12:00', activity: 'Morning Work Block', type: 'work' },
